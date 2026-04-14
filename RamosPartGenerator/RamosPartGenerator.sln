@@ -1,0 +1,50 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FD491997-E6BC-461D-999B-98698C48DE6E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RamosPartGenerator.Core", "src\RamosPartGenerator.Core\RamosPartGenerator.Core.csproj", "{8821042D-30B3-4D16-8AA0-7D228A44E912}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RamosPartGenerator.Excel", "src\RamosPartGenerator.Excel\RamosPartGenerator.Excel.csproj", "{0C4B0C52-0058-4A93-A7BA-0825C488747F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RamosPartGenerator.App", "src\RamosPartGenerator.App\RamosPartGenerator.App.csproj", "{768748EE-A3E8-4211-8EE6-F9EB143DB179}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{7664477F-B8CA-4D83-8B50-CEDD9EC1BD8F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RamosPartGenerator.Tests", "tests\RamosPartGenerator.Tests\RamosPartGenerator.Tests.csproj", "{735B544B-9924-4554-847C-C0A1307DCADC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8821042D-30B3-4D16-8AA0-7D228A44E912}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8821042D-30B3-4D16-8AA0-7D228A44E912}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8821042D-30B3-4D16-8AA0-7D228A44E912}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8821042D-30B3-4D16-8AA0-7D228A44E912}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C4B0C52-0058-4A93-A7BA-0825C488747F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C4B0C52-0058-4A93-A7BA-0825C488747F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C4B0C52-0058-4A93-A7BA-0825C488747F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C4B0C52-0058-4A93-A7BA-0825C488747F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{768748EE-A3E8-4211-8EE6-F9EB143DB179}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{768748EE-A3E8-4211-8EE6-F9EB143DB179}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{768748EE-A3E8-4211-8EE6-F9EB143DB179}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{768748EE-A3E8-4211-8EE6-F9EB143DB179}.Release|Any CPU.Build.0 = Release|Any CPU
+		{735B544B-9924-4554-847C-C0A1307DCADC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{735B544B-9924-4554-847C-C0A1307DCADC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{735B544B-9924-4554-847C-C0A1307DCADC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{735B544B-9924-4554-847C-C0A1307DCADC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{8821042D-30B3-4D16-8AA0-7D228A44E912} = {FD491997-E6BC-461D-999B-98698C48DE6E}
+		{0C4B0C52-0058-4A93-A7BA-0825C488747F} = {FD491997-E6BC-461D-999B-98698C48DE6E}
+		{768748EE-A3E8-4211-8EE6-F9EB143DB179} = {FD491997-E6BC-461D-999B-98698C48DE6E}
+		{735B544B-9924-4554-847C-C0A1307DCADC} = {7664477F-B8CA-4D83-8B50-CEDD9EC1BD8F}
+	EndGlobalSection
+EndGlobal
