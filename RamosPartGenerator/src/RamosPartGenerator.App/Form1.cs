@@ -5,6 +5,19 @@ namespace RamosPartGenerator.App;
 
 public partial class Form1 : Form
 {
+    private static readonly Color AppBackgroundColor = Color.FromArgb(245, 247, 251);
+    private static readonly Color SurfaceColor = Color.White;
+    private static readonly Color BorderColor = Color.FromArgb(218, 223, 230);
+    private static readonly Color PrimaryColor = Color.FromArgb(37, 99, 235);
+    private static readonly Color AccentColor = Color.FromArgb(245, 158, 11);
+    private static readonly Color AccentDarkColor = Color.FromArgb(217, 119, 6);
+    private static readonly Color SuccessColor = Color.FromArgb(22, 163, 74);
+    private static readonly Color SuccessDarkColor = Color.FromArgb(21, 128, 61);
+    private static readonly Color SecondaryColor = Color.FromArgb(100, 116, 139);
+    private static readonly Color SecondaryDarkColor = Color.FromArgb(71, 85, 105);
+    private static readonly Font UiFont = new("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+    private static readonly Font UiBoldFont = new("Segoe UI", 10F, FontStyle.Bold, GraphicsUnit.Point);
+
     private Label titleLabel = null!;
     private Label specPathTitleLabel = null!;
     private Label specPathValueLabel = null!;
@@ -16,6 +29,7 @@ public partial class Form1 : Form
     private GroupBox incomingRevisionGroupBox = null!;
     private RadioButton incomingRevision27RadioButton = null!;
     private RadioButton incomingRevision30RadioButton = null!;
+    private TextBox incomingFullPartTextBox = null!;
     private ComboBox incomingSourceComboBox = null!;
     private ComboBox incomingDramTypeComboBox = null!;
     private ComboBox incomingDensityComboBox = null!;
@@ -32,11 +46,15 @@ public partial class Form1 : Form
     private ComboBox incomingTesterComboBox = null!;
     private Label incomingVendorLabel = null!;
     private Label incomingPurchaserLabel = null!;
-    private Button previewIncomingButton = null!;
+    private Button incomingParseButton = null!;
+    private Button incomingGenerateButton = null!;
+    private Button incomingResetButton = null!;
 
     private GroupBox moduleRevisionGroupBox = null!;
     private RadioButton moduleRevision27RadioButton = null!;
     private RadioButton moduleRevision30RadioButton = null!;
+    private TextBox moduleCompFullPartTextBox = null!;
+    private TextBox moduleFullPartTextBox = null!;
     private TextBox moduleDramTypeTextBox = null!;
     private TextBox moduleDimmTypeTextBox = null!;
     private TextBox moduleDensityTextBox = null!;
@@ -52,151 +70,42 @@ public partial class Form1 : Form
     private TextBox modulePurchaserTextBox = null!;
     private TextBox moduleBasePartTextBox = null!;
     private TextBox moduleBinPartTextBox = null!;
-    private Button previewModuleButton = null!;
+    private Button moduleCompParseButton = null!;
+    private Button moduleFullParseButton = null!;
+    private Button moduleGenerateButton = null!;
+    private Button moduleResetButton = null!;
 
     private readonly SpecProvider _specProvider;
     private readonly IncomingCompService _incomingCompService;
     private readonly ModuleService _moduleService;
 
-    private static readonly string[] IncomingSourceItems =
-    {
-        "K - RAmos Memory",
-        "T - Ramos TP",
-        "C - CTST Memory",
-        "B - CTST TP"
-    };
-
-    private static readonly string[] DramTypeItems =
-    {
-        "A - DDR4",
-        "R - DDR5"
-    };
-
-    private static readonly string[] DensityDdr4Items =
-    {
-        "4G - 4Gb",
-        "8G - 8Gb",
-        "AG - 16Gb"
-    };
-
-    private static readonly string[] DensityDdr5Items =
-    {
-        "AH - 16Gb",
-        "HE - 24Gb",
-        "BH - 32Gb"
-    };
-
-    private static readonly string[] BitItems =
-    {
-        "04 - x4",
-        "08 - x8",
-        "16 - x16"
-    };
-
+    private static readonly string[] IncomingSourceItems = { "K - RAmos Memory", "T - Ramos TP", "C - CTST Memory", "B - CTST TP" };
+    private static readonly string[] DramTypeItems = { "A - DDR4", "R - DDR5" };
+    private static readonly string[] DensityDdr4Items = { "4G - 4Gb", "8G - 8Gb", "AG - 16Gb" };
+    private static readonly string[] DensityDdr5Items = { "AH - 16Gb", "HE - 24Gb", "BH - 32Gb" };
+    private static readonly string[] BitItems = { "04 - x4", "08 - x8", "16 - x16" };
     private static readonly string[] BankDdr4Items = { "5 - 16Bank" };
     private static readonly string[] BankDdr5Items = { "6 - 32Bank" };
     private static readonly string[] InterfaceDdr4Items = { "W - POD 1.2V" };
     private static readonly string[] InterfaceDdr5Items = { "V - POD 1.1V" };
-    private static readonly string[] CompTypeItems =
-    {
-        "P - Partial",
-        "U - Pre-Mark Partial",
-        "N - EMC Partial",
-        "H - a chip",
-        "M - Erase Marking",
-        "C - X-Comp",
-        "D - Tested",
-        "G - MDL(GOX)",
-        "T - MDL Reballed(GKKR)",
-        "F - Pre-Mark MDL(FX)",
-        "E - EMC MDL(FX)",
-        "Q - Pre-Mark Reballed(FKKR)",
-        "W - EMC Reballed(FKKR)",
-        "J - G Comp",
-        "A - EMC G Comp",
-        "X - EMC Partial X",
-        "Y - EMC Partial Y",
-        "Z - EMC Partial Z"
-    };
-
-    private static readonly string[] DieBrandItems =
-    {
-        "S - S1(SS)",
-        "G - GIGA S1(SS)",
-        "H - GIGA S2(Hynix)",
-        "M - GIGA S3(Micron)",
-        "C - GIGA S6(CXMT)",
-        "N - GIGA S9(NANYA)"
-    };
-
-    private static readonly string[] Vendor30Items =
-    {
-        "S - S1(SS)",
-        "G - GIGA",
-        "B - BY20",
-        "A - A100",
-        "X - Ramaxel"
-    };
-
-    private static readonly string[] Purchaser30Items =
-    {
-        "(¾øÀ½)",
-        "V - VM",
-        "H - RMHK",
-        "A - ADATA"
-    };
-
-    private static readonly string[] Vendor27Items =
-    {
-        "(¾øÀ½)",
-        "V - VM",
-        "H - RMHK"
-    };
-
-    private static readonly string[] CompType2Items =
-    {
-        "(¾øÀ½)",
-        "B - Reball"
-    };
-
-    private static readonly string[] PackageTypeItems =
-    {
-        "B - FBGA(Flip Chip)",
-        "M - FBGA(DDP)",
-        "R - FBGA(FC-ReMark)",
-        "N - FBGA(DDP-ReMark)"
-    };
-
-    private static readonly string[] TesterItems =
-    {
-        "R - Ramos",
-        "S - No-Test",
-        "A - ADATA",
-        "W - Winpac",
-        "T - DynaCard",
-        "G - GoldKey",
-        "K - CKMT",
-        "Y - Yueyin",
-        "D - OM",
-        "L - SemiconTest",
-        "1 - HTSI",
-        "2 - DLI",
-        "3 - Rayson",
-        "4 - Ramsun",
-        "5 - Powev"
-    };
+    private static readonly string[] CompTypeItems = { "P - Partial", "U - Pre-Mark Partial", "N - EMC Partial", "H - a chip", "M - Erase Marking", "C - X-Comp", "D - Tested", "G - MDL(GOX)", "T - MDL Reballed(GKKR)", "F - Pre-Mark MDL(FX)", "E - EMC MDL(FX)", "Q - Pre-Mark Reballed(FKKR)", "W - EMC Reballed(FKKR)", "J - G Comp", "A - EMC G Comp", "X - EMC Partial X", "Y - EMC Partial Y", "Z - EMC Partial Z" };
+    private static readonly string[] DieBrandItems = { "S - S1(SS)", "G - GIGA S1(SS)", "H - GIGA S2(Hynix)", "M - GIGA S3(Micron)", "C - GIGA S6(CXMT)", "N - GIGA S9(NANYA)" };
+    private static readonly string[] Vendor30Items = { "S - S1(SS)", "G - GIGA", "B - BY20", "A - A100", "X - Ramaxel" };
+    private static readonly string[] Purchaser30Items = { "(None)", "V - VM", "H - RMHK", "A - ADATA" };
+    private static readonly string[] Vendor27Items = { "(None)", "V - VM", "H - RMHK" };
+    private static readonly string[] CompType2Items = { "(None)", "B - Reball" };
+    private static readonly string[] PackageTypeItems = { "B - FBGA(Flip Chip)", "M - FBGA(DDP)", "R - FBGA(FC-ReMark)", "N - FBGA(DDP-ReMark)" };
+    private static readonly string[] TesterItems = { "R - Ramos", "S - No-Test", "A - ADATA", "W - Winpac", "T - DynaCard", "G - GoldKey", "K - CKMT", "Y - Yueyin", "D - OM", "L - SemiconTest", "1 - HTSI", "2 - DLI", "3 - Rayson", "4 - Ramsun", "5 - Powev" };
 
     public Form1()
     {
         BuildUi();
-
         var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
         _specProvider = new SpecProvider(specDirectory);
         _specProvider.Load();
         var productTextService = new ProductTextService(_specProvider);
         _incomingCompService = new IncomingCompService(_specProvider, productTextService);
         _moduleService = new ModuleService(_specProvider, productTextService);
-
         Form1_Load(this, EventArgs.Empty);
     }
 
@@ -220,7 +129,6 @@ public partial class Form1 : Form
         SetComboItems(incomingPackageComboBox, PackageTypeItems);
         SetComboItems(incomingTesterComboBox, TesterItems);
         SetComboItems(incomingPartRevisionComboBox, Enumerable.Range('A', 26).Select(x => ((char)x).ToString()).ToArray());
-
         incomingDramTypeComboBox.TextChanged += (_, _) => UpdateIncomingDramTypeUi();
         incomingDramTypeComboBox.SelectedIndexChanged += (_, _) => UpdateIncomingDramTypeUi();
         incomingSourceComboBox.TextChanged += (_, _) => UpdateIncomingRevisionUi();
@@ -228,7 +136,6 @@ public partial class Form1 : Form
         incomingRevision27RadioButton.CheckedChanged += (_, _) => UpdateIncomingRevisionUi();
         incomingRevision30RadioButton.CheckedChanged += (_, _) => UpdateIncomingRevisionUi();
     }
-
     private void UpdateIncomingDramTypeUi()
     {
         var dramTypeCode = ExtractCode(incomingDramTypeComboBox.Text);
@@ -261,7 +168,6 @@ public partial class Form1 : Form
         var isRev27 = GetSelectedIncomingRevision() == "27";
         var sourceCode = ExtractCode(incomingSourceComboBox.Text);
         var isInternalSource = sourceCode is "K" or "C";
-
         incomingVendorLabel.Text = isRev27 ? "Vendor (For TP)" : "Vendor";
         incomingPurchaserLabel.Visible = !isRev27;
         incomingPurchaserComboBox.Visible = !isRev27;
@@ -271,7 +177,7 @@ public partial class Form1 : Form
             SetComboItems(incomingVendorComboBox, Vendor27Items, preserveText: true);
             if (isInternalSource)
             {
-                incomingVendorComboBox.Text = "(¾øÀ½)";
+                incomingVendorComboBox.Text = "(None)";
                 incomingVendorComboBox.Enabled = false;
             }
             else
@@ -279,7 +185,7 @@ public partial class Form1 : Form
                 incomingVendorComboBox.Enabled = true;
             }
 
-            incomingPurchaserComboBox.Text = "(¾øÀ½)";
+            incomingPurchaserComboBox.Text = "(None)";
             incomingPurchaserComboBox.Enabled = false;
         }
         else
@@ -287,10 +193,9 @@ public partial class Form1 : Form
             SetComboItems(incomingVendorComboBox, Vendor30Items, preserveText: true);
             SetComboItems(incomingPurchaserComboBox, Purchaser30Items, preserveText: true);
             incomingVendorComboBox.Enabled = true;
-
             if (isInternalSource)
             {
-                incomingPurchaserComboBox.Text = "(¾øÀ½)";
+                incomingPurchaserComboBox.Text = "(None)";
                 incomingPurchaserComboBox.Enabled = false;
             }
             else
@@ -370,59 +275,27 @@ public partial class Form1 : Form
     }
 
     private string GetSelectedIncomingRevision() => incomingRevision27RadioButton.Checked ? "27" : "30";
-
     private string GetSelectedModuleRevision() => moduleRevision27RadioButton.Checked ? "27" : "30";
 
     private void BuildUi()
     {
-        titleLabel = new Label
-        {
-            AutoSize = true,
-            Font = new Font("Segoe UI", 18F, FontStyle.Bold, GraphicsUnit.Point),
-            Location = new Point(16, 12),
-            Text = "Ramos Part Generator"
-        };
-
-        specPathTitleLabel = new Label
-        {
-            AutoSize = true,
-            Location = new Point(20, 52),
-            Text = "Specs"
-        };
-
-        specPathValueLabel = new Label
-        {
-            AutoSize = true,
-            Location = new Point(70, 52),
-            Text = "-"
-        };
-
-        mainTabControl = new TabControl
-        {
-            Location = new Point(16, 80),
-            Size = new Size(980, 360)
-        };
-
-        incomingTabPage = new TabPage("ÀÔ°í & Comp");
-        moduleTabPage = new TabPage("Module");
+        titleLabel = new Label { AutoSize = true, Font = new Font("Segoe UI", 20F, FontStyle.Bold, GraphicsUnit.Point), ForeColor = Color.FromArgb(15, 23, 42), Location = new Point(18, 14), Text = "Ramos Part Generator" };
+        specPathTitleLabel = new Label { AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point), ForeColor = Color.FromArgb(71, 85, 105), Location = new Point(22, 55), Text = "Specs" };
+        specPathValueLabel = new Label { AutoSize = true, Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point), ForeColor = Color.FromArgb(100, 116, 139), Location = new Point(76, 55), Text = "-" };
+        mainTabControl = new TabControl { Location = new Point(18, 86), Size = new Size(1120, 430), Font = UiFont };
+        incomingTabPage = new TabPage("Incoming & Comp") { BackColor = AppBackgroundColor };
+        moduleTabPage = new TabPage("Module") { BackColor = AppBackgroundColor };
         mainTabControl.TabPages.Add(incomingTabPage);
         mainTabControl.TabPages.Add(moduleTabPage);
-
-        resultsGridView = new DataGridView
-        {
-            Location = new Point(16, 452),
-            Size = new Size(980, 220),
-            Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom
-        };
-
+        resultsGridView = new DataGridView { Location = new Point(18, 528), Size = new Size(1120, 220), Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom };
+        ApplyGridTheme(resultsGridView);
         BuildIncomingTab();
         BuildModuleTab();
-
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode = AutoScaleMode.Font;
-        ClientSize = new Size(1014, 691);
+        BackColor = AppBackgroundColor;
+        ClientSize = new Size(1160, 768);
         Text = "Ramos Part Generator";
-
         Controls.Add(resultsGridView);
         Controls.Add(mainTabControl);
         Controls.Add(specPathValueLabel);
@@ -432,161 +305,160 @@ public partial class Form1 : Form
 
     private void BuildIncomingTab()
     {
-        incomingRevisionGroupBox = CreateRevisionGroupBox(140, 8, out incomingRevision27RadioButton, out incomingRevision30RadioButton);
-        incomingSourceComboBox = CreateEditableComboBox(140, 52);
-        incomingDramTypeComboBox = CreateEditableComboBox(140, 82);
-        incomingDensityComboBox = CreateEditableComboBox(140, 112);
-        incomingBitComboBox = CreateEditableComboBox(140, 142);
-        incomingBankComboBox = CreateEditableComboBox(140, 172);
-        incomingInterfaceComboBox = CreateEditableComboBox(140, 202);
-        incomingPartRevisionComboBox = CreateEditableComboBox(140, 232);
-        incomingCompTypeComboBox = CreateEditableComboBox(450, 52);
-        incomingDieBrandComboBox = CreateEditableComboBox(450, 82);
-        incomingVendorComboBox = CreateEditableComboBox(450, 112);
-        incomingPurchaserComboBox = CreateEditableComboBox(450, 142);
-        incomingCompType2ComboBox = CreateEditableComboBox(450, 172);
-        incomingPackageComboBox = CreateEditableComboBox(760, 52);
-        incomingTesterComboBox = CreateEditableComboBox(760, 82);
-        incomingVendorLabel = CreateLabel("Vendor", 330, 116);
-        incomingPurchaserLabel = CreateLabel("Purchaser", 330, 146);
-        previewIncomingButton = new Button
-        {
-            Text = "ÀÔ°í/Comp ¹Ì¸®»ý¼º",
-            Location = new Point(760, 120),
-            Size = new Size(170, 32)
-        };
-        previewIncomingButton.Click += previewIncomingButton_Click;
-
-        incomingTabPage.Controls.AddRange(
-        new Control[]
-        {
-            CreateLabel("Spec Rev", 20, 20), incomingRevisionGroupBox,
-            CreateLabel("Source", 20, 56), incomingSourceComboBox,
-            CreateLabel("DRAM Type", 20, 86), incomingDramTypeComboBox,
-            CreateLabel("Density", 20, 116), incomingDensityComboBox,
-            CreateLabel("Bit", 20, 146), incomingBitComboBox,
-            CreateLabel("Bank", 20, 176), incomingBankComboBox,
-            CreateLabel("Interface", 20, 206), incomingInterfaceComboBox,
-            CreateLabel("Part Revision", 20, 236), incomingPartRevisionComboBox,
-            CreateLabel("Comp Type", 330, 56), incomingCompTypeComboBox,
-            CreateLabel("Die Brand", 330, 86), incomingDieBrandComboBox,
-            incomingVendorLabel, incomingVendorComboBox,
-            incomingPurchaserLabel, incomingPurchaserComboBox,
-            CreateLabel("Comp Type 2", 330, 176), incomingCompType2ComboBox,
-            CreateLabel("Package", 670, 56), incomingPackageComboBox,
-            CreateLabel("Tester", 670, 86), incomingTesterComboBox,
-            previewIncomingButton
-        });
+        var controlPanel = CreateCardPanel(18, 16, 1060, 86);
+        var commonPanel = CreateCardPanel(18, 118, 340, 256);
+        var compPanel = CreateCardPanel(374, 118, 340, 256);
+        var optionPanel = CreateCardPanel(730, 118, 348, 256);
+        controlPanel.Controls.Add(CreateSectionHeader("Quick Input", 18, 14));
+        controlPanel.Controls.Add(CreateLabel("Spec Rev", 18, 48));
+        incomingRevisionGroupBox = CreateRevisionGroupBox(92, 36, out incomingRevision27RadioButton, out incomingRevision30RadioButton);
+        controlPanel.Controls.Add(incomingRevisionGroupBox);
+        controlPanel.Controls.Add(CreateLabel("Comp Full Part", 240, 48));
+        incomingFullPartTextBox = CreateWideTextBox(360, 36, 420);
+        incomingParseButton = CreateAccentButton("Parse", 794, 35, 108, 38);
+        incomingGenerateButton = CreatePrimaryButton("Generate", 914, 20, 128, 48);
+        incomingResetButton = CreateSecondaryButton("Reset", 914, 72, 128, 36);
+        incomingParseButton.Click += incomingParseButton_Click;
+        incomingGenerateButton.Click += previewIncomingButton_Click;
+        incomingResetButton.Click += incomingResetButton_Click;
+        controlPanel.Controls.Add(incomingFullPartTextBox);
+        controlPanel.Controls.Add(incomingParseButton);
+        controlPanel.Controls.Add(incomingGenerateButton);
+        controlPanel.Controls.Add(incomingResetButton);
+        commonPanel.Controls.Add(CreateSectionHeader("Common", 18, 14));
+        incomingSourceComboBox = CreateEditableComboBox(138, 42, 176);
+        incomingDramTypeComboBox = CreateEditableComboBox(138, 74, 176);
+        incomingDensityComboBox = CreateEditableComboBox(138, 106, 176);
+        incomingBitComboBox = CreateEditableComboBox(138, 138, 176);
+        incomingBankComboBox = CreateEditableComboBox(138, 170, 176);
+        incomingInterfaceComboBox = CreateEditableComboBox(138, 202, 176);
+        incomingPartRevisionComboBox = CreateEditableComboBox(138, 234, 176);
+        commonPanel.Controls.AddRange(new Control[] { CreateFieldLabel("Source", 18, 46), incomingSourceComboBox, CreateFieldLabel("DRAM Type", 18, 78), incomingDramTypeComboBox, CreateFieldLabel("Density", 18, 110), incomingDensityComboBox, CreateFieldLabel("Bit", 18, 142), incomingBitComboBox, CreateFieldLabel("Bank", 18, 174), incomingBankComboBox, CreateFieldLabel("Interface", 18, 206), incomingInterfaceComboBox, CreateFieldLabel("Part Revision", 18, 238), incomingPartRevisionComboBox });
+        compPanel.Controls.Add(CreateSectionHeader("Comp Fields", 18, 14));
+        incomingCompTypeComboBox = CreateEditableComboBox(138, 42, 176);
+        incomingDieBrandComboBox = CreateEditableComboBox(138, 74, 176);
+        incomingVendorComboBox = CreateEditableComboBox(138, 106, 176);
+        incomingPurchaserComboBox = CreateEditableComboBox(138, 138, 176);
+        incomingCompType2ComboBox = CreateEditableComboBox(138, 170, 176);
+        incomingVendorLabel = CreateFieldLabel("Vendor", 18, 110);
+        incomingPurchaserLabel = CreateFieldLabel("Purchaser", 18, 142);
+        compPanel.Controls.AddRange(new Control[] { CreateFieldLabel("Comp Type", 18, 46), incomingCompTypeComboBox, CreateFieldLabel("Die Brand", 18, 78), incomingDieBrandComboBox, incomingVendorLabel, incomingVendorComboBox, incomingPurchaserLabel, incomingPurchaserComboBox, CreateFieldLabel("Comp Type 2", 18, 174), incomingCompType2ComboBox });
+        optionPanel.Controls.Add(CreateSectionHeader("Extra", 18, 14));
+        incomingPackageComboBox = CreateEditableComboBox(138, 42, 176);
+        incomingTesterComboBox = CreateEditableComboBox(138, 74, 176);
+        optionPanel.Controls.AddRange(new Control[] { CreateFieldLabel("Package", 18, 46), incomingPackageComboBox, CreateFieldLabel("Tester", 18, 78), incomingTesterComboBox });
+        incomingTabPage.Controls.AddRange(new Control[] { controlPanel, commonPanel, compPanel, optionPanel });
     }
-
     private void BuildModuleTab()
     {
-        moduleRevisionGroupBox = CreateRevisionGroupBox(140, 8, out moduleRevision27RadioButton, out moduleRevision30RadioButton);
-        moduleDramTypeTextBox = CreateTextBox(140, 52);
-        moduleDimmTypeTextBox = CreateTextBox(140, 82);
-        moduleDensityTextBox = CreateTextBox(140, 112);
-        moduleDieDensityTextBox = CreateTextBox(140, 142);
-        moduleCompositionTextBox = CreateTextBox(140, 172);
-        moduleRankTextBox = CreateTextBox(430, 52);
-        moduleGenerationTextBox = CreateTextBox(430, 82);
-        moduleIcBrandTextBox = CreateTextBox(430, 112);
-        moduleCompTypeTextBox = CreateTextBox(430, 142);
-        moduleSpeedTextBox = CreateTextBox(430, 172);
-        modulePcbTextBox = CreateTextBox(730, 52);
-        moduleVendorTextBox = CreateTextBox(730, 82);
-        modulePurchaserTextBox = CreateTextBox(730, 112);
-        moduleBasePartTextBox = CreateTextBox(730, 142);
-        moduleBinPartTextBox = CreateTextBox(730, 172);
-        previewModuleButton = new Button
-        {
-            Text = "Module ¹Ì¸®»ý¼º",
-            Location = new Point(730, 210),
-            Size = new Size(170, 32)
-        };
-        previewModuleButton.Click += previewModuleButton_Click;
-
-        moduleTabPage.Controls.AddRange(
-        new Control[]
-        {
-            CreateLabel("Spec Rev", 20, 20), moduleRevisionGroupBox,
-            CreateLabel("DRAM Type", 20, 56), moduleDramTypeTextBox,
-            CreateLabel("DIMM Type", 20, 86), moduleDimmTypeTextBox,
-            CreateLabel("Module Density", 20, 116), moduleDensityTextBox,
-            CreateLabel("Die Density", 20, 146), moduleDieDensityTextBox,
-            CreateLabel("Composition", 20, 176), moduleCompositionTextBox,
-            CreateLabel("Rank", 320, 56), moduleRankTextBox,
-            CreateLabel("Generation", 320, 86), moduleGenerationTextBox,
-            CreateLabel("I.C Brand", 320, 116), moduleIcBrandTextBox,
-            CreateLabel("Comp Type", 320, 146), moduleCompTypeTextBox,
-            CreateLabel("Speed", 320, 176), moduleSpeedTextBox,
-            CreateLabel("PCB", 640, 56), modulePcbTextBox,
-            CreateLabel("Vendor", 640, 86), moduleVendorTextBox,
-            CreateLabel("Purchaser", 640, 116), modulePurchaserTextBox,
-            CreateLabel("Base Part", 640, 146), moduleBasePartTextBox,
-            CreateLabel("Bin Part", 640, 176), moduleBinPartTextBox,
-            previewModuleButton
-        });
+        var controlPanel = CreateCardPanel(18, 16, 1060, 120);
+        var corePanel = CreateCardPanel(18, 152, 340, 222);
+        var configPanel = CreateCardPanel(374, 152, 340, 222);
+        var partPanel = CreateCardPanel(730, 152, 348, 222);
+        controlPanel.Controls.Add(CreateSectionHeader("Quick Input", 18, 14));
+        controlPanel.Controls.Add(CreateLabel("Spec Rev", 18, 48));
+        moduleRevisionGroupBox = CreateRevisionGroupBox(92, 36, out moduleRevision27RadioButton, out moduleRevision30RadioButton);
+        controlPanel.Controls.Add(moduleRevisionGroupBox);
+        controlPanel.Controls.Add(CreateLabel("Comp Full Part", 240, 26));
+        moduleCompFullPartTextBox = CreateWideTextBox(360, 22, 420);
+        moduleCompParseButton = CreateAccentButton("Parse", 794, 21, 108, 38);
+        moduleCompParseButton.Click += moduleCompParseButton_Click;
+        controlPanel.Controls.Add(moduleCompFullPartTextBox);
+        controlPanel.Controls.Add(moduleCompParseButton);
+        controlPanel.Controls.Add(CreateLabel("Module Full Part", 240, 66));
+        moduleFullPartTextBox = CreateWideTextBox(360, 62, 420);
+        moduleFullParseButton = CreateAccentButton("Parse", 794, 61, 108, 38);
+        moduleFullParseButton.Click += moduleFullParseButton_Click;
+        controlPanel.Controls.Add(moduleFullPartTextBox);
+        controlPanel.Controls.Add(moduleFullParseButton);
+        moduleGenerateButton = CreatePrimaryButton("Generate", 914, 20, 128, 48);
+        moduleResetButton = CreateSecondaryButton("Reset", 914, 72, 128, 36);
+        moduleGenerateButton.Click += previewModuleButton_Click;
+        moduleResetButton.Click += moduleResetButton_Click;
+        controlPanel.Controls.Add(moduleGenerateButton);
+        controlPanel.Controls.Add(moduleResetButton);
+        corePanel.Controls.Add(CreateSectionHeader("Module Base", 18, 14));
+        moduleDramTypeTextBox = CreateTextBox(138, 42, 176);
+        moduleDimmTypeTextBox = CreateTextBox(138, 74, 176);
+        moduleDensityTextBox = CreateTextBox(138, 106, 176);
+        moduleDieDensityTextBox = CreateTextBox(138, 138, 176);
+        moduleCompositionTextBox = CreateTextBox(138, 170, 176);
+        corePanel.Controls.AddRange(new Control[] { CreateFieldLabel("DRAM Type", 18, 46), moduleDramTypeTextBox, CreateFieldLabel("DIMM Type", 18, 78), moduleDimmTypeTextBox, CreateFieldLabel("Module Density", 18, 110), moduleDensityTextBox, CreateFieldLabel("Die Density", 18, 142), moduleDieDensityTextBox, CreateFieldLabel("Composition", 18, 174), moduleCompositionTextBox });
+        configPanel.Controls.Add(CreateSectionHeader("Structure", 18, 14));
+        moduleRankTextBox = CreateTextBox(138, 42, 176);
+        moduleGenerationTextBox = CreateTextBox(138, 74, 176);
+        moduleIcBrandTextBox = CreateTextBox(138, 106, 176);
+        moduleCompTypeTextBox = CreateTextBox(138, 138, 176);
+        moduleSpeedTextBox = CreateTextBox(138, 170, 176);
+        configPanel.Controls.AddRange(new Control[] { CreateFieldLabel("Rank", 18, 46), moduleRankTextBox, CreateFieldLabel("Generation", 18, 78), moduleGenerationTextBox, CreateFieldLabel("I.C Brand", 18, 110), moduleIcBrandTextBox, CreateFieldLabel("Comp Type", 18, 142), moduleCompTypeTextBox, CreateFieldLabel("Speed", 18, 174), moduleSpeedTextBox });
+        partPanel.Controls.Add(CreateSectionHeader("Output Fields", 18, 14));
+        modulePcbTextBox = CreateTextBox(138, 42, 176);
+        moduleVendorTextBox = CreateTextBox(138, 74, 176);
+        modulePurchaserTextBox = CreateTextBox(138, 106, 176);
+        moduleBasePartTextBox = CreateTextBox(138, 138, 176);
+        moduleBinPartTextBox = CreateTextBox(138, 170, 176);
+        partPanel.Controls.AddRange(new Control[] { CreateFieldLabel("PCB", 18, 46), modulePcbTextBox, CreateFieldLabel("Vendor", 18, 78), moduleVendorTextBox, CreateFieldLabel("Purchaser", 18, 110), modulePurchaserTextBox, CreateFieldLabel("Base Part", 18, 142), moduleBasePartTextBox, CreateFieldLabel("Bin Part", 18, 174), moduleBinPartTextBox });
+        moduleTabPage.Controls.AddRange(new Control[] { controlPanel, corePanel, configPanel, partPanel });
     }
 
-    private static Label CreateLabel(string text, int x, int y)
+    private void incomingParseButton_Click(object? sender, EventArgs e)
     {
-        return new Label
-        {
-            AutoSize = true,
-            Text = text,
-            Location = new Point(x, y + 4)
-        };
+        MessageBox.Show(this, "Incoming/Comp full part parser is the next step.", "Not Ready", MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
 
-    private static ComboBox CreateEditableComboBox(int x, int y)
+    private void incomingResetButton_Click(object? sender, EventArgs e)
     {
-        return new ComboBox
+        incomingFullPartTextBox.Clear();
+        foreach (var comboBox in new[] { incomingSourceComboBox, incomingDramTypeComboBox, incomingDensityComboBox, incomingBitComboBox, incomingBankComboBox, incomingInterfaceComboBox, incomingPartRevisionComboBox, incomingCompTypeComboBox, incomingDieBrandComboBox, incomingVendorComboBox, incomingPurchaserComboBox, incomingCompType2ComboBox, incomingPackageComboBox, incomingTesterComboBox })
         {
-            Location = new Point(x, y),
-            Width = 160,
-            DropDownStyle = ComboBoxStyle.DropDown,
-            AutoCompleteMode = AutoCompleteMode.SuggestAppend,
-            AutoCompleteSource = AutoCompleteSource.ListItems
-        };
+            comboBox.Text = string.Empty;
+        }
     }
 
-    private static TextBox CreateTextBox(int x, int y)
+    private void moduleCompParseButton_Click(object? sender, EventArgs e)
     {
-        return new TextBox
-        {
-            Location = new Point(x, y),
-            Width = 140
-        };
+        MessageBox.Show(this, "Module comp full part parser is the next step.", "Not Ready", MessageBoxButtons.OK, MessageBoxIcon.Information);
     }
+
+    private void moduleFullParseButton_Click(object? sender, EventArgs e)
+    {
+        MessageBox.Show(this, "Module full part parser is the next step.", "Not Ready", MessageBoxButtons.OK, MessageBoxIcon.Information);
+    }
+
+    private void moduleResetButton_Click(object? sender, EventArgs e)
+    {
+        moduleCompFullPartTextBox.Clear();
+        moduleFullPartTextBox.Clear();
+        foreach (var textBox in new[] { moduleDramTypeTextBox, moduleDimmTypeTextBox, moduleDensityTextBox, moduleDieDensityTextBox, moduleCompositionTextBox, moduleRankTextBox, moduleGenerationTextBox, moduleIcBrandTextBox, moduleCompTypeTextBox, moduleSpeedTextBox, modulePcbTextBox, moduleVendorTextBox, modulePurchaserTextBox, moduleBasePartTextBox, moduleBinPartTextBox })
+        {
+            textBox.Clear();
+        }
+    }
+
+    private static Label CreateLabel(string text, int x, int y) => new() { AutoSize = true, Font = UiBoldFont, ForeColor = Color.FromArgb(30, 41, 59), Text = text, Location = new Point(x, y + 4) };
+    private static Label CreateFieldLabel(string text, int x, int y) => new() { AutoSize = false, Width = 112, Height = 24, Font = UiBoldFont, ForeColor = Color.FromArgb(51, 65, 85), Text = text, Location = new Point(x, y), TextAlign = ContentAlignment.MiddleLeft };
+    private static Label CreateSectionHeader(string text, int x, int y) => new() { AutoSize = true, Font = new Font("Segoe UI", 11F, FontStyle.Bold, GraphicsUnit.Point), ForeColor = Color.FromArgb(15, 23, 42), Text = text, Location = new Point(x, y) };
+
+    private static Panel CreateCardPanel(int x, int y, int width, int height)
+    {
+        var panel = new Panel { Location = new Point(x, y), Size = new Size(width, height), BackColor = SurfaceColor };
+        panel.Paint += (_, e) => { using var pen = new Pen(BorderColor, 1); e.Graphics.DrawRectangle(pen, 0, 0, panel.Width - 1, panel.Height - 1); };
+        return panel;
+    }
+
+    private static ComboBox CreateEditableComboBox(int x, int y, int width) => new() { Location = new Point(x, y), Width = width, DropDownStyle = ComboBoxStyle.DropDown, AutoCompleteMode = AutoCompleteMode.SuggestAppend, AutoCompleteSource = AutoCompleteSource.ListItems, DropDownWidth = Math.Max(width, 320), Font = UiFont, FlatStyle = FlatStyle.Flat };
+    private static TextBox CreateTextBox(int x, int y, int width) => new() { Location = new Point(x, y), Width = width, Font = UiFont, BorderStyle = BorderStyle.FixedSingle };
+    private static TextBox CreateWideTextBox(int x, int y, int width) => CreateTextBox(x, y, width);
 
     private static GroupBox CreateRevisionGroupBox(int x, int y, out RadioButton rev27RadioButton, out RadioButton rev30RadioButton)
     {
-        var groupBox = new GroupBox
-        {
-            Location = new Point(x, y),
-            Size = new Size(160, 40),
-            TabStop = false
-        };
-
-        rev27RadioButton = new RadioButton
-        {
-            Text = "27",
-            Location = new Point(10, 14),
-            AutoSize = true
-        };
-
-        rev30RadioButton = new RadioButton
-        {
-            Text = "30",
-            Location = new Point(80, 14),
-            AutoSize = true
-        };
-
+        var groupBox = new GroupBox { Location = new Point(x, y), Size = new Size(130, 42), TabStop = false };
+        rev27RadioButton = new RadioButton { Text = "27", Font = UiBoldFont, Location = new Point(12, 14), AutoSize = true };
+        rev30RadioButton = new RadioButton { Text = "30", Font = UiBoldFont, Location = new Point(68, 14), AutoSize = true };
         groupBox.Controls.Add(rev27RadioButton);
         groupBox.Controls.Add(rev30RadioButton);
         return groupBox;
     }
-
     private static void SetComboItems(ComboBox comboBox, IEnumerable<string> items, bool preserveText = false)
     {
         var currentText = comboBox.Text;
@@ -597,7 +469,6 @@ public partial class Form1 : Form
             comboBox.Items.Add(item);
         }
         comboBox.EndUpdate();
-
         if (preserveText)
         {
             comboBox.Text = currentText;
@@ -607,12 +478,63 @@ public partial class Form1 : Form
     private static string ExtractCode(string? rawValue)
     {
         var text = (rawValue ?? string.Empty).Trim();
-        if (string.IsNullOrWhiteSpace(text) || text == "(¾øÀ½)")
+        if (string.IsNullOrWhiteSpace(text) || text == "(None)" || text == "(ì—†ìŒ)")
         {
             return "0";
         }
 
         var separatorIndex = text.IndexOf(" - ", StringComparison.Ordinal);
         return separatorIndex > 0 ? text[..separatorIndex].Trim().ToUpperInvariant() : text.ToUpperInvariant();
+    }
+
+    private static Button CreateAccentButton(string text, int x, int y, int width, int height)
+    {
+        var button = new Button { Text = text, Location = new Point(x, y), Size = new Size(width, height), Font = UiBoldFont };
+        StyleButton(button, AccentColor, AccentDarkColor, Color.White);
+        return button;
+    }
+
+    private static Button CreatePrimaryButton(string text, int x, int y, int width, int height)
+    {
+        var button = new Button { Text = text, Location = new Point(x, y), Size = new Size(width, height), Font = new Font("Segoe UI", 11F, FontStyle.Bold, GraphicsUnit.Point) };
+        StyleButton(button, SuccessColor, SuccessDarkColor, Color.White);
+        return button;
+    }
+
+    private static Button CreateSecondaryButton(string text, int x, int y, int width, int height)
+    {
+        var button = new Button { Text = text, Location = new Point(x, y), Size = new Size(width, height), Font = UiBoldFont };
+        StyleButton(button, SecondaryColor, SecondaryDarkColor, Color.White);
+        return button;
+    }
+
+    private static void StyleButton(Button button, Color backColor, Color hoverColor, Color foreColor)
+    {
+        button.FlatStyle = FlatStyle.Flat;
+        button.FlatAppearance.BorderSize = 0;
+        button.BackColor = backColor;
+        button.ForeColor = foreColor;
+        button.Cursor = Cursors.Hand;
+        button.MouseEnter += (_, _) => button.BackColor = hoverColor;
+        button.MouseLeave += (_, _) => button.BackColor = backColor;
+    }
+
+    private static void ApplyGridTheme(DataGridView grid)
+    {
+        grid.BackgroundColor = SurfaceColor;
+        grid.BorderStyle = BorderStyle.None;
+        grid.EnableHeadersVisualStyles = false;
+        grid.RowHeadersVisible = false;
+        grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+        grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+        grid.ColumnHeadersDefaultCellStyle.BackColor = PrimaryColor;
+        grid.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
+        grid.ColumnHeadersDefaultCellStyle.Font = UiBoldFont;
+        grid.ColumnHeadersHeight = 34;
+        grid.DefaultCellStyle.BackColor = SurfaceColor;
+        grid.DefaultCellStyle.SelectionBackColor = Color.FromArgb(219, 234, 254);
+        grid.DefaultCellStyle.SelectionForeColor = Color.FromArgb(15, 23, 42);
+        grid.DefaultCellStyle.Font = UiFont;
+        grid.GridColor = BorderColor;
     }
 }
