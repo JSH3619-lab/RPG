@@ -115,9 +115,7 @@ public sealed class LookupCatalog
             new("speedCode", "Speed", "structure", true, true, Array.Empty<string>()),
             new("pcbCode", "PCB", "output", true, true, PcbItems),
             new("vendorCode", spec.Module.VendorFieldLabel, "output", true, true, spec.Revision == "27" ? Vendor27Items : Vendor30Items),
-            new("purchaserCode", spec.Module.PurchaserFieldLabel ?? "Purchaser", "output", spec.Module.PurchaserFieldPresent, true, Purchaser30Items),
-            new("basePartCode", "Base Part", "output", true, true, Array.Empty<string>()),
-            new("binPartCode", "BIN Part", "output", true, true, Array.Empty<string>())
+            new("purchaserCode", spec.Module.PurchaserFieldLabel ?? "Purchaser", "output", spec.Module.PurchaserFieldPresent, true, Purchaser30Items)
         };
 
         return new LookupPageResponse(spec.Revision, spec.DisplayRevision, fields);

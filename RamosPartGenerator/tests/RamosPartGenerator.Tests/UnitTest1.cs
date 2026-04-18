@@ -124,4 +124,24 @@ public class UnitTest1
         Assert.Equal("K4A8G085WE-PGELB", rows[0].PartCode);
         Assert.Equal("RCA8G085WE-PBGSB", rows[1].PartCode);
     }
+
+    [Fact]
+    public void GeneratePreview_ModuleFullPart_AutoGeneratesBaseAndBin()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleFullPartCode = "TMRDAG58A1P-GPWRRWM7GH"
+        });
+
+        Assert.Equal(2, rows.Count);
+        Assert.Equal("TMRDAG58A1P-GPWRRWM7GH", rows[0].PartCode);
+        Assert.Equal("TMRDAG58A1P-GPWRRWM7GH-TNAGA00", rows[1].PartCode);
+        Assert.Equal("Module BIN", rows[1].Kind);
+    }
 }
