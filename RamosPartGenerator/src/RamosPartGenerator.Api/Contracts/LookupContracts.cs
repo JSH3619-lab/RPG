@@ -17,6 +17,8 @@ public sealed record LookupPageResponse(
 
 public sealed record ExportRegistrationRequest(IReadOnlyList<ExportRowRequest> Rows);
 
+public sealed record PartParseRequest(string Revision, string PartCode);
+
 public sealed record ExportRowRequest(
     string Kind,
     string PartCode,

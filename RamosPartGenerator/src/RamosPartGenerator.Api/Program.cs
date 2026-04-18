@@ -99,14 +99,41 @@ app.MapPost("/api/module/preview", (ModuleRequest request, ModuleService service
     }
 });
 
-app.MapPost("/api/incoming-comp/parse", () =>
-    Results.StatusCode(StatusCodes.Status501NotImplemented));
+app.MapPost("/api/incoming-comp/parse", (PartParseRequest request, IncomingCompService service) =>
+{
+    try
+    {
+        return Results.Ok(service.ParseCompPart(request.Revision, request.PartCode));
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { message = ex.Message });
+    }
+});
 
-app.MapPost("/api/module/parse-comp", () =>
-    Results.StatusCode(StatusCodes.Status501NotImplemented));
+app.MapPost("/api/module/parse-comp", (PartParseRequest request, ModuleService service) =>
+{
+    try
+    {
+        return Results.Ok(service.ParseCompPart(request.Revision, request.PartCode));
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { message = ex.Message });
+    }
+});
 
-app.MapPost("/api/module/parse-full", () =>
-    Results.StatusCode(StatusCodes.Status501NotImplemented));
+app.MapPost("/api/module/parse-full", (PartParseRequest request, ModuleService service) =>
+{
+    try
+    {
+        return Results.Ok(service.ParseModuleFullPart(request.Revision, request.PartCode));
+    }
+    catch (Exception ex)
+    {
+        return Results.BadRequest(new { message = ex.Message });
+    }
+});
 
 app.MapPost("/api/export/registration", (ExportRegistrationRequest request, RegistrationExcelExporter exporter) =>
 {

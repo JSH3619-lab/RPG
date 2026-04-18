@@ -118,6 +118,122 @@ public sealed class IncomingCompService
         return rows;
     }
 
+
+    public IncomingCompRequest ParseCompPart(string revision, string partCode)
+    {
+        var revisionSpec = _specProvider.GetRevisionSpec(revision);
+        var normalizedPartCode = (partCode ?? string.Empty).Trim().ToUpperInvariant();
+        if (string.IsNullOrWhiteSpace(normalizedPartCode))
+        {
+            throw new InvalidOperationException("Comp Full Part가 비어 있습니다.");
+        }
+
+        var separatorIndex = normalizedPartCode.IndexOf('-');
+        if (separatorIndex <= 0 || separatorIndex >= normalizedPartCode.Length - 1)
+        {
+            throw new InvalidOperationException("Comp Full Part 형식이 잘못되었습니다. '-' 위치를 확인하세요.");
+        }
+
+        var prefix = normalizedPartCode[..separatorIndex];
+        var tail = normalizedPartCode[(separatorIndex + 1)..];
+
+        if (prefix.Length != 10)
+        {
+            throw new InvalidOperationException("Comp Full Part prefix 길이가 올바르지 않습니다.");
+        }
+
+        if (tail.Length < 4)
+        {
+            throw new InvalidOperationException("Comp Full Part tail 길이가 올바르지 않습니다.");
+        }
+
+        var compFamily = prefix[..2];
+        var sourceCode = MapCompToIncomingFamily(compFamily);
+        var dramTypeCode = prefix.Substring(2, 1);
+        var densityCode = prefix.Substring(3, 2);
+        var bitOrganizationCode = prefix.Substring(5, 2);
+        var bankCode = prefix.Substring(7, 1);
+        var interfaceCode = prefix.Substring(8, 1);
+        var revisionCode = prefix.Substring(9, 1);
+
+        var compTypeCode = tail.Substring(0, 1);
+        var packageTypeCode = tail.Substring(1, 1);
+        var dieBrandCode = tail.Substring(2, 1);
+        var testerCode = tail.Substring(3, 1);
+        var remaining = tail.Length > 4 ? tail[4..] : string.Empty;
+
+        var vendorCode = "0";
+        var purchaserCode = "0";
+        var compType2Code = "0";
+
+        if (revisionSpec.Revision == "30")
+        {
+            if (remaining.Length < 1)
+            {
+                throw new InvalidOperationException("Rev 30 Comp Full Part에는 Vendor가 필요합니다.");
+            }
+
+            vendorCode = remaining.Substring(0, 1);
+            remaining = remaining.Length > 1 ? remaining[1..] : string.Empty;
+
+            if (remaining.Length == 1)
+            {
+                if (IsPurchaserCode(remaining))
+                {
+                    purchaserCode = remaining;
+                }
+                else
+                {
+                    compType2Code = remaining;
+                }
+            }
+            else if (remaining.Length >= 2)
+            {
+                purchaserCode = remaining.Substring(0, 1);
+                compType2Code = remaining.Substring(1, 1);
+            }
+        }
+        else
+        {
+            if (remaining.Length == 1)
+            {
+                if (IsVendor27Code(remaining, revisionSpec))
+                {
+                    vendorCode = remaining;
+                }
+                else
+                {
+                    compType2Code = remaining;
+                }
+            }
+            else if (remaining.Length >= 2)
+            {
+                vendorCode = remaining.Substring(0, 1);
+                compType2Code = remaining.Substring(1, 1);
+            }
+        }
+
+        ValidateDensity(dramTypeCode, densityCode);
+
+        return new IncomingCompRequest
+        {
+            Revision = revisionSpec.Revision,
+            SourceCode = sourceCode,
+            DramTypeCode = dramTypeCode,
+            DensityCode = densityCode,
+            BitOrganizationCode = bitOrganizationCode,
+            BankCode = bankCode,
+            InterfaceCode = interfaceCode,
+            RevisionCode = revisionCode,
+            CompTypeCode = compTypeCode,
+            DieBrandCode = dieBrandCode,
+            VendorCode = vendorCode,
+            PurchaserCode = purchaserCode,
+            CompType2Code = compType2Code,
+            PackageTypeCode = packageTypeCode,
+            TesterCode = testerCode
+        };
+    }
     private bool IsThirdPartyIncoming(string sourceCode)
     {
         return _specProvider.SharedSpec.Families.TryGetValue("incoming_third_party", out var familyCodes)
@@ -295,6 +411,28 @@ public sealed class IncomingCompService
         };
     }
 
+
+    private static string MapCompToIncomingFamily(string compFamily)
+    {
+        return compFamily switch
+        {
+            "RC" => "K",
+            "TC" => "T",
+            "CC" => "C",
+            "BC" => "B",
+            _ => throw new InvalidOperationException($"지원하지 않는 Comp Family입니다: {compFamily}")
+        };
+    }
+
+    private static bool IsPurchaserCode(string code)
+    {
+        return code is "V" or "H" or "A" or "0";
+    }
+
+    private static bool IsVendor27Code(string code, RevisionSpec revisionSpec)
+    {
+        return revisionSpec.IncomingComp.TailModel.VendorCodes.Contains(code, StringComparer.OrdinalIgnoreCase);
+    }
     private static string GetDensityLabel(string densityCode)
     {
         return densityCode switch
@@ -309,3 +447,5 @@ public sealed class IncomingCompService
         };
     }
 }
+
+
