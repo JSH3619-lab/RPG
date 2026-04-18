@@ -4,10 +4,14 @@ type Props = {
   field: LookupField;
   value: string;
   onChange: (key: string, value: string) => void;
+  options?: string[];
+  disabled?: boolean;
+  label?: string;
 };
 
-export function FieldInput({ field, value, onChange }: Props) {
+export function FieldInput({ field, value, onChange, options, disabled = false, label }: Props) {
   const listId = `${field.key}-options`;
+  const items = options ?? field.options;
 
   if (!field.visible) {
     return null;
@@ -15,16 +19,17 @@ export function FieldInput({ field, value, onChange }: Props) {
 
   return (
     <label className="field-row">
-      <span className="field-label">{field.label}</span>
+      <span className="field-label">{label ?? field.label}</span>
       <input
         className="field-input"
-        list={field.options.length > 0 ? listId : undefined}
+        list={items.length > 0 ? listId : undefined}
         value={value}
+        disabled={disabled}
         onChange={(event) => onChange(field.key, event.target.value)}
       />
-      {field.options.length > 0 && (
+      {items.length > 0 && (
         <datalist id={listId}>
-          {field.options.map((option) => (
+          {items.map((option) => (
             <option key={option} value={option} />
           ))}
         </datalist>

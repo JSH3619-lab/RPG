@@ -119,6 +119,11 @@ input {
   flex-wrap: wrap;
 }
 
+.hint-row {
+  color: #475569;
+  font-size: 14px;
+}
+
 .field-row {
   display: grid;
   grid-template-columns: 180px minmax(0, 1fr);
@@ -192,6 +197,21 @@ input {
   background: #fef2f2;
   color: #b91c1c;
   border: 1px solid #fecaca;
+}
+
+.rule-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.rule-pill {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  font-size: 14px;
 }
 
 .table-wrap {
