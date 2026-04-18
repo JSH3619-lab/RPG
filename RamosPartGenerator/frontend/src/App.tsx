@@ -60,7 +60,12 @@ export function App() {
 
       {error && <div className="error-box">{error}</div>}
 
-      {tab === "incoming" ? <IncomingCompPage revision={revision} /> : <ModulePage revision={revision} />}
+      <div className={tab === "incoming" ? "tab-panel active" : "tab-panel hidden"}>
+        <IncomingCompPage revision={revision} />
+      </div>
+      <div className={tab === "module" ? "tab-panel active" : "tab-panel hidden"}>
+        <ModulePage revision={revision} />
+      </div>
     </div>
   );
 }

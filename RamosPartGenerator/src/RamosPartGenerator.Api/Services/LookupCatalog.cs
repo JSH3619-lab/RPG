@@ -34,7 +34,21 @@ public sealed class LookupCatalog
     private static readonly string[] GenerationItems = Enumerable.Range('A', 26).Select(x => ((char)x).ToString().ToUpperInvariant()).ToArray();
     private static readonly string[] ModuleIcBrandItems = { "S - S1(SS)", "G - GIGA S1(SS)", "H - GIGA S2(Hynix)", "M - GIGA S3(Micron)", "C - GIGA S6(CXMT)", "N - GIGA S9(NANYA)" };
     private static readonly string[] ModuleCompTypeItems = { "P - Partial", "N - EMC Partial", "G - MDL(GOX)", "T - MDL Reballed(GKKR)", "J - G Comp", "A - EMC G Comp" };
-    private static readonly string[] PcbItems = { "BP", "HJ", "A1", "M7" };
+    private static readonly string[] PcbItems =
+    {
+        "1 - DN Green",
+        "2 - HJ Green",
+        "3 - DN Black",
+        "4 - HJ Black",
+        "5 - HJ Black 11x11",
+        "6 - BP Green",
+        "7 - BP Black",
+        "8 - BP RGB Black",
+        "9 - ADATA/BP Black",
+        "A - AXA5UR02",
+        "G - Hammer Pass",
+        "K - Hammer Fail"
+    };
 
     public LookupCatalog(SpecProvider specProvider)
     {
@@ -97,10 +111,10 @@ public sealed class LookupCatalog
             new("rankCode", "Rank", "structure", true, true, rankItems),
             new("generationCode", "Generation", "structure", true, true, GenerationItems),
             new("icBrandCode", spec.Module.SplitIcBrandAndCompType ? (spec.Module.IcBrand?.Label ?? "I.C Brand") : "I.C Brand + Comp Type", "structure", true, true, ModuleIcBrandItems),
-            new("moduleCompTypeCode", spec.Module.SplitIcBrandAndCompType ? (spec.Module.CompType?.Label ?? "Comp Type") : "Comp Type", "structure", spec.Module.SplitIcBrandAndCompType, true, ModuleCompTypeItems),
+            new("moduleCompTypeCode", spec.Module.SplitIcBrandAndCompType ? "Comp Type" : "Comp Type", "structure", spec.Module.SplitIcBrandAndCompType, true, ModuleCompTypeItems),
             new("speedCode", "Speed", "structure", true, true, Array.Empty<string>()),
             new("pcbCode", "PCB", "output", true, true, PcbItems),
-            new("vendorCode", spec.Module.VendorFieldLabel, "output", true, true, Vendor30Items),
+            new("vendorCode", spec.Module.VendorFieldLabel, "output", true, true, spec.Revision == "27" ? Vendor27Items : Vendor30Items),
             new("purchaserCode", spec.Module.PurchaserFieldLabel ?? "Purchaser", "output", spec.Module.PurchaserFieldPresent, true, Purchaser30Items),
             new("basePartCode", "Base Part", "output", true, true, Array.Empty<string>()),
             new("binPartCode", "BIN Part", "output", true, true, Array.Empty<string>())

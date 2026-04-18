@@ -90,6 +90,10 @@ input {
   gap: 20px;
 }
 
+.tab-panel.hidden {
+  display: none;
+}
+
 .action-card,
 .section-card,
 .result-card {
