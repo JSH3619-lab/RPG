@@ -144,4 +144,23 @@ public class UnitTest1
         Assert.Equal("TMRDAG58A1P-GPWRRWM7GH-TNAGA00", rows[1].PartCode);
         Assert.Equal("Module BIN", rows[1].Kind);
     }
+
+    [Fact]
+    public void GeneratePreview_ModuleFullPart_BuildsReadableModuleTexts()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleFullPartCode = "TMRDAG58A1P-GPWRRWM7GH"
+        });
+
+        Assert.Equal("UDIMM 16GB COO : KR", rows[0].GeneralInfo);
+        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) RMHK (BP PCB) TP", rows[0].Specification);
+        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) RMHK (BP PCB) TP 5600 MT/s", rows[1].Specification);
+    }
 }

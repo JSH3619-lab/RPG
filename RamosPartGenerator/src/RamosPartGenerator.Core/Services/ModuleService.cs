@@ -7,21 +7,6 @@ public sealed class ModuleService
 {
     private readonly SpecProvider _specProvider;
     private readonly ProductTextService _productTextService;
-    private static readonly Dictionary<string, string> PcbLabels = new(StringComparer.OrdinalIgnoreCase)
-    {
-        ["1"] = "DN Green",
-        ["2"] = "HJ Green",
-        ["3"] = "DN Black",
-        ["4"] = "HJ Black",
-        ["5"] = "HJ Black 11x11",
-        ["6"] = "BP Green",
-        ["7"] = "BP Black",
-        ["8"] = "BP RGB Black",
-        ["9"] = "ADATA/BP Black",
-        ["A"] = "AXA5UR02",
-        ["G"] = "Hammer Pass",
-        ["K"] = "Hammer Fail"
-    };
 
     public ModuleService(SpecProvider specProvider, ProductTextService productTextService)
     {
@@ -68,19 +53,54 @@ public sealed class ModuleService
         var formFactorLabel = GetModuleFormFactorLabel(effectiveRequest.DimmTypeCode);
         var capacityLabel = GetModuleDensityLabel(effectiveRequest.ModuleDensityCode);
         var dieDensityLabel = GetDensityLabel(effectiveRequest.DieDensityCode);
-        var ownerLabel = GetModuleOwnerLabel(effectiveRequest.ModuleSourceCode);
-        var pcbLabel = GetPcbLabel(effectiveRequest.PcbCode);
         var icCount = CalculateModuleIcCount(
             effectiveRequest.ModuleDensityCode,
             effectiveRequest.DieDensityCode,
             effectiveRequest.CompositionCode,
             effectiveRequest.RankCode);
         var speedText = GetModuleSpeedText(effectiveRequest.SpeedCode);
+        var isCompSale = effectiveRequest.DimmTypeCode.Equals("C", StringComparison.OrdinalIgnoreCase);
 
         var baseText = _productTextService.BuildModuleTexts(
-            basePartCode, dramTypeLabel, formFactorLabel, capacityLabel, dieDensityLabel, ownerLabel, pcbLabel, isThirdParty, icCount);
+            basePartCode,
+            effectiveRequest.ModuleSourceCode,
+            dramTypeLabel,
+            formFactorLabel,
+            capacityLabel,
+            dieDensityLabel,
+            effectiveRequest.CompositionCode,
+            icCount,
+            effectiveRequest.GenerationCode,
+            effectiveRequest.IcBrandCode,
+            effectiveRequest.ModuleCompTypeCode,
+            effectiveRequest.VendorCode,
+            effectiveRequest.PurchaserCode,
+            effectiveRequest.PcbCode,
+            isThirdParty,
+            effectiveRequest.SpecialCode2Code,
+            effectiveRequest.SpecialCode3Code,
+            null,
+            isCompSale);
         var binText = _productTextService.BuildModuleTexts(
-            binPartCode, dramTypeLabel, formFactorLabel, capacityLabel, dieDensityLabel, ownerLabel, pcbLabel, isThirdParty, icCount, speedText, effectiveRequest.DimmTypeCode.Equals("C", StringComparison.OrdinalIgnoreCase));
+            binPartCode,
+            effectiveRequest.ModuleSourceCode,
+            dramTypeLabel,
+            formFactorLabel,
+            capacityLabel,
+            dieDensityLabel,
+            effectiveRequest.CompositionCode,
+            icCount,
+            effectiveRequest.GenerationCode,
+            effectiveRequest.IcBrandCode,
+            effectiveRequest.ModuleCompTypeCode,
+            effectiveRequest.VendorCode,
+            effectiveRequest.PurchaserCode,
+            effectiveRequest.PcbCode,
+            isThirdParty,
+            effectiveRequest.SpecialCode2Code,
+            effectiveRequest.SpecialCode3Code,
+            speedText,
+            isCompSale);
 
         return new List<GeneratedPartRow>
         {
@@ -519,21 +539,6 @@ public sealed class ModuleService
             "C" => "64Gb",
             _ => densityCode
         };
-    }
-
-    private static string GetModuleOwnerLabel(string moduleSourceCode)
-    {
-        return moduleSourceCode switch
-        {
-            "RM" or "TM" => "RAmos",
-            "CM" or "BM" => "CT",
-            _ => moduleSourceCode
-        };
-    }
-
-    private static string GetPcbLabel(string pcbCode)
-    {
-        return PcbLabels.TryGetValue(pcbCode, out var label) ? label : pcbCode;
     }
 
     private static string CalculateModuleIcCount(string moduleDensityCode, string dieDensityCode, string compositionCode, string rankCode)
