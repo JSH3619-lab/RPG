@@ -68,6 +68,7 @@ export function ModulePage({ revision }: Props) {
 
   const isRev27 = revision === "27";
   const sourceCode = extractCode(request.moduleSourceCode);
+  const dramTypeCode = extractCode(request.dramTypeCode);
   const isThirdParty = sourceCode === "TM" || sourceCode === "BM";
 
   const grouped = useMemo(() => {
@@ -106,7 +107,7 @@ export function ModulePage({ revision }: Props) {
   async function handlePreview() {
     try {
       const previewRows = await api.previewModule(toApiRequest(request, compFullPart, moduleFullPart));
-      setRows(previewRows);
+      setRows((prev) => [...prev, ...previewRows]);
       setError("");
     } catch (err) {
       setError((err as Error).message);
@@ -228,6 +229,7 @@ function FieldSection({
 
 function buildFieldView(field: LookupField, request: ModuleRequest, revision: string): DisplayField {
   const sourceCode = extractCode(request.moduleSourceCode);
+  const dramTypeCode = extractCode(request.dramTypeCode);
   const isThirdParty = sourceCode === "TM" || sourceCode === "BM";
   const isRev27 = revision === "27";
 
@@ -257,6 +259,17 @@ function buildFieldView(field: LookupField, request: ModuleRequest, revision: st
     return {
       field,
       label: isRev27 ? "I.C Brand + Comp Type" : field.label
+    };
+  }
+
+  if (field.key === "speedCode") {
+    return {
+      field,
+      options: dramTypeCode === "4"
+        ? field.options.filter((option) => extractCode(option) === "WE")
+        : dramTypeCode === "R"
+          ? field.options.filter((option) => ["QK", "WM", "CM", "CQ", "CR", "CS"].includes(extractCode(option)))
+          : field.options
     };
   }
 
@@ -306,11 +319,11 @@ function toDisplayRequest(parsed: ModuleRequest, lookups: LookupPage | null): Mo
     generationCode: parsed.generationCode,
     icBrandCode: resolve("icBrandCode", parsed.icBrandCode),
     moduleCompTypeCode: resolve("moduleCompTypeCode", parsed.moduleCompTypeCode),
-    compTestCode: parsed.compTestCode,
-    moduleSmtCode: parsed.moduleSmtCode,
-    moduleTestCode: parsed.moduleTestCode,
-    speedCode: parsed.speedCode,
-    pcbCode: parsed.pcbCode,
+    compTestCode: resolve("compTestCode", parsed.compTestCode),
+    moduleSmtCode: resolve("moduleSmtCode", parsed.moduleSmtCode),
+    moduleTestCode: resolve("moduleTestCode", parsed.moduleTestCode),
+    speedCode: resolve("speedCode", parsed.speedCode),
+    pcbCode: resolve("pcbCode", parsed.pcbCode),
     vendorCode: resolve("vendorCode", parsed.vendorCode),
     purchaserCode: resolve("purchaserCode", parsed.purchaserCode),
     a100SpecialCode: resolve("a100SpecialCode", parsed.a100SpecialCode),

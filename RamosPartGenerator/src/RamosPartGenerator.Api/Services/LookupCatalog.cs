@@ -34,6 +34,11 @@ public sealed class LookupCatalog
     private static readonly string[] GenerationItems = Enumerable.Range('A', 26).Select(x => ((char)x).ToString().ToUpperInvariant()).ToArray();
     private static readonly string[] ModuleIcBrandItems = { "S - S1(SS)", "G - GIGA S1(SS)", "H - GIGA S2(Hynix)", "M - GIGA S3(Micron)", "C - GIGA S6(CXMT)", "N - GIGA S9(NANYA)" };
     private static readonly string[] ModuleCompTypeItems = { "P - Partial", "N - EMC Partial", "G - MDL(GOX)", "T - MDL Reballed(GKKR)", "J - G Comp", "A - EMC G Comp" };
+    private static readonly string[] ModuleCompTestItems = TesterItems;
+    private static readonly string[] ModuleSmtItems = new[] { "0 - No Ass'y" }.Concat(TesterItems).ToArray();
+    private static readonly string[] ModuleModuleTestItems = new[] { "0 - No Ass'y" }.Concat(TesterItems).ToArray();
+    private static readonly string[] ModuleSpeedDdr4Items = { "WE - 3200 MT/s" };
+    private static readonly string[] ModuleSpeedDdr5Items = { "QK - 4800 MT/s", "WM - 5600 MT/s", "CM - 6000 MT/s", "CQ - 6400 MT/s", "CR - 6800 MT/s", "CS - 7200 MT/s" };
     private static readonly string[] PcbItems =
     {
         "1 - DN Green",
@@ -141,7 +146,10 @@ public sealed class LookupCatalog
             new("generationCode", "Generation", "structure", true, true, GenerationItems),
             new("icBrandCode", spec.Module.SplitIcBrandAndCompType ? (spec.Module.IcBrand?.Label ?? "I.C Brand") : "I.C Brand + Comp Type", "structure", true, true, ModuleIcBrandItems),
             new("moduleCompTypeCode", spec.Module.SplitIcBrandAndCompType ? "Comp Type" : "Comp Type", "structure", spec.Module.SplitIcBrandAndCompType, true, ModuleCompTypeItems),
-            new("speedCode", "Speed", "structure", true, true, Array.Empty<string>()),
+            new("compTestCode", "Comp Test Site", "structure", true, true, ModuleCompTestItems),
+            new("speedCode", "Speed", "structure", true, true, ModuleSpeedDdr4Items.Concat(ModuleSpeedDdr5Items).ToArray()),
+            new("moduleSmtCode", "SMT Site", "output", true, true, ModuleSmtItems),
+            new("moduleTestCode", "Module Test Site", "output", true, true, ModuleModuleTestItems),
             new("pcbCode", "PCB", "output", true, true, PcbItems),
             new("vendorCode", spec.Module.VendorFieldLabel, "output", true, true, spec.Revision == "27" ? Vendor27Items : Vendor30Items),
             new("purchaserCode", spec.Module.PurchaserFieldLabel ?? "Purchaser", "output", spec.Module.PurchaserFieldPresent, true, Purchaser30Items),

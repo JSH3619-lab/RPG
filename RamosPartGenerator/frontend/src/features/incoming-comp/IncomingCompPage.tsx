@@ -124,7 +124,7 @@ export function IncomingCompPage({ revision }: Props) {
   async function handlePreview() {
     try {
       const previewRows = await api.previewIncoming(toApiRequest(request));
-      setRows(previewRows);
+      setRows((prev) => [...prev, ...previewRows]);
       setError("");
     } catch (err) {
       setError((err as Error).message);
