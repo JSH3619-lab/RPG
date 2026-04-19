@@ -113,6 +113,28 @@ export function ModulePage({ revision }: Props) {
     }
   }
 
+  async function handleExport() {
+    try {
+      if (rows.length === 0) {
+        setError("Generate results first.");
+        return;
+      }
+
+      const blob = await api.exportRegistration(rows);
+      const url = window.URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `module_${revision}.xlsx`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.URL.revokeObjectURL(url);
+      setError("");
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  }
+
   function handleReset() {
     setRequest({ ...EMPTY_REQUEST, revision });
     setCompFullPart("");
@@ -149,6 +171,7 @@ export function ModulePage({ revision }: Props) {
         </div>
         <div className="action-buttons">
           <button type="button" className="primary-button" onClick={handlePreview}>Generate</button>
+          <button type="button" className="secondary-button" onClick={handleExport}>Export Excel</button>
           <button type="button" className="ghost-button" onClick={handleReset}>Reset</button>
         </div>
       </section>
@@ -242,7 +265,7 @@ function buildFieldView(field: LookupField, request: ModuleRequest, revision: st
 
 function extractCode(rawValue: string): string {
   const trimmed = rawValue.trim();
-  if (!trimmed || trimmed === "(None)" || trimmed === "(?놁쓬)") {
+  if (!trimmed || trimmed === "(None)") {
     return "";
   }
 
@@ -331,3 +354,4 @@ function toApiRequest(request: ModuleRequest, compFullPart: string, moduleFullPa
     binPartCode: request.binPartCode.trim().toUpperCase()
   };
 }
+
