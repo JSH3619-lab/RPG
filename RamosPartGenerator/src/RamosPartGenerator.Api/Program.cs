@@ -139,10 +139,24 @@ app.MapPost("/api/export/registration", (ExportRegistrationRequest request, Regi
 {
     if (request.Rows is null || request.Rows.Count == 0)
     {
-        return Results.BadRequest(new { message = "내보낼 행이 없습니다." });
+        return Results.BadRequest(new { message = "Export rows are required." });
     }
 
-    return Results.StatusCode(StatusCodes.Status501NotImplemented);
+    var rows = request.Rows
+        .Select(row => new GeneratedPartRow(
+            row.Kind,
+            row.PartCode,
+            row.Name,
+            row.GeneralInfo,
+            row.Specification,
+            row.Note))
+        .ToArray();
+
+    var content = exporter.Export(rows);
+    return Results.File(
+        content,
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        exporter.DefaultFileName);
 });
 
 app.Run();

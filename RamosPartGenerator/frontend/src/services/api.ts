@@ -71,5 +71,27 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ revision, partCode })
     });
+  },
+  async exportRegistration(rows: GeneratedPartRow[]): Promise<Blob> {
+    const response = await fetch(`${API_BASE_URL}/api/export/registration`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ rows })
+    });
+
+    if (!response.ok) {
+      let message = "Export failed.";
+      try {
+        const body = await response.json();
+        message = body.message ?? message;
+      } catch {
+        // ignore
+      }
+      throw new Error(message);
+    }
+
+    return response.blob();
   }
 };
