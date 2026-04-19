@@ -163,4 +163,36 @@ public class UnitTest1
         Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) RMHK (BP PCB) TP", rows[0].Specification);
         Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) RMHK (BP PCB) TP 5600 MT/s", rows[1].Specification);
     }
+
+    [Fact]
+    public void BuildModuleTexts_CompSale_UsesFullCompTypeDescription()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ProductTextService(provider);
+
+        var texts = service.BuildModuleTexts(
+            partCode: "TEST",
+            moduleSourceCode: "TM",
+            dramTypeLabel: "DDR5",
+            formFactorLabel: "Comp",
+            capacityLabel: "16GB",
+            dieDensityLabel: "16Gb",
+            compositionCode: "8",
+            icCountText: "8",
+            generationCode: "G",
+            icBrandCode: "G",
+            moduleCompTypeCode: "P - Partial",
+            vendorCode: "G",
+            purchaserCode: "H",
+            pcbCode: "7",
+            isThirdParty: true,
+            specialCode2Code: "",
+            specialCode3Code: "",
+            speedText: "6400 MT/s",
+            isCompSale: true);
+
+        Assert.Equal("DDR5 16Gb x8 G-die GIGA S1 Partial Comp TP 6400 MT/s", texts.Specification);
+    }
 }

@@ -29,11 +29,12 @@ public sealed class LookupCatalog
     private static readonly string[] DimmTypeCommonItems = { "D - UDIMM 288pin", "S - SODIMM 262pin" };
     private static readonly string[] DimmTypeCompItem = { "C - Comp" };
     private static readonly string[] ModuleDensityItems = { "4G - 4GB", "8G - 8GB", "AG - 16GB", "BG - 32GB" };
-    private static readonly string[] RankItems = { "1 - 1Rank", "2 - 2Rank", "4 - 4Rank", "8 - 8Rank" };
+    private static readonly string[] ModuleSourceItems = { "RM - RAmos Memory", "TM - Ramos TP", "CM - CTST Memory", "BM - CTST TP" };
+    private static readonly string[] RankItems = { "1 - 1Rank", "2 - 2Rank" };
     private static readonly string[] RankCompItem = { "0 - Comp" };
     private static readonly string[] GenerationItems = Enumerable.Range('A', 26).Select(x => ((char)x).ToString().ToUpperInvariant()).ToArray();
     private static readonly string[] ModuleIcBrandItems = { "S - S1(SS)", "G - GIGA S1(SS)", "H - GIGA S2(Hynix)", "M - GIGA S3(Micron)", "C - GIGA S6(CXMT)", "N - GIGA S9(NANYA)" };
-    private static readonly string[] ModuleCompTypeItems = { "P - Partial", "N - EMC Partial", "G - MDL(GOX)", "T - MDL Reballed(GKKR)", "J - G Comp", "A - EMC G Comp" };
+    private static readonly string[] ModuleCompTypeItems = CompTypeItems;
     private static readonly string[] ModuleCompTestItems = TesterItems;
     private static readonly string[] ModuleSmtItems = new[] { "0 - No Ass'y" }.Concat(TesterItems).ToArray();
     private static readonly string[] ModuleModuleTestItems = new[] { "0 - No Ass'y" }.Concat(TesterItems).ToArray();
@@ -137,6 +138,7 @@ public sealed class LookupCatalog
         {
             new("compFullPart", "Comp Full Part", "quick", true, true, Array.Empty<string>()),
             new("moduleFullPart", "Module Full Part", "quick", true, true, Array.Empty<string>()),
+            new("moduleSourceCode", "Source", "base", true, true, ModuleSourceItems),
             new("dramTypeCode", "DRAM Type", "base", true, true, DramTypeItems),
             new("dimmTypeCode", "DIMM Type", "base", true, true, dimmTypeItems),
             new("moduleDensityCode", "Module Density", "base", true, true, ModuleDensityItems),

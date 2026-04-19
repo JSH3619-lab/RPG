@@ -334,7 +334,8 @@ public sealed class ProductTextService
 
     private static string GetModuleCompTypeDescription(string moduleCompTypeCode)
     {
-        return moduleCompTypeCode switch
+        var normalizedCode = NormalizeLookupCode(moduleCompTypeCode);
+        return normalizedCode switch
         {
             "P" => "Partial",
             "U" => "Pre-Mark Partial",
@@ -344,17 +345,32 @@ public sealed class ProductTextService
             "C" => "X-Comp",
             "D" => "Tested",
             "G" => "MDL(GOX)",
-            "T" => "Pre-Mark MDL(FX)",
-            "F" => "EMC MDL(FX)",
+            "T" => "MDL Reballed(GKKR)",
+            "F" => "Pre-Mark MDL(FX)",
+            "E" => "EMC MDL(FX)",
             "Q" => "Pre-Mark Reballed(FKKR)",
-            "W" => "EMC Reballed(FKR)",
+            "W" => "EMC Reballed(FKKR)",
             "J" => "G Comp",
             "A" => "EMC G Comp",
             "X" => "EMC Partial X",
             "Y" => "EMC Partial Y",
             "Z" => "EMC Partial Z",
-            _ => moduleCompTypeCode
+            _ => normalizedCode
         };
+    }
+
+    private static string NormalizeLookupCode(string rawValue)
+    {
+        var trimmed = (rawValue ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(trimmed) || trimmed.Equals("(None)", StringComparison.OrdinalIgnoreCase))
+        {
+            return string.Empty;
+        }
+
+        var separatorIndex = trimmed.IndexOf(" - ", StringComparison.Ordinal);
+        return separatorIndex > -1
+            ? trimmed[..separatorIndex].Trim()
+            : trimmed;
     }
 
     private static string NormalizeWhitespace(string rawText)
