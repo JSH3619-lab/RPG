@@ -223,6 +223,13 @@ function buildFieldView(field: LookupField, request: ModuleRequest, revision: st
     };
   }
 
+  if (field.key === "a100SpecialCode") {
+    return {
+      field,
+      disabled: !isThirdParty || extractCode(request.vendorCode) !== "A" || extractCode(request.purchaserCode) !== "A"
+    };
+  }
+
   if (field.key === "moduleCompTypeCode") {
     return {
       field,
@@ -235,7 +242,7 @@ function buildFieldView(field: LookupField, request: ModuleRequest, revision: st
 
 function extractCode(rawValue: string): string {
   const trimmed = rawValue.trim();
-  if (!trimmed || trimmed === "(None)" || trimmed === "(æ¯¿Ω)") {
+  if (!trimmed || trimmed === "(None)" || trimmed === "(?ÎÜÅÏì¨)") {
     return "";
   }
 
@@ -283,11 +290,11 @@ function toDisplayRequest(parsed: ModuleRequest, lookups: LookupPage | null): Mo
     pcbCode: parsed.pcbCode,
     vendorCode: resolve("vendorCode", parsed.vendorCode),
     purchaserCode: resolve("purchaserCode", parsed.purchaserCode),
-    a100SpecialCode: parsed.a100SpecialCode,
-    specialCode2Code: parsed.specialCode2Code,
-    specialCode3Code: parsed.specialCode3Code,
-    gradeCode: parsed.gradeCode,
-    productBinCode: parsed.productBinCode,
+    a100SpecialCode: resolve("a100SpecialCode", parsed.a100SpecialCode),
+    specialCode2Code: resolve("specialCode2Code", parsed.specialCode2Code),
+    specialCode3Code: resolve("specialCode3Code", parsed.specialCode3Code),
+    gradeCode: resolve("gradeCode", parsed.gradeCode),
+    productBinCode: resolve("productBinCode", parsed.productBinCode),
     basePartCode: parsed.basePartCode,
     binPartCode: parsed.binPartCode
   };

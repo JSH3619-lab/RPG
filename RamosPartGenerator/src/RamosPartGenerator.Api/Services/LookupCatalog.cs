@@ -49,6 +49,35 @@ public sealed class LookupCatalog
         "G - Hammer Pass",
         "K - Hammer Fail"
     };
+    private static readonly string[] A100SpecialItems =
+    {
+        "(None) - MPS PMIC + Renesas SPD",
+        "1 - Richtek PMIC + Renesas SPD"
+    };
+    private static readonly string[] ModuleSpecialCode2Items =
+    {
+        "(None)",
+        "R - 1st Repair",
+        "S - 2nd Repair",
+        "B - Reball",
+        "C - Reball Repair"
+    };
+    private static readonly string[] ModuleSpecialCode3Items =
+    {
+        "(None)",
+        "R - RMA",
+        "M - RMA",
+        "Y - Retest"
+    };
+    private static readonly string[] GradeCodeItems =
+    {
+        "TN - Normal",
+        "HM - Speed Down"
+    };
+    private static readonly string[] ProductBinItems =
+    {
+        "A00 - Normal"
+    };
 
     public LookupCatalog(SpecProvider specProvider)
     {
@@ -115,7 +144,12 @@ public sealed class LookupCatalog
             new("speedCode", "Speed", "structure", true, true, Array.Empty<string>()),
             new("pcbCode", "PCB", "output", true, true, PcbItems),
             new("vendorCode", spec.Module.VendorFieldLabel, "output", true, true, spec.Revision == "27" ? Vendor27Items : Vendor30Items),
-            new("purchaserCode", spec.Module.PurchaserFieldLabel ?? "Purchaser", "output", spec.Module.PurchaserFieldPresent, true, Purchaser30Items)
+            new("purchaserCode", spec.Module.PurchaserFieldLabel ?? "Purchaser", "output", spec.Module.PurchaserFieldPresent, true, Purchaser30Items),
+            new("a100SpecialCode", "A100 Special", "output", spec.Revision == "30", true, A100SpecialItems),
+            new("specialCode2Code", "Special Code 2", "output", true, true, ModuleSpecialCode2Items),
+            new("specialCode3Code", "Special Code 3", "output", spec.Revision == "30", true, ModuleSpecialCode3Items),
+            new("gradeCode", "Grade Code", "output", true, true, GradeCodeItems),
+            new("productBinCode", "Product Bin", "output", true, true, ProductBinItems)
         };
 
         return new LookupPageResponse(spec.Revision, spec.DisplayRevision, fields);
