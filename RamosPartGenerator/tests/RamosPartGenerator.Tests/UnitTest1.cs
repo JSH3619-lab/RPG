@@ -6,6 +6,20 @@ namespace RamosPartGenerator.Tests;
 public class UnitTest1
 {
     [Fact]
+    public void BuildModuleLookups_UsesModuleDieDensityCodes()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var catalog = new RamosPartGenerator.Api.Services.LookupCatalog(provider);
+
+        var page = catalog.BuildModule("30");
+        var dieDensityField = Assert.Single(page.Fields, field => field.Key == "dieDensityCode");
+
+        Assert.Equal(new[] { "4 - 4Gb", "8 - 8Gb", "A - 16Gb", "H - 24Gb", "B - 32Gb" }, dieDensityField.Options);
+    }
+
+    [Fact]
     public void GeneratePreview_Rev30_RequiresPurchaserForThirdParty()
     {
         var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
