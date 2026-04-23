@@ -83,7 +83,7 @@ public sealed class IncomingCompService
         var densityLabel = GetDensityLabel(densityCode);
         var bitLabel = $"x{bitOrganizationCode.TrimStart('0')}";
         var dieBrandLabel = $"{dieBrandCode}-die";
-        var compTypeLabel = compTypeCode;
+        var compTypeLabel = ProductTextService.GetCompTypeDescription(compTypeCode);
 
         var incomingTexts = _productTextService.BuildIncomingCompTexts(
             dddPartCode, dramTypeLabel, densityLabel, bitLabel, dieBrandLabel, compTypeLabel, isThirdParty);

@@ -182,7 +182,7 @@ public sealed class ProductTextService
             GetCompositionText(compositionCode),
             GetGenerationDieLabel(generationCode),
             GetIcBrandShortLabel(icBrandCode),
-            GetModuleCompTypeDescription(moduleCompTypeCode),
+            GetCompTypeDescription(moduleCompTypeCode),
             "Comp"
         };
 
@@ -332,9 +332,9 @@ public sealed class ProductTextService
         };
     }
 
-    private static string GetModuleCompTypeDescription(string moduleCompTypeCode)
+    public static string GetCompTypeDescription(string compTypeCode)
     {
-        var normalizedCode = NormalizeLookupCode(moduleCompTypeCode);
+        var normalizedCode = NormalizeLookupCode(compTypeCode);
         return normalizedCode switch
         {
             "P" => "Partial",

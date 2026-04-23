@@ -125,6 +125,40 @@ public class UnitTest1
         Assert.Equal("RCA8G085WE-PBGSB", rows[1].PartCode);
     }
 
+    [Theory]
+    [InlineData("G", "MDL(GOX)")]
+    [InlineData("P", "Partial")]
+    [InlineData("U", "Pre-Mark Partial")]
+    public void GeneratePreview_IncomingCompSpecification_UsesFullCompTypeDescription(string compTypeCode, string expectedCompTypeText)
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new IncomingCompService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new IncomingCompRequest
+        {
+            Revision = "30",
+            SourceCode = "K",
+            DramTypeCode = "R",
+            DensityCode = "AH",
+            BitOrganizationCode = "08",
+            BankCode = "6",
+            InterfaceCode = "V",
+            RevisionCode = "A",
+            CompTypeCode = compTypeCode,
+            DieBrandCode = "G",
+            VendorCode = "G",
+            PackageTypeCode = "B",
+            TesterCode = "W"
+        });
+
+        Assert.Contains($"{expectedCompTypeText} Comp", rows[0].Specification);
+        Assert.Contains($"{expectedCompTypeText} Comp", rows[1].Specification);
+        Assert.DoesNotContain($"{compTypeCode} Comp", rows[0].Specification);
+        Assert.DoesNotContain($"{compTypeCode} Comp", rows[1].Specification);
+    }
+
     [Fact]
     public void GeneratePreview_ModuleFullPart_AutoGeneratesBaseAndBin()
     {
