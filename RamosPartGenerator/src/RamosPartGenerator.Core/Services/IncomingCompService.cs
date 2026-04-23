@@ -1,5 +1,4 @@
 using RamosPartGenerator.Core.Models;
-using RamosPartGenerator.Core.Specs;
 
 namespace RamosPartGenerator.Core.Services;
 
@@ -46,10 +45,9 @@ public sealed class IncomingCompService
             packageTypeCode,
             testerCode);
         ValidateDensity(dramTypeCode, densityCode);
-        ValidateRevisionSpecificFields(revisionSpec, isThirdParty, vendorCode, purchaserCode);
+        ValidateRev30Fields(isThirdParty, vendorCode, purchaserCode);
 
         var dddPartCode = BuildIncomingPartCode(
-            revisionSpec,
             dramTypeCode,
             densityCode,
             bitOrganizationCode,
@@ -63,7 +61,6 @@ public sealed class IncomingCompService
             purchaserCode,
             compType2Code);
         var compPartCode = BuildCompPartCode(
-            revisionSpec,
             dramTypeCode,
             densityCode,
             bitOrganizationCode,
@@ -166,51 +163,29 @@ public sealed class IncomingCompService
         var purchaserCode = "0";
         var compType2Code = "0";
 
-        if (revisionSpec.Revision == "30")
+        if (remaining.Length < 1)
         {
-            if (remaining.Length < 1)
-            {
-                throw new InvalidOperationException("Rev 30 Comp Full Part에는 Vendor가 필요합니다.");
-            }
+            throw new InvalidOperationException("Rev 30 Comp Full Part에는 Vendor가 필요합니다.");
+        }
 
-            vendorCode = remaining.Substring(0, 1);
-            remaining = remaining.Length > 1 ? remaining[1..] : string.Empty;
+        vendorCode = remaining.Substring(0, 1);
+        remaining = remaining.Length > 1 ? remaining[1..] : string.Empty;
 
-            if (remaining.Length == 1)
+        if (remaining.Length == 1)
+        {
+            if (IsPurchaserCode(remaining))
             {
-                if (IsPurchaserCode(remaining))
-                {
-                    purchaserCode = remaining;
-                }
-                else
-                {
-                    compType2Code = remaining;
-                }
+                purchaserCode = remaining;
             }
-            else if (remaining.Length >= 2)
+            else
             {
-                purchaserCode = remaining.Substring(0, 1);
-                compType2Code = remaining.Substring(1, 1);
+                compType2Code = remaining;
             }
         }
-        else
+        else if (remaining.Length >= 2)
         {
-            if (remaining.Length == 1)
-            {
-                if (IsVendor27Code(remaining, revisionSpec))
-                {
-                    vendorCode = remaining;
-                }
-                else
-                {
-                    compType2Code = remaining;
-                }
-            }
-            else if (remaining.Length >= 2)
-            {
-                vendorCode = remaining.Substring(0, 1);
-                compType2Code = remaining.Substring(1, 1);
-            }
+            purchaserCode = remaining.Substring(0, 1);
+            compType2Code = remaining.Substring(1, 1);
         }
 
         ValidateDensity(dramTypeCode, densityCode);
@@ -276,31 +251,20 @@ public sealed class IncomingCompService
         }
     }
 
-    private static void ValidateRevisionSpecificFields(RevisionSpec revisionSpec, bool isThirdParty, string vendorCode, string purchaserCode)
+    private static void ValidateRev30Fields(bool isThirdParty, string vendorCode, string purchaserCode)
     {
-        if (revisionSpec.Revision == "30")
+        if (IsBlankCode(vendorCode))
         {
-            if (IsBlankCode(vendorCode))
-            {
-                throw new InvalidOperationException("Rev 30에서는 Vendor가 반드시 필요합니다.");
-            }
-
-            if (isThirdParty && IsBlankCode(purchaserCode))
-            {
-                throw new InvalidOperationException("Third-Party Comp는 Purchaser가 반드시 필요합니다.");
-            }
-
-            return;
+            throw new InvalidOperationException("Rev 30에서는 Vendor가 반드시 필요합니다.");
         }
 
-        if (isThirdParty && IsBlankCode(vendorCode))
+        if (isThirdParty && IsBlankCode(purchaserCode))
         {
-            throw new InvalidOperationException("Rev 27 Third-Party는 Vendor(For Third-party)가 반드시 필요합니다.");
+            throw new InvalidOperationException("Third-Party Comp는 Purchaser가 반드시 필요합니다.");
         }
     }
 
     private static string BuildIncomingPartCode(
-        RevisionSpec revisionSpec,
         string dramTypeCode,
         string densityCode,
         string bitOrganizationCode,
@@ -323,21 +287,10 @@ public sealed class IncomingCompService
             + interfaceCode
             + partRevisionCode;
 
-        if (revisionSpec.Revision == "30")
+        code += "-" + compTypeCode + dieBrandCode + vendorCode + "EL";
+        if (!IsBlankCode(purchaserCode))
         {
-            code += "-" + compTypeCode + dieBrandCode + vendorCode + "EL";
-            if (!IsBlankCode(purchaserCode))
-            {
-                code += purchaserCode;
-            }
-        }
-        else
-        {
-            code += "-" + compTypeCode + dieBrandCode + "EL";
-            if (!IsBlankCode(vendorCode))
-            {
-                code += vendorCode;
-            }
+            code += purchaserCode;
         }
 
         if (!IsBlankCode(compType2Code))
@@ -349,7 +302,6 @@ public sealed class IncomingCompService
     }
 
     private static string BuildCompPartCode(
-        RevisionSpec revisionSpec,
         string dramTypeCode,
         string densityCode,
         string bitOrganizationCode,
@@ -378,17 +330,10 @@ public sealed class IncomingCompService
             + dieBrandCode
             + testerCode;
 
-        if (revisionSpec.Revision == "30")
+        code += vendorCode;
+        if (!IsBlankCode(purchaserCode))
         {
-            code += vendorCode;
-            if (!IsBlankCode(purchaserCode))
-            {
-                code += purchaserCode;
-            }
-        }
-        else if (!IsBlankCode(vendorCode))
-        {
-            code += vendorCode;
+            code += purchaserCode;
         }
 
         if (!IsBlankCode(compType2Code))
@@ -429,10 +374,6 @@ public sealed class IncomingCompService
         return code is "V" or "H" or "A" or "0";
     }
 
-    private static bool IsVendor27Code(string code, RevisionSpec revisionSpec)
-    {
-        return revisionSpec.IncomingComp.TailModel.VendorCodes.Contains(code, StringComparer.OrdinalIgnoreCase);
-    }
     private static string GetDensityLabel(string densityCode)
     {
         return densityCode switch

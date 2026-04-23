@@ -37,17 +37,17 @@ public sealed class ModuleService
             effectiveRequest.PcbCode,
             effectiveRequest.VendorCode);
 
-        if (revisionSpec.Revision == "30" && IsBlankCode(effectiveRequest.IcBrandCode))
+        if (IsBlankCode(effectiveRequest.IcBrandCode))
         {
-            throw new InvalidOperationException("Rev 30 Module은 I.C Brand가 반드시 필요합니다.");
+            throw new InvalidOperationException("Rev 30 Module?� I.C Brand가 반드???�요?�니??");
         }
 
-        if (revisionSpec.Revision == "30" && isThirdParty && IsBlankCode(effectiveRequest.PurchaserCode))
+        if (isThirdParty && IsBlankCode(effectiveRequest.PurchaserCode))
         {
-            throw new InvalidOperationException("Third-Party Module은 Purchaser가 반드시 필요합니다.");
+            throw new InvalidOperationException("Third-Party Module?� Purchaser가 반드???�요?�니??");
         }
 
-        var basePartCode = BuildModuleBasePartCode(revisionSpec, effectiveRequest);
+        var basePartCode = BuildModuleBasePartCode(effectiveRequest);
         var binPartCode = BuildModuleBinPartCode(basePartCode, effectiveRequest);
         var dramTypeLabel = GetModuleDramTypeLabel(effectiveRequest.DramTypeCode);
         var formFactorLabel = GetModuleFormFactorLabel(effectiveRequest.DimmTypeCode);
@@ -116,14 +116,14 @@ public sealed class ModuleService
         var parts = normalizedPartCode.Split('-');
         if (parts.Length != 2)
         {
-            throw new InvalidOperationException("Comp Full Part 형식이 올바르지 않습니다.");
+            throw new InvalidOperationException("Comp Full Part ?�식???�바르�? ?�습?�다.");
         }
 
         var headPart = parts[0];
         var tailPart = parts[1];
         if (headPart.Length < 10 || tailPart.Length < 5)
         {
-            throw new InvalidOperationException("Comp Full Part 길이가 예상 형식과 맞지 않습니다.");
+            throw new InvalidOperationException("Comp Full Part 길이가 ?�상 ?�식�?맞�? ?�습?�다.");
         }
 
         var compFamilyCode = headPart[..2];
@@ -136,7 +136,7 @@ public sealed class ModuleService
         var dieBrandCode = tailPart.Substring(2, 1);
         var testerCode = tailPart.Substring(3, 1);
         var vendorCode = tailPart.Substring(4, 1);
-        var purchaserCode = revisionSpec.Revision == "30" && tailPart.Length >= 6 ? tailPart.Substring(5, 1) : "0";
+        var purchaserCode = tailPart.Length >= 6 ? tailPart.Substring(5, 1) : "0";
 
         var moduleSourceCode = MapCompFamilyToModuleFamily(compFamilyCode);
         var moduleDramTypeCode = MapCompDramTypeToModuleDramType(compDramTypeCode);
@@ -147,7 +147,7 @@ public sealed class ModuleService
             string.IsNullOrWhiteSpace(compositionCode) ||
             string.IsNullOrWhiteSpace(dieDensityCode))
         {
-            throw new InvalidOperationException("Comp Full Part에서 Module용 자동 매핑을 만들 수 없습니다.");
+            throw new InvalidOperationException("Comp Full Part?�서 Module???�동 매핑??만들 ???�습?�다.");
         }
 
         return new ModuleRequest
@@ -159,8 +159,8 @@ public sealed class ModuleService
             CompositionCode = compositionCode,
             DieDensityCode = dieDensityCode,
             GenerationCode = compRevisionCode,
-            IcBrandCode = revisionSpec.Module.SplitIcBrandAndCompType ? dieBrandCode : string.Empty,
-            ModuleCompTypeCode = revisionSpec.Module.SplitIcBrandAndCompType ? compTypeCode : dieBrandCode + compTypeCode,
+            IcBrandCode = dieBrandCode,
+            ModuleCompTypeCode = compTypeCode,
             CompTestCode = testerCode,
             VendorCode = vendorCode,
             PurchaserCode = purchaserCode == "0" ? string.Empty : purchaserCode
@@ -174,7 +174,7 @@ public sealed class ModuleService
         var parts = normalizedPartCode.Split('-');
         if (parts.Length is < 2 or > 3)
         {
-            throw new InvalidOperationException("Module Full Part 형식이 올바르지 않습니다.");
+            throw new InvalidOperationException("Module Full Part ?�식???�바르�? ?�습?�다.");
         }
 
         var headPart = parts[0];
@@ -182,12 +182,12 @@ public sealed class ModuleService
         var binTail = parts.Length == 3 ? parts[2] : string.Empty;
         if (headPart.Length != 11)
         {
-            throw new InvalidOperationException($"Module Full Part 앞부분 길이가 올바르지 않습니다. 현재 길이: {headPart.Length} / 기대 길이: 11");
+            throw new InvalidOperationException($"Module Full Part ?��?�?길이가 ?�바르�? ?�습?�다. ?�재 길이: {headPart.Length} / 기�? 길이: 11");
         }
 
         if (!string.IsNullOrEmpty(binTail) && binTail.Length != 7)
         {
-            throw new InvalidOperationException("Module BIN suffix 길이가 올바르지 않습니다. 예: TNAGA00");
+            throw new InvalidOperationException("Module BIN suffix 길이가 ?�바르�? ?�습?�다. ?? TNAGA00");
         }
 
         var request = new ModuleRequest
@@ -212,77 +212,46 @@ public sealed class ModuleService
 
         if (tailPart.Length < 9)
         {
-            throw new InvalidOperationException($"Rev {revisionSpec.DisplayRevision} Module tail 길이가 부족합니다.");
+            throw new InvalidOperationException($"Rev {revisionSpec.DisplayRevision} Module tail 길이가 부족합?�다.");
         }
 
-        if (revisionSpec.Revision == "30")
+        request.IcBrandCode = tailPart.Substring(0, 1);
+        request.ModuleCompTypeCode = tailPart.Substring(1, 1);
+        request.CompTestCode = tailPart.Substring(2, 1);
+        request.ModuleSmtCode = tailPart.Substring(3, 1);
+        request.ModuleTestCode = tailPart.Substring(4, 1);
+        request.SpeedCode = tailPart.Substring(5, 2);
+        request.PcbCode = tailPart.Substring(7, 1);
+        request.VendorCode = tailPart.Substring(8, 1);
+
+        var trailingText = tailPart.Length > 9 ? tailPart[9..] : string.Empty;
+        if (!string.IsNullOrEmpty(trailingText) && IsPurchaserCode(trailingText[..1]))
         {
-            request.IcBrandCode = tailPart.Substring(0, 1);
-            request.ModuleCompTypeCode = tailPart.Substring(1, 1);
-            request.CompTestCode = tailPart.Substring(2, 1);
-            request.ModuleSmtCode = tailPart.Substring(3, 1);
-            request.ModuleTestCode = tailPart.Substring(4, 1);
-            request.SpeedCode = tailPart.Substring(5, 2);
-            request.PcbCode = tailPart.Substring(7, 1);
-            request.VendorCode = tailPart.Substring(8, 1);
-
-            var trailingText = tailPart.Length > 9 ? tailPart[9..] : string.Empty;
-            if (!string.IsNullOrEmpty(trailingText) && IsPurchaserCode(trailingText[..1]))
-            {
-                request.PurchaserCode = trailingText[..1];
-                trailingText = trailingText[1..];
-            }
-
-            if (!string.IsNullOrEmpty(trailingText))
-            {
-                request.A100SpecialCode = trailingText[..1];
-                trailingText = trailingText[1..];
-            }
-
-            if (!string.IsNullOrEmpty(trailingText))
-            {
-                request.SpecialCode2Code = trailingText[..1];
-                trailingText = trailingText[1..];
-            }
-
-            if (!string.IsNullOrEmpty(trailingText))
-            {
-                request.SpecialCode3Code = trailingText[..1];
-                trailingText = trailingText[1..];
-            }
-
-            if (!string.IsNullOrEmpty(trailingText))
-            {
-                throw new InvalidOperationException($"Rev 30 Module tail에 해석되지 않은 코드가 남아 있습니다: {trailingText}");
-            }
+            request.PurchaserCode = trailingText[..1];
+            trailingText = trailingText[1..];
         }
-        else
+
+        if (!string.IsNullOrEmpty(trailingText))
         {
-            request.ModuleCompTypeCode = tailPart[..2];
-            request.CompTestCode = tailPart.Substring(2, 1);
-            request.ModuleSmtCode = tailPart.Substring(3, 1);
-            request.ModuleTestCode = tailPart.Substring(4, 1);
-            request.SpeedCode = tailPart.Substring(5, 2);
-            request.PcbCode = tailPart.Substring(7, 1);
-            request.VendorCode = tailPart.Substring(8, 1);
+            request.A100SpecialCode = trailingText[..1];
+            trailingText = trailingText[1..];
+        }
 
-            var trailingText = tailPart.Length > 9 ? tailPart[9..] : string.Empty;
-            if (!string.IsNullOrEmpty(trailingText))
-            {
-                request.SpecialCode2Code = trailingText[..1];
-                trailingText = trailingText[1..];
-            }
+        if (!string.IsNullOrEmpty(trailingText))
+        {
+            request.SpecialCode2Code = trailingText[..1];
+            trailingText = trailingText[1..];
+        }
 
-            if (!string.IsNullOrEmpty(trailingText))
-            {
-                request.SpecialCode3Code = trailingText[..1];
-                trailingText = trailingText[1..];
-            }
+        if (!string.IsNullOrEmpty(trailingText))
+        {
+            request.SpecialCode3Code = trailingText[..1];
+            trailingText = trailingText[1..];
+        }
 
-            if (!string.IsNullOrEmpty(trailingText))
-            {
-                throw new InvalidOperationException($"Rev 27 Module tail에 해석되지 않은 코드가 남아 있습니다: {trailingText}");
-            }
+        if (!string.IsNullOrEmpty(trailingText))
+        {
+            throw new InvalidOperationException($"Rev 30 Module tail�� �ؼ����� ���� �ڵ尡 ���� �ֽ��ϴ�: {trailingText}");
         }
 
         return request;
@@ -438,33 +407,26 @@ public sealed class ModuleService
         return IsBlankCode(overrideValue) ? parsedValue : overrideValue;
     }
 
-    private static string BuildModuleBasePartCode(RevisionSpec revisionSpec, ModuleRequest request)
+    private static string BuildModuleBasePartCode(ModuleRequest request)
     {
         var bankVddCode = IsBlankCode(request.BankVddCode)
             ? GetModuleBankVddCode(request.DramTypeCode, request.SpeedCode)
             : request.BankVddCode;
         if (IsBlankCode(bankVddCode))
         {
-            throw new InvalidOperationException("선택한 Speed에 맞는 Module Bank/VDD 코드를 계산할 수 없습니다.");
+            throw new InvalidOperationException("?�택??Speed??맞는 Module Bank/VDD 코드�?계산?????�습?�다.");
         }
 
         var basePartCode = request.ModuleSourceCode + request.DramTypeCode + request.DimmTypeCode + request.ModuleDensityCode + bankVddCode + request.CompositionCode + request.DieDensityCode + request.RankCode + request.GenerationCode;
 
-        if (revisionSpec.Revision == "30")
-        {
-            basePartCode += "-" + request.IcBrandCode + request.ModuleCompTypeCode + request.CompTestCode + request.ModuleSmtCode + request.ModuleTestCode + request.SpeedCode + request.PcbCode + request.VendorCode;
-        }
-        else
-        {
-            basePartCode += "-" + request.ModuleCompTypeCode + request.CompTestCode + request.ModuleSmtCode + request.ModuleTestCode + request.SpeedCode + request.PcbCode + request.VendorCode;
-        }
+        basePartCode += "-" + request.IcBrandCode + request.ModuleCompTypeCode + request.CompTestCode + request.ModuleSmtCode + request.ModuleTestCode + request.SpeedCode + request.PcbCode + request.VendorCode;
 
         if (!IsBlankCode(request.PurchaserCode))
         {
             basePartCode += request.PurchaserCode;
         }
 
-        if (revisionSpec.Revision == "30" && !IsBlankCode(request.A100SpecialCode))
+        if (!IsBlankCode(request.A100SpecialCode))
         {
             basePartCode += request.A100SpecialCode;
         }
@@ -614,7 +576,7 @@ public sealed class ModuleService
     {
         if (requiredCodes.Any(IsBlankCode))
         {
-            throw new InvalidOperationException("Module 생성 필수 코드가 비어 있습니다.");
+            throw new InvalidOperationException("Module ?�성 ?�수 코드가 비어 ?�습?�다.");
         }
     }
 }

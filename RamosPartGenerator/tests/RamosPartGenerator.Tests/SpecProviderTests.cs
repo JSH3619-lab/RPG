@@ -12,7 +12,6 @@ public class SpecProviderTests
 
         provider.Load();
 
-        Assert.Contains("27", provider.GetSupportedRevisions());
-        Assert.Contains("30", provider.GetSupportedRevisions());
+        Assert.Equal(new[] { "30" }, provider.GetSupportedRevisions());
     }
 }

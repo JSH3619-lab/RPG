@@ -80,8 +80,6 @@ public sealed class SpecProvider
         var normalized = revision.Trim().ToUpperInvariant().Replace("REV", string.Empty).Replace(" ", string.Empty);
         return normalized switch
         {
-            "27.2" => "27",
-            "27" => "27",
             "30.0" => "30",
             "30" => "30",
             _ => normalized

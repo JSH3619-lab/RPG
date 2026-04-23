@@ -21,7 +21,6 @@ public sealed class LookupCatalog
     private static readonly string[] DieBrandItems = { "S - S1(SS)", "G - GIGA S1(SS)", "H - GIGA S2(Hynix)", "M - GIGA S3(Micron)", "C - GIGA S6(CXMT)", "N - GIGA S9(NANYA)" };
     private static readonly string[] Vendor30Items = { "S - S1(SS)", "G - GIGA", "B - BY20", "A - A100", "X - Ramaxel" };
     private static readonly string[] Purchaser30Items = { "(None)", "V - VM", "H - RMHK", "A - ADATA" };
-    private static readonly string[] Vendor27Items = { "(None)", "V - VM", "H - RMHK" };
     private static readonly string[] CompType2Items = { "(None)", "B - Reball" };
     private static readonly string[] PackageTypeItems = { "B - FBGA(Flip Chip)", "M - FBGA(DDP)", "R - FBGA(FC-ReMark)", "N - FBGA(DDP-ReMark)" };
     private static readonly string[] TesterItems = { "R - Ramos", "S - No-Test", "A - ADATA", "W - Winpac", "T - DynaCard", "G - GoldKey", "K - CKMT", "Y - Yueyin", "D - OM", "L - SemiconTest", "1 - HTSI", "2 - DLI", "3 - Rayson", "4 - Ramsun", "5 - Powev" };
@@ -115,7 +114,7 @@ public sealed class LookupCatalog
             new("revisionCode", "Part Revision", "common", true, true, PartRevisionItems),
             new("compTypeCode", "Comp Type", "comp", true, true, CompTypeItems),
             new("dieBrandCode", "Die Brand", "comp", true, true, DieBrandItems),
-            new("vendorCode", tail.VendorFieldLabel, "comp", true, true, spec.Revision == "27" ? Vendor27Items : Vendor30Items),
+            new("vendorCode", tail.VendorFieldLabel, "comp", true, true, Vendor30Items),
             new("purchaserCode", tail.PurchaserFieldLabel ?? "Purchaser", "comp", tail.PurchaserFieldPresent, true, Purchaser30Items),
             new("compType2Code", "Comp Type 2", "comp", true, true, CompType2Items),
             new("packageTypeCode", "Package", "extra", true, true, PackageTypeItems),
@@ -148,18 +147,18 @@ public sealed class LookupCatalog
             new("compositionCode", "Composition", "base", true, true, BitItems),
             new("rankCode", "Rank", "base", true, true, rankItems),
             new("generationCode", "Generation", "base", true, true, GenerationItems),
-            new("icBrandCode", spec.Module.SplitIcBrandAndCompType ? (spec.Module.IcBrand?.Label ?? "I.C Brand") : "I.C Brand + Comp Type", "structure", true, true, ModuleIcBrandItems),
-            new("moduleCompTypeCode", spec.Module.SplitIcBrandAndCompType ? "Comp Type" : "Comp Type", "structure", spec.Module.SplitIcBrandAndCompType, true, ModuleCompTypeItems),
+            new("icBrandCode", spec.Module.IcBrand?.Label ?? "I.C Brand", "structure", true, true, ModuleIcBrandItems),
+            new("moduleCompTypeCode", "Comp Type", "structure", true, true, ModuleCompTypeItems),
             new("compTestCode", "Comp Test Site", "structure", true, true, ModuleCompTestItems),
             new("speedCode", "Speed", "structure", true, true, ModuleSpeedDdr4Items.Concat(ModuleSpeedDdr5Items).ToArray()),
             new("moduleSmtCode", "SMT Site", "structure", true, true, ModuleSmtItems),
             new("moduleTestCode", "Module Test Site", "structure", true, true, ModuleModuleTestItems),
             new("pcbCode", "PCB", "structure", true, true, PcbItems),
-            new("vendorCode", spec.Module.VendorFieldLabel, "output", true, true, spec.Revision == "27" ? Vendor27Items : Vendor30Items),
+            new("vendorCode", spec.Module.VendorFieldLabel, "output", true, true, Vendor30Items),
             new("purchaserCode", spec.Module.PurchaserFieldLabel ?? "Purchaser", "output", spec.Module.PurchaserFieldPresent, true, Purchaser30Items),
-            new("a100SpecialCode", "A100 Special", "output", spec.Revision == "30", true, A100SpecialItems),
+            new("a100SpecialCode", "A100 Special", "output", true, true, A100SpecialItems),
             new("specialCode2Code", "Special Code 2", "output", true, true, ModuleSpecialCode2Items),
-            new("specialCode3Code", "Special Code 3", "output", spec.Revision == "30", true, ModuleSpecialCode3Items),
+            new("specialCode3Code", "Special Code 3", "output", true, true, ModuleSpecialCode3Items),
             new("gradeCode", "Grade Code", "output", true, true, GradeCodeItems),
             new("productBinCode", "Product Bin", "output", true, true, ProductBinItems)
         };

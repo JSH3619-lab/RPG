@@ -1,5 +1,5 @@
 {
-  "supported_revisions": ["27", "30"],
+  "supported_revisions": ["30"],
   "excluded_families": ["LPDDR"],
   "families": {
     "incoming_internal": ["K", "C"],

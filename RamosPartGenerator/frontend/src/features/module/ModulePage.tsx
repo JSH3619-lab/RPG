@@ -67,7 +67,6 @@ export function ModulePage({ revision }: Props) {
     setError("");
   }, [revision]);
 
-  const isRev27 = revision === "27";
   const sourceCode = extractCode(request.moduleSourceCode);
   const dramTypeCode = extractCode(request.dramTypeCode);
   const isThirdParty = sourceCode === "TM" || sourceCode === "BM";
@@ -75,9 +74,9 @@ export function ModulePage({ revision }: Props) {
   const grouped = useMemo(() => {
     const fields = lookups?.fields ?? [];
     return {
-      base: fields.filter((field) => field.section === "base").map((field) => buildFieldView(field, request, revision)),
-      structure: fields.filter((field) => field.section === "structure").map((field) => buildFieldView(field, request, revision)),
-      output: fields.filter((field) => field.section === "output").map((field) => buildFieldView(field, request, revision))
+      base: fields.filter((field) => field.section === "base").map((field) => buildFieldView(field, request)),
+      structure: fields.filter((field) => field.section === "structure").map((field) => buildFieldView(field, request)),
+      output: fields.filter((field) => field.section === "output").map((field) => buildFieldView(field, request))
     };
   }, [lookups, request, revision]);
 
@@ -188,7 +187,7 @@ export function ModulePage({ revision }: Props) {
 
       <div className="rule-strip">
         <span className="rule-pill">{sourceCode ? `Source: ${sourceCode}` : "Parse Comp Part or Module Part to derive source"}</span>
-        <span className="rule-pill">{isRev27 ? "Rev 27: combined I.C Brand + Comp Type, Vendor (For TP) only" : "Rev 30: split I.C Brand / Comp Type, Vendor + Purchaser"}</span>
+        <span className="rule-pill">Rev 30: split I.C Brand / Comp Type, Vendor + Purchaser</span>
         <span className="rule-pill">{isThirdParty ? "Third-party module" : sourceCode ? "Internal module" : "Source not determined yet"}</span>
       </div>
 
@@ -234,19 +233,10 @@ function FieldSection({
   );
 }
 
-function buildFieldView(field: LookupField, request: ModuleRequest, revision: string): DisplayField {
+function buildFieldView(field: LookupField, request: ModuleRequest): DisplayField {
   const sourceCode = extractCode(request.moduleSourceCode);
   const dramTypeCode = extractCode(request.dramTypeCode);
   const isThirdParty = sourceCode === "TM" || sourceCode === "BM";
-  const isRev27 = revision === "27";
-
-  if (field.key === "vendorCode") {
-    return {
-      field,
-      disabled: isRev27 && !isThirdParty,
-      label: isRev27 ? "Vendor (For TP)" : field.label
-    };
-  }
 
   if (field.key === "purchaserCode") {
     return {
@@ -259,13 +249,6 @@ function buildFieldView(field: LookupField, request: ModuleRequest, revision: st
     return {
       field,
       disabled: !isThirdParty || extractCode(request.vendorCode) !== "A" || extractCode(request.purchaserCode) !== "A"
-    };
-  }
-
-  if (field.key === "moduleCompTypeCode") {
-    return {
-      field,
-      label: isRev27 ? "I.C Brand + Comp Type" : field.label
     };
   }
 

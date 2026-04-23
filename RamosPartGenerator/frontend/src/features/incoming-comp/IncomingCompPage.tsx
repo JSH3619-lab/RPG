@@ -52,7 +52,6 @@ export function IncomingCompPage({ revision }: Props) {
     setError("");
   }, [revision]);
 
-  const isRev27 = revision === "27";
   const dramTypeCode = extractCode(request.dramTypeCode);
   const sourceCode = extractCode(request.sourceCode);
   const isThirdParty = sourceCode === "T" || sourceCode === "B";
@@ -60,9 +59,9 @@ export function IncomingCompPage({ revision }: Props) {
   const grouped = useMemo(() => {
     const fields = lookups?.fields ?? [];
     return {
-      common: fields.filter((field) => field.section === "common").map((field) => buildFieldView(field, request, revision)),
-      comp: fields.filter((field) => field.section === "comp").map((field) => buildFieldView(field, request, revision)),
-      extra: fields.filter((field) => field.section === "extra").map((field) => buildFieldView(field, request, revision))
+      common: fields.filter((field) => field.section === "common").map((field) => buildFieldView(field, request)),
+      comp: fields.filter((field) => field.section === "comp").map((field) => buildFieldView(field, request)),
+      extra: fields.filter((field) => field.section === "extra").map((field) => buildFieldView(field, request))
     };
   }, [lookups, request, revision]);
 
@@ -92,12 +91,7 @@ export function IncomingCompPage({ revision }: Props) {
       if (key === "sourceCode") {
         const code = extractCode(value);
         const tp = code === "T" || code === "B";
-        if (isRev27) {
-          if (!tp) {
-            next.vendorCode = "";
-          }
-          next.purchaserCode = "";
-        } else if (!tp) {
+        if (!tp) {
           next.purchaserCode = "";
         }
       }
@@ -189,7 +183,7 @@ export function IncomingCompPage({ revision }: Props) {
 
       <div className="rule-strip">
         <span className="rule-pill">{dramTypeCode === "A" ? "DDR4 fixed: 16Bank / POD 1.2V" : dramTypeCode === "R" ? "DDR5 fixed: 32Bank / POD 1.1V" : "Select DRAM Type to apply Bank / Interface defaults"}</span>
-        <span className="rule-pill">{isRev27 ? "Rev 27: Vendor(For TP) only" : "Rev 30: Vendor + Purchaser"}</span>
+        <span className="rule-pill">Rev 30: Vendor + Purchaser</span>
         <span className="rule-pill">{isThirdParty ? "Third-party source selected" : "Internal source selected"}</span>
       </div>
 
@@ -235,11 +229,10 @@ function FieldSection({
   );
 }
 
-function buildFieldView(field: LookupField, request: IncomingCompRequest, revision: string): DisplayField {
+function buildFieldView(field: LookupField, request: IncomingCompRequest): DisplayField {
   const dramTypeCode = extractCode(request.dramTypeCode);
   const sourceCode = extractCode(request.sourceCode);
   const isThirdParty = sourceCode === "T" || sourceCode === "B";
-  const isRev27 = revision === "27";
 
   if (field.key === "densityCode") {
     return {
@@ -273,14 +266,6 @@ function buildFieldView(field: LookupField, request: IncomingCompRequest, revisi
           ? field.options.filter((option) => extractCode(option) === "V")
           : field.options,
       disabled: dramTypeCode === "A" || dramTypeCode === "R"
-    };
-  }
-
-  if (field.key === "vendorCode") {
-    return {
-      field,
-      disabled: isRev27 && !isThirdParty,
-      label: isRev27 ? "Vendor (For TP)" : field.label
     };
   }
 

@@ -1,50 +1,24 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { IncomingCompPage } from "./features/incoming-comp/IncomingCompPage";
 import { ModulePage } from "./features/module/ModulePage";
-import { api } from "./services/api";
-import type { RevisionMeta } from "./types";
 
 type TabKey = "incoming" | "module";
+const REVISION = "30";
 
 export function App() {
   const [tab, setTab] = useState<TabKey>("incoming");
-  const [revisions, setRevisions] = useState<RevisionMeta[]>([]);
-  const [revision, setRevision] = useState("30");
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    api.getRevisions()
-      .then((items) => {
-        setRevisions(items);
-        if (items.length > 0) {
-          setRevision(items[items.length - 1].revision);
-        }
-      })
-      .catch((err: Error) => setError(err.message));
-  }, []);
 
   return (
     <div className="app-shell">
       <header className="app-header">
         <div>
           <h1>Ramos Part Generator</h1>
-          <p>Rev 27 / Rev 30 rules, preview, parse, and Excel export flow</p>
+          <p>Rev 30 rules, preview, parse, and Excel export flow</p>
         </div>
         <div className="revision-switch">
           <span>Spec Rev</span>
           <div className="radio-group">
-            {revisions.map((item) => (
-              <label key={item.revision} className="radio-pill">
-                <input
-                  type="radio"
-                  name="revision"
-                  value={item.revision}
-                  checked={revision === item.revision}
-                  onChange={() => setRevision(item.revision)}
-                />
-                <span>{item.displayRevision}</span>
-              </label>
-            ))}
+            <span className="radio-pill">Rev 30</span>
           </div>
         </div>
       </header>
@@ -58,13 +32,11 @@ export function App() {
         </button>
       </nav>
 
-      {error && <div className="error-box">{error}</div>}
-
       <div className={tab === "incoming" ? "tab-panel active" : "tab-panel hidden"}>
-        <IncomingCompPage revision={revision} />
+        <IncomingCompPage revision={REVISION} />
       </div>
       <div className={tab === "module" ? "tab-panel active" : "tab-panel hidden"}>
-        <ModulePage revision={revision} />
+        <ModulePage revision={REVISION} />
       </div>
     </div>
   );
