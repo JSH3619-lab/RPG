@@ -13,6 +13,8 @@ $apiWwwroot = Join-Path $repoRoot "src\RamosPartGenerator.Api\wwwroot"
 $publishRoot = Join-Path $OutputRoot "RamosPartGenerator_Rev30_Localhost5371"
 $zipPath = "$publishRoot.zip"
 
+Get-Process RamosPartGenerator.Api -ErrorAction SilentlyContinue | Stop-Process -Force
+
 Write-Host "Building frontend..."
 Push-Location $frontendDir
 npm run build
@@ -86,7 +88,14 @@ $installStartupBat = @"
 @echo off
 setlocal
 set STARTUP=%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup
-copy /Y "%~dp0start-hidden.vbs" "%STARTUP%\RamosPartGenerator_Rev30_Localhost5371.vbs" >nul
+set TARGET=%STARTUP%\RamosPartGenerator_Rev30_Localhost5371.vbs
+(
+  echo Set shell = CreateObject^("WScript.Shell"^)
+  echo appDir = "%~dp0"
+  echo shell.CurrentDirectory = appDir
+  echo shell.Environment^("Process"^)^("ASPNETCORE_URLS"^) = "http://localhost:$Port"
+  echo shell.Run """" ^& appDir ^& "RamosPartGenerator.Api.exe" ^& """", 0, False
+) > "%TARGET%"
 echo Startup registration completed.
 echo The app will run in the background after Windows login.
 echo To start it now, double-click start-hidden.vbs or run run.bat.

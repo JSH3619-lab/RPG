@@ -6,11 +6,6 @@ using RamosPartGenerator.Excel;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy => policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
-});
-
 builder.Services.AddSingleton(provider =>
 {
     var specDirectory = Path.Combine(AppContext.BaseDirectory, "specs");
@@ -26,7 +21,6 @@ builder.Services.AddSingleton<LookupCatalog>();
 
 var app = builder.Build();
 
-app.UseCors();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
