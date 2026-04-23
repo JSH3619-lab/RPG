@@ -29,6 +29,7 @@ public sealed class LookupCatalog
     private static readonly string[] DimmTypeCommonItems = { "D - UDIMM 288pin", "S - SODIMM 262pin" };
     private static readonly string[] DimmTypeCompItem = { "C - Comp" };
     private static readonly string[] ModuleDensityItems = { "4G - 4GB", "8G - 8GB", "AG - 16GB", "BG - 32GB" };
+    private static readonly string[] ModuleBankVddItems = { "4 - 16Bank / 1.2V", "5 - 32Bank / 1.1V", "6 - 32Bank / 1.35V", "7 - 32Bank / 1.4V" };
     private static readonly string[] ModuleSourceItems = { "RM - RAmos Memory", "TM - Ramos TP", "CM - CTST Memory", "BM - CTST TP" };
     private static readonly string[] RankItems = { "1 - 1Rank", "2 - 2Rank" };
     private static readonly string[] RankCompItem = { "0 - Comp" };
@@ -142,6 +143,7 @@ public sealed class LookupCatalog
             new("dramTypeCode", "DRAM Type", "base", true, true, DramTypeItems),
             new("dimmTypeCode", "DIMM Type", "base", true, true, dimmTypeItems),
             new("moduleDensityCode", "Module Density", "base", true, true, ModuleDensityItems),
+            new("bankVddCode", "Bank / VDD", "base", true, true, ModuleBankVddItems),
             new("dieDensityCode", "Die Density", "base", true, true, DensityDdr4Items.Concat(DensityDdr5Items).ToArray()),
             new("compositionCode", "Composition", "base", true, true, BitItems),
             new("rankCode", "Rank", "structure", true, true, rankItems),

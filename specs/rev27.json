@@ -1,0 +1,34 @@
+{
+  "revision": "27",
+  "source_pdf": "docs/RAMOS_DRAM_PART (Rev.27.2).pdf",
+  "display_revision": "27",
+  "incoming_comp": {
+    "tail_model": {
+      "vendor_field_label": "Vendor (For Third-party)",
+      "vendor_field_position": 13,
+      "vendor_codes": ["0", "V", "H"],
+      "purchaser_field_present": false,
+      "comp_type2_position": 14
+    }
+  },
+  "module": {
+    "split_ic_brand_and_comp_type": false,
+    "combined_comp_field": {
+      "position": 11,
+      "meaning": "I.C Brand + Comp Type"
+    },
+    "vendor_field_label": "Vendor (For Third-party)",
+    "purchaser_field_present": false,
+    "special_fields": [
+      "Special Code 1",
+      "Special Code 2",
+      "-",
+      "Grade Code",
+      "Module Density",
+      "Product Bin"
+    ]
+  },
+  "ui": {
+    "spec_rev_options": ["27", "30"]
+  }
+}

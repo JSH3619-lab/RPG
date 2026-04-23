@@ -12,6 +12,7 @@ const EMPTY_REQUEST: ModuleRequest = {
   dramTypeCode: "",
   dimmTypeCode: "",
   moduleDensityCode: "",
+  bankVddCode: "",
   dieDensityCode: "",
   compositionCode: "",
   rankCode: "",
@@ -81,7 +82,13 @@ export function ModulePage({ revision }: Props) {
   }, [lookups, request, revision]);
 
   function updateField(key: string, value: string) {
-    setRequest((prev) => ({ ...prev, [key]: value }));
+    setRequest((prev) => {
+      const next = { ...prev, [key]: value };
+      if (key === "speedCode" || key === "dramTypeCode") {
+        next.bankVddCode = resolveBankVdd(extractCode(key === "dramTypeCode" ? value : next.dramTypeCode), extractCode(key === "speedCode" ? value : next.speedCode), lookups);
+      }
+      return next;
+    });
   }
 
   async function handleParseComp() {
@@ -313,6 +320,7 @@ function toDisplayRequest(parsed: ModuleRequest, lookups: LookupPage | null): Mo
     dramTypeCode: resolve("dramTypeCode", parsed.dramTypeCode),
     dimmTypeCode: resolve("dimmTypeCode", parsed.dimmTypeCode),
     moduleDensityCode: resolve("moduleDensityCode", parsed.moduleDensityCode),
+    bankVddCode: resolve("bankVddCode", parsed.bankVddCode),
     dieDensityCode: resolve("dieDensityCode", parsed.dieDensityCode),
     compositionCode: resolve("compositionCode", parsed.compositionCode),
     rankCode: resolve("rankCode", parsed.rankCode),
@@ -345,6 +353,7 @@ function toApiRequest(request: ModuleRequest, compFullPart: string, moduleFullPa
     dramTypeCode: extractCode(request.dramTypeCode),
     dimmTypeCode: extractCode(request.dimmTypeCode),
     moduleDensityCode: extractCode(request.moduleDensityCode),
+    bankVddCode: extractCode(request.bankVddCode),
     dieDensityCode: extractCode(request.dieDensityCode),
     compositionCode: extractCode(request.compositionCode),
     rankCode: extractCode(request.rankCode),
@@ -366,5 +375,20 @@ function toApiRequest(request: ModuleRequest, compFullPart: string, moduleFullPa
     basePartCode: request.basePartCode.trim().toUpperCase(),
     binPartCode: request.binPartCode.trim().toUpperCase()
   };
+}
+
+function resolveBankVdd(dramTypeCode: string, speedCode: string, lookups: LookupPage | null): string {
+  const code = dramTypeCode === "4" && speedCode === "WE"
+    ? "4"
+    : dramTypeCode === "R" && ["QK", "WM"].includes(speedCode)
+      ? "5"
+      : dramTypeCode === "R" && ["CM", "CQ"].includes(speedCode)
+        ? "6"
+        : dramTypeCode === "R" && ["CR", "CS"].includes(speedCode)
+          ? "7"
+          : "";
+
+  const field = lookups?.fields.find((item) => item.key === "bankVddCode");
+  return resolveDisplayValue(code, field?.options ?? []);
 }
 

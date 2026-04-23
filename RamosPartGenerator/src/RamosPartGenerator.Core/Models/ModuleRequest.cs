@@ -9,6 +9,7 @@ public sealed class ModuleRequest
     public string DramTypeCode { get; set; } = string.Empty;
     public string DimmTypeCode { get; set; } = string.Empty;
     public string ModuleDensityCode { get; set; } = string.Empty;
+    public string BankVddCode { get; set; } = string.Empty;
     public string DieDensityCode { get; set; } = string.Empty;
     public string CompositionCode { get; set; } = string.Empty;
     public string RankCode { get; set; } = string.Empty;

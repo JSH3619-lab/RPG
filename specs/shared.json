@@ -1,0 +1,56 @@
+{
+  "supported_revisions": ["27", "30"],
+  "excluded_families": ["LPDDR"],
+  "families": {
+    "incoming_internal": ["K", "C"],
+    "incoming_third_party": ["T", "B"],
+    "comp_internal": ["RC", "CC"],
+    "comp_third_party": ["TC", "BC"],
+    "module_internal": ["RM", "CM"],
+    "module_third_party": ["TM", "BM"]
+  },
+  "comp_bin_speed_map": {
+    "CA": "7200 MT/s",
+    "CB": "6800 MT/s",
+    "CC": "6400 MT/s",
+    "CD": "6000 MT/s",
+    "CE": "5600 MT/s",
+    "CF": "4800 MT/s"
+  },
+  "module_speed_rules": {
+    "DDR4": {
+      "allowed_speeds": ["WE"],
+      "bank_vdd_by_speed": {
+        "WE": "5 / W"
+      }
+    },
+    "DDR5": {
+      "allowed_speeds": ["QK", "WM", "CM", "CQ", "CR", "CS"],
+      "bank_vdd_by_speed": {
+        "QK": "6 / V",
+        "WM": "6 / V",
+        "CM": "6 / 1.35V",
+        "CQ": "6 / 1.35V",
+        "CR": "6 / 1.4V",
+        "CS": "6 / 1.4V"
+      }
+    }
+  },
+  "item_text_rules": {
+    "name_equals_code": true,
+    "coo_default": "KR",
+    "general_info": {
+      "dram_and_comp_blank": true,
+      "module_template": "{form_factor_or_comp} {capacity} COO : KR"
+    },
+    "specification": {
+      "comp_include_comp_type": true,
+      "module_include_comp_type": false
+    }
+  },
+  "a100_rule": {
+    "requires_third_party": true,
+    "vendor_code": "A",
+    "purchaser_code": "A"
+  }
+}

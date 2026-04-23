@@ -195,4 +195,35 @@ public class UnitTest1
 
         Assert.Equal("DDR5 16Gb x8 G-die GIGA S1 Partial Comp TP 6400 MT/s", texts.Specification);
     }
+
+    [Fact]
+    public void BuildModuleTexts_CompSale_MapsMdlGoxCodeToFullDescription()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ProductTextService(provider);
+
+        var texts = service.BuildModuleTexts(
+            partCode: "TEST",
+            moduleSourceCode: "TM",
+            dramTypeLabel: "DDR5",
+            formFactorLabel: "Comp",
+            capacityLabel: "16GB",
+            dieDensityLabel: "16Gb",
+            compositionCode: "8",
+            icCountText: "8",
+            generationCode: "G",
+            icBrandCode: "G",
+            moduleCompTypeCode: "G - MDL(GOX)",
+            vendorCode: "G",
+            purchaserCode: "H",
+            pcbCode: "7",
+            isThirdParty: true,
+            specialCode2Code: "",
+            specialCode3Code: "",
+            isCompSale: true);
+
+        Assert.Equal("DDR5 16Gb x8 G-die GIGA S1 MDL(GOX) Comp TP", texts.Specification);
+    }
 }

@@ -53,6 +53,7 @@ export type ModuleRequest = {
   dramTypeCode: string;
   dimmTypeCode: string;
   moduleDensityCode: string;
+  bankVddCode: string;
   dieDensityCode: string;
   compositionCode: string;
   rankCode: string;

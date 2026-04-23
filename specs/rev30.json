@@ -1,0 +1,44 @@
+{
+  "revision": "30",
+  "source_pdf": "docs/RAMOS_DRAM_PART (Rev.30).pdf",
+  "display_revision": "30",
+  "incoming_comp": {
+    "tail_model": {
+      "vendor_field_label": "Vendor",
+      "vendor_field_position": 12,
+      "vendor_codes": ["S", "G", "B", "A", "X"],
+      "purchaser_field_present": true,
+      "purchaser_field_label": "Purchaser (For Third-party)",
+      "purchaser_field_position": 14,
+      "comp_type2_position": 15
+    }
+  },
+  "module": {
+    "split_ic_brand_and_comp_type": true,
+    "ic_brand": {
+      "label": "I.C Brand",
+      "position": 11
+    },
+    "comp_type": {
+      "label": "Comp Type (Manufactory + 특성)",
+      "position": 12
+    },
+    "dimm_type_additions": ["Comp"],
+    "rank_additions": ["0"],
+    "vendor_field_label": "Vendor",
+    "purchaser_field_present": true,
+    "purchaser_field_label": "Purchaser",
+    "special_fields": [
+      "Special Code 1 (Only A100)",
+      "Special Code 2",
+      "Special Code 3",
+      "-",
+      "Grade Code",
+      "Module Density",
+      "Product Bin"
+    ]
+  },
+  "ui": {
+    "spec_rev_options": ["27", "30"]
+  }
+}

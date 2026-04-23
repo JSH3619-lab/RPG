@@ -200,6 +200,7 @@ public sealed class ModuleService
             DramTypeCode = headPart.Substring(2, 1),
             DimmTypeCode = headPart.Substring(3, 1),
             ModuleDensityCode = headPart.Substring(4, 2),
+            BankVddCode = headPart.Substring(6, 1),
             PcbCode = string.Empty,
             CompositionCode = headPart.Substring(7, 1),
             DieDensityCode = headPart.Substring(8, 1),
@@ -209,7 +210,6 @@ public sealed class ModuleService
             ProductBinCode = string.IsNullOrEmpty(binTail) ? string.Empty : binTail[^3..]
         };
 
-        var bankVddCode = headPart.Substring(6, 1);
         if (tailPart.Length < 9)
         {
             throw new InvalidOperationException($"Rev {revisionSpec.DisplayRevision} Module tail 길이가 부족합니다.");
@@ -285,7 +285,6 @@ public sealed class ModuleService
             }
         }
 
-        request.PcbCode = string.IsNullOrWhiteSpace(request.PcbCode) ? bankVddCode : request.PcbCode;
         return request;
     }
 
@@ -358,7 +357,7 @@ public sealed class ModuleService
         if (!string.IsNullOrWhiteSpace(effective.ModuleFullPartCode))
         {
             var parsedModule = ParseModuleFullPart(revisionSpec.Revision, effective.ModuleFullPartCode);
-            effective = MergeRequests(parsedModule, effective);
+            effective = MergeRequests(effective, parsedModule);
         }
 
         return NormalizeRequest(effective);
@@ -375,6 +374,7 @@ public sealed class ModuleService
             DramTypeCode = NormalizeCode(request.DramTypeCode),
             DimmTypeCode = NormalizeCode(request.DimmTypeCode),
             ModuleDensityCode = NormalizeCode(request.ModuleDensityCode),
+            BankVddCode = NormalizeCode(request.BankVddCode),
             DieDensityCode = NormalizeCode(request.DieDensityCode),
             CompositionCode = NormalizeCode(request.CompositionCode),
             RankCode = NormalizeCode(request.RankCode),
@@ -409,6 +409,7 @@ public sealed class ModuleService
             DramTypeCode = PreferValue(parsedRequest.DramTypeCode, overrideRequest.DramTypeCode),
             DimmTypeCode = PreferValue(parsedRequest.DimmTypeCode, overrideRequest.DimmTypeCode),
             ModuleDensityCode = PreferValue(parsedRequest.ModuleDensityCode, overrideRequest.ModuleDensityCode),
+            BankVddCode = PreferValue(parsedRequest.BankVddCode, overrideRequest.BankVddCode),
             DieDensityCode = PreferValue(parsedRequest.DieDensityCode, overrideRequest.DieDensityCode),
             CompositionCode = PreferValue(parsedRequest.CompositionCode, overrideRequest.CompositionCode),
             RankCode = PreferValue(parsedRequest.RankCode, overrideRequest.RankCode),
@@ -439,7 +440,9 @@ public sealed class ModuleService
 
     private static string BuildModuleBasePartCode(RevisionSpec revisionSpec, ModuleRequest request)
     {
-        var bankVddCode = GetModuleBankVddCode(request.DramTypeCode, request.SpeedCode);
+        var bankVddCode = IsBlankCode(request.BankVddCode)
+            ? GetModuleBankVddCode(request.DramTypeCode, request.SpeedCode)
+            : request.BankVddCode;
         if (IsBlankCode(bankVddCode))
         {
             throw new InvalidOperationException("선택한 Speed에 맞는 Module Bank/VDD 코드를 계산할 수 없습니다.");
