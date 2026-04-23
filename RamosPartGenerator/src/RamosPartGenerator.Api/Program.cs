@@ -27,8 +27,10 @@ builder.Services.AddSingleton<LookupCatalog>();
 var app = builder.Build();
 
 app.UseCors();
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
-app.MapGet("/", () => Results.Ok(new
+app.MapGet("/api/status", () => Results.Ok(new
 {
     name = "RamosPartGenerator.Api",
     status = "ok",
@@ -158,5 +160,7 @@ app.MapPost("/api/export/registration", (ExportRegistrationRequest request, Regi
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         exporter.DefaultFileName);
 });
+
+app.MapFallbackToFile("index.html");
 
 app.Run();
