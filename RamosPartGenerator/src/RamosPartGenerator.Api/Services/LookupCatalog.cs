@@ -7,85 +7,6 @@ public sealed class LookupCatalog
 {
     private readonly SpecProvider _specProvider;
 
-    private static readonly string[] IncomingSourceItems = { "K - RAmos Memory", "T - Ramos TP", "C - CTST Memory", "B - CTST TP" };
-    private static readonly string[] DramTypeItems = { "A - DDR4", "R - DDR5" };
-    private static readonly string[] DensityDdr4Items = { "4G - 4Gb", "8G - 8Gb", "AG - 16Gb" };
-    private static readonly string[] DensityDdr5Items = { "AH - 16Gb", "HE - 24Gb", "BH - 32Gb" };
-    private static readonly string[] BitItems = { "04 - x4", "08 - x8", "16 - x16" };
-    private static readonly string[] BankDdr4Items = { "5 - 16Bank" };
-    private static readonly string[] BankDdr5Items = { "6 - 32Bank" };
-    private static readonly string[] InterfaceDdr4Items = { "W - POD 1.2V" };
-    private static readonly string[] InterfaceDdr5Items = { "V - POD 1.1V" };
-    private static readonly string[] PartRevisionItems = Enumerable.Range('A', 26).Select(x => ((char)x).ToString()).ToArray();
-    private static readonly string[] CompTypeItems = { "P - Partial", "U - Pre-Mark Partial", "N - EMC Partial", "H - a chip", "M - Erase Marking", "C - X-Comp", "D - Tested", "G - MDL(GOX)", "T - MDL Reballed(GKKR)", "F - Pre-Mark MDL(FX)", "E - EMC MDL(FX)", "Q - Pre-Mark Reballed(FKKR)", "W - EMC Reballed(FKKR)", "J - G Comp", "A - EMC G Comp", "X - EMC Partial X", "Y - EMC Partial Y", "Z - EMC Partial Z" };
-    private static readonly string[] DieBrandItems = { "S - S1(SS)", "G - GIGA S1(SS)", "H - GIGA S2(Hynix)", "M - GIGA S3(Micron)", "C - GIGA S6(CXMT)", "N - GIGA S9(NANYA)" };
-    private static readonly string[] Vendor30Items = { "S - S1(SS)", "G - GIGA", "B - BY20", "A - A100", "X - Ramaxel" };
-    private static readonly string[] Purchaser30Items = { "(None)", "V - VM", "H - RMHK", "A - ADATA" };
-    private static readonly string[] CompType2Items = { "(None)", "B - Reball" };
-    private static readonly string[] PackageTypeItems = { "B - FBGA(Flip Chip)", "M - FBGA(DDP)", "R - FBGA(FC-ReMark)", "N - FBGA(DDP-ReMark)" };
-    private static readonly string[] TesterItems = { "R - Ramos", "S - No-Test", "A - ADATA", "W - Winpac", "T - DynaCard", "G - GoldKey", "K - CKMT", "Y - Yueyin", "D - OM", "L - SemiconTest", "1 - HTSI", "2 - DLI", "3 - Rayson", "4 - Ramsun", "5 - Powev" };
-
-    private static readonly string[] DimmTypeCommonItems = { "D - UDIMM 288pin", "S - SODIMM 262pin" };
-    private static readonly string[] DimmTypeCompItem = { "C - Comp" };
-    private static readonly string[] ModuleDensityItems = { "4G - 4GB", "8G - 8GB", "AG - 16GB", "BG - 32GB" };
-    private static readonly string[] ModuleDieDensityItems = { "4 - 4Gb", "8 - 8Gb", "A - 16Gb", "H - 24Gb", "B - 32Gb" };
-    private static readonly string[] ModuleBankVddItems = { "4 - 16Bank / 1.2V", "5 - 32Bank / 1.1V", "6 - 32Bank / 1.35V", "7 - 32Bank / 1.4V" };
-    private static readonly string[] ModuleSourceItems = { "RM - RAmos Memory", "TM - Ramos TP", "CM - CTST Memory", "BM - CTST TP" };
-    private static readonly string[] RankItems = { "1 - 1Rank", "2 - 2Rank" };
-    private static readonly string[] RankCompItem = { "0 - Comp" };
-    private static readonly string[] GenerationItems = Enumerable.Range('A', 26).Select(x => ((char)x).ToString().ToUpperInvariant()).ToArray();
-    private static readonly string[] ModuleIcBrandItems = { "S - S1(SS)", "G - GIGA S1(SS)", "H - GIGA S2(Hynix)", "M - GIGA S3(Micron)", "C - GIGA S6(CXMT)", "N - GIGA S9(NANYA)" };
-    private static readonly string[] ModuleCompTypeItems = CompTypeItems;
-    private static readonly string[] ModuleCompTestItems = TesterItems;
-    private static readonly string[] ModuleSmtItems = new[] { "0 - No Ass'y" }.Concat(TesterItems).ToArray();
-    private static readonly string[] ModuleModuleTestItems = new[] { "0 - No Ass'y" }.Concat(TesterItems).ToArray();
-    private static readonly string[] ModuleSpeedDdr4Items = { "WE - 3200 MT/s" };
-    private static readonly string[] ModuleSpeedDdr5Items = { "QK - 4800 MT/s", "WM - 5600 MT/s", "CM - 6000 MT/s", "CQ - 6400 MT/s", "CR - 6800 MT/s", "CS - 7200 MT/s" };
-    private static readonly string[] PcbItems =
-    {
-        "1 - DN Green",
-        "2 - HJ Green",
-        "3 - DN Black",
-        "4 - HJ Black",
-        "5 - HJ Black 11x11",
-        "6 - BP Green",
-        "7 - BP Black",
-        "8 - BP RGB Black",
-        "9 - ADATA/BP Black",
-        "A - AXA5UR02",
-        "G - Hammer Pass",
-        "K - Hammer Fail"
-    };
-    private static readonly string[] A100SpecialItems =
-    {
-        "(None) - MPS PMIC + Renesas SPD",
-        "1 - Richtek PMIC + Renesas SPD"
-    };
-    private static readonly string[] ModuleSpecialCode2Items =
-    {
-        "(None)",
-        "R - 1st Repair",
-        "S - 2nd Repair",
-        "B - Reball",
-        "C - Reball Repair"
-    };
-    private static readonly string[] ModuleSpecialCode3Items =
-    {
-        "(None)",
-        "R - RMA",
-        "M - RMA",
-        "Y - Retest"
-    };
-    private static readonly string[] GradeCodeItems =
-    {
-        "TN - Normal",
-        "HM - Speed Down"
-    };
-    private static readonly string[] ProductBinItems =
-    {
-        "A00 - Normal"
-    };
-
     public LookupCatalog(SpecProvider specProvider)
     {
         _specProvider = specProvider;
@@ -106,20 +27,20 @@ public sealed class LookupCatalog
         var tail = spec.IncomingComp.TailModel;
         var fields = new List<LookupFieldResponse>
         {
-            new("sourceCode", "Source", "common", true, true, IncomingSourceItems),
-            new("dramTypeCode", "DRAM Type", "common", true, true, DramTypeItems),
-            new("densityCode", "Density", "common", true, true, DensityDdr4Items.Concat(DensityDdr5Items).ToArray()),
-            new("bitOrganizationCode", "Bit", "common", true, true, BitItems),
-            new("bankCode", "Bank", "common", true, true, BankDdr4Items.Concat(BankDdr5Items).ToArray()),
-            new("interfaceCode", "Interface", "common", true, true, InterfaceDdr4Items.Concat(InterfaceDdr5Items).ToArray()),
-            new("revisionCode", "Part Revision", "common", true, true, PartRevisionItems),
-            new("compTypeCode", "Comp Type", "comp", true, true, CompTypeItems),
-            new("dieBrandCode", "Die Brand", "comp", true, true, DieBrandItems),
-            new("vendorCode", tail.VendorFieldLabel, "comp", true, true, Vendor30Items),
-            new("purchaserCode", tail.PurchaserFieldLabel ?? "Purchaser", "comp", tail.PurchaserFieldPresent, true, Purchaser30Items),
-            new("compType2Code", "Comp Type 2", "comp", true, true, CompType2Items),
-            new("packageTypeCode", "Package", "extra", true, true, PackageTypeItems),
-            new("testerCode", "Tester", "extra", true, true, TesterItems)
+            new("sourceCode", "Source", "common", true, true, Options("incoming_source")),
+            new("dramTypeCode", "DRAM Type", "common", true, true, Options("dram_type")),
+            new("densityCode", "Density", "common", true, true, Options("density_ddr4", "density_ddr5")),
+            new("bitOrganizationCode", "Bit", "common", true, true, Options("bit")),
+            new("bankCode", "Bank", "common", true, true, Options("bank_ddr4", "bank_ddr5")),
+            new("interfaceCode", "Interface", "common", true, true, Options("interface_ddr4", "interface_ddr5")),
+            new("revisionCode", "Part Revision", "common", true, true, AlphabetOptions()),
+            new("compTypeCode", "Comp Type", "comp", true, true, Options("comp_type")),
+            new("dieBrandCode", "Die Brand", "comp", true, true, Options("die_brand")),
+            new("vendorCode", tail.VendorFieldLabel, "comp", true, true, Options("vendor")),
+            new("purchaserCode", tail.PurchaserFieldLabel ?? "Purchaser", "comp", tail.PurchaserFieldPresent, true, Options("purchaser")),
+            new("compType2Code", "Comp Type 2", "comp", true, true, Options("comp_type2")),
+            new("packageTypeCode", "Package", "extra", true, true, Options("package_type")),
+            new("testerCode", "Tester", "extra", true, true, Options("tester"))
         };
 
         return new LookupPageResponse(spec.Revision, spec.DisplayRevision, fields);
@@ -129,41 +50,55 @@ public sealed class LookupCatalog
     {
         var spec = _specProvider.GetRevisionSpec(revision);
         var dimmTypeItems = spec.Module.DimmTypeAdditions.Count == 0
-            ? DimmTypeCommonItems
-            : DimmTypeCommonItems.Concat(spec.Module.DimmTypeAdditions.Select(code => $"{code} - Comp")).ToArray();
+            ? Options("dimm_type_common")
+            : Options("dimm_type_common").Concat(spec.Module.DimmTypeAdditions.Select(code => $"{code} - Comp")).ToArray();
         var rankItems = spec.Module.RankAdditions.Count == 0
-            ? RankItems
-            : RankItems.Concat(spec.Module.RankAdditions.Select(code => $"{code} - Comp")).ToArray();
+            ? Options("rank")
+            : Options("rank").Concat(spec.Module.RankAdditions.Select(code => $"{code} - Comp")).ToArray();
 
         var fields = new List<LookupFieldResponse>
         {
             new("compFullPart", "Comp Full Part", "quick", true, true, Array.Empty<string>()),
             new("moduleFullPart", "Module Full Part", "quick", true, true, Array.Empty<string>()),
-            new("moduleSourceCode", "Source", "base", true, true, ModuleSourceItems),
-            new("dramTypeCode", "DRAM Type", "base", true, true, DramTypeItems),
+            new("moduleSourceCode", "Source", "base", true, true, Options("module_source")),
+            new("dramTypeCode", "DRAM Type", "base", true, true, Options("dram_type")),
             new("dimmTypeCode", "DIMM Type", "base", true, true, dimmTypeItems),
-            new("moduleDensityCode", "Module Density", "base", true, true, ModuleDensityItems),
-            new("bankVddCode", "Bank / VDD", "base", true, true, ModuleBankVddItems),
-            new("dieDensityCode", "Die Density", "base", true, true, ModuleDieDensityItems),
-            new("compositionCode", "Composition", "base", true, true, BitItems),
+            new("moduleDensityCode", "Module Density", "base", true, true, Options("module_density")),
+            new("bankVddCode", "Bank / VDD", "base", true, true, Options("module_bank_vdd")),
+            new("dieDensityCode", "Die Density", "base", true, true, Options("module_die_density")),
+            new("compositionCode", "Composition", "base", true, true, Options("bit")),
             new("rankCode", "Rank", "base", true, true, rankItems),
-            new("generationCode", "Generation", "base", true, true, GenerationItems),
-            new("icBrandCode", spec.Module.IcBrand?.Label ?? "I.C Brand", "structure", true, true, ModuleIcBrandItems),
-            new("moduleCompTypeCode", "Comp Type", "structure", true, true, ModuleCompTypeItems),
-            new("compTestCode", "Comp Test Site", "structure", true, true, ModuleCompTestItems),
-            new("speedCode", "Speed", "structure", true, true, ModuleSpeedDdr4Items.Concat(ModuleSpeedDdr5Items).ToArray()),
-            new("moduleSmtCode", "SMT Site", "structure", true, true, ModuleSmtItems),
-            new("moduleTestCode", "Module Test Site", "structure", true, true, ModuleModuleTestItems),
-            new("pcbCode", "PCB", "structure", true, true, PcbItems),
-            new("vendorCode", spec.Module.VendorFieldLabel, "output", true, true, Vendor30Items),
-            new("purchaserCode", spec.Module.PurchaserFieldLabel ?? "Purchaser", "output", spec.Module.PurchaserFieldPresent, true, Purchaser30Items),
-            new("a100SpecialCode", "A100 Special", "output", true, true, A100SpecialItems),
-            new("specialCode2Code", "Special Code 2", "output", true, true, ModuleSpecialCode2Items),
-            new("specialCode3Code", "Special Code 3", "output", true, true, ModuleSpecialCode3Items),
-            new("gradeCode", "Grade Code", "output", true, true, GradeCodeItems),
-            new("productBinCode", "Product Bin", "output", true, true, ProductBinItems)
+            new("generationCode", "Generation", "base", true, true, AlphabetOptions()),
+            new("icBrandCode", spec.Module.IcBrand?.Label ?? "I.C Brand", "structure", true, true, Options("module_ic_brand")),
+            new("moduleCompTypeCode", spec.Module.CompType?.Label ?? "Comp Type", "structure", true, true, Options("comp_type")),
+            new("compTestCode", "Comp Test Site", "structure", true, true, Options("tester")),
+            new("speedCode", "Speed", "structure", true, true, Options("speed_ddr4", "speed_ddr5")),
+            new("moduleSmtCode", "SMT Site", "structure", true, true, new[] { "0 - No Ass'y" }.Concat(Options("tester")).ToArray()),
+            new("moduleTestCode", "Module Test Site", "structure", true, true, new[] { "0 - No Ass'y" }.Concat(Options("tester")).ToArray()),
+            new("pcbCode", "PCB", "structure", true, true, Options("pcb")),
+            new("vendorCode", spec.Module.VendorFieldLabel, "output", true, true, Options("vendor")),
+            new("purchaserCode", spec.Module.PurchaserFieldLabel ?? "Purchaser", "output", spec.Module.PurchaserFieldPresent, true, Options("purchaser")),
+            new("a100SpecialCode", "A100 Special", "output", true, true, Options("a100_special")),
+            new("specialCode2Code", "Special Code 2", "output", true, true, Options("module_special_code2")),
+            new("specialCode3Code", "Special Code 3", "output", true, true, Options("module_special_code3")),
+            new("gradeCode", "Grade Code", "output", true, true, Options("grade_code")),
+            new("productBinCode", "Product Bin", "output", true, true, Options("product_bin"))
         };
 
         return new LookupPageResponse(spec.Revision, spec.DisplayRevision, fields);
+    }
+
+    private IReadOnlyList<string> Options(params string[] keys)
+    {
+        return keys
+            .SelectMany(key => _specProvider.SharedSpec.CodeOptions.TryGetValue(key, out var options)
+                ? options
+                : throw new KeyNotFoundException($"Lookup option set '{key}' was not found."))
+            .ToArray();
+    }
+
+    private static IReadOnlyList<string> AlphabetOptions()
+    {
+        return Enumerable.Range('A', 26).Select(x => ((char)x).ToString()).ToArray();
     }
 }

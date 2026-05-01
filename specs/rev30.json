@@ -23,7 +23,7 @@
       "label": "Comp Type (Manufactory + 특성)",
       "position": 12
     },
-    "dimm_type_additions": ["Comp"],
+    "dimm_type_additions": ["C"],
     "rank_additions": ["0"],
     "vendor_field_label": "Vendor",
     "purchaser_field_present": true,

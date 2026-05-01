@@ -21,18 +21,18 @@
     "DDR4": {
       "allowed_speeds": ["WE"],
       "bank_vdd_by_speed": {
-        "WE": "5 / W"
+        "WE": "4"
       }
     },
     "DDR5": {
       "allowed_speeds": ["QK", "WM", "CM", "CQ", "CR", "CS"],
       "bank_vdd_by_speed": {
-        "QK": "6 / V",
-        "WM": "6 / V",
-        "CM": "6 / 1.35V",
-        "CQ": "6 / 1.35V",
-        "CR": "6 / 1.4V",
-        "CS": "6 / 1.4V"
+        "QK": "5",
+        "WM": "5",
+        "CM": "6",
+        "CQ": "6",
+        "CR": "7",
+        "CS": "7"
       }
     }
   },
@@ -52,5 +52,38 @@
     "requires_third_party": true,
     "vendor_code": "A",
     "purchaser_code": "A"
+  },
+  "code_options": {
+    "incoming_source": ["K - RAmos Memory", "T - Ramos TP", "C - CTST Memory", "B - CTST TP"],
+    "dram_type": ["A - DDR4", "R - DDR5"],
+    "density_ddr4": ["4G - 4Gb", "8G - 8Gb", "AG - 16Gb"],
+    "density_ddr5": ["AH - 16Gb", "HE - 24Gb", "BH - 32Gb"],
+    "bit": ["04 - x4", "08 - x8", "16 - x16"],
+    "bank_ddr4": ["5 - 16Bank"],
+    "bank_ddr5": ["6 - 32Bank"],
+    "interface_ddr4": ["W - POD 1.2V"],
+    "interface_ddr5": ["V - POD 1.1V"],
+    "comp_type": ["P - Partial", "U - Pre-Mark Partial", "N - EMC Partial", "H - a chip", "M - Erase Marking", "C - X-Comp", "D - Tested", "G - MDL(GOX)", "T - MDL Reballed(GKKR)", "F - Pre-Mark MDL(FX)", "E - EMC MDL(FX)", "Q - Pre-Mark Reballed(FKKR)", "W - EMC Reballed(FKKR)", "J - G Comp", "A - EMC G Comp", "X - EMC Partial X", "Y - EMC Partial Y", "Z - EMC Partial Z"],
+    "die_brand": ["S - S1(SS)", "G - GIGA S1(SS)", "H - GIGA S2(Hynix)", "M - GIGA S3(Micron)", "C - GIGA S6(CXMT)", "N - GIGA S9(NANYA)"],
+    "vendor": ["S - S1(SS)", "G - GIGA", "B - BY20", "A - A100", "X - Ramaxel"],
+    "purchaser": ["(None)", "V - VM", "H - RMHK", "A - ADATA"],
+    "comp_type2": ["(None)", "B - Reball"],
+    "package_type": ["B - FBGA(Flip Chip)", "M - FBGA(DDP)", "R - FBGA(FC-ReMark)", "N - FBGA(DDP-ReMark)"],
+    "tester": ["R - Ramos", "S - No-Test", "A - ADATA", "W - Winpac", "T - DynaCard", "G - GoldKey", "K - CKMT", "Y - Yueyin", "D - OM", "L - SemiconTest", "1 - HTSI", "2 - DLI", "3 - Rayson", "4 - Ramsun", "5 - Powev"],
+    "dimm_type_common": ["D - UDIMM 288pin", "S - SODIMM 262pin"],
+    "module_density": ["4G - 4GB", "8G - 8GB", "AG - 16GB", "BG - 32GB"],
+    "module_die_density": ["4 - 4Gb", "8 - 8Gb", "A - 16Gb", "H - 24Gb", "B - 32Gb"],
+    "module_bank_vdd": ["4 - 16Bank / 1.2V", "5 - 32Bank / 1.1V", "6 - 32Bank / 1.35V", "7 - 32Bank / 1.4V"],
+    "module_source": ["RM - RAmos Memory", "TM - Ramos TP", "CM - CTST Memory", "BM - CTST TP"],
+    "rank": ["1 - 1Rank", "2 - 2Rank"],
+    "module_ic_brand": ["S - S1(SS)", "G - GIGA S1(SS)", "H - GIGA S2(Hynix)", "M - GIGA S3(Micron)", "C - GIGA S6(CXMT)", "N - GIGA S9(NANYA)", "A - A100", "X - Ramaxel"],
+    "speed_ddr4": ["WE - 3200 MT/s"],
+    "speed_ddr5": ["QK - 4800 MT/s", "WM - 5600 MT/s", "CM - 6000 MT/s", "CQ - 6400 MT/s", "CR - 6800 MT/s", "CS - 7200 MT/s"],
+    "pcb": ["1 - DN Green", "2 - HJ Green", "3 - DN Black", "4 - HJ Black", "5 - HJ Black 11x11", "6 - BP Green", "7 - BP Black", "8 - BP RGB Black", "9 - ADATA/BP Black", "A - AXA5UR02", "G - Hammer Pass", "K - Hammer Fail"],
+    "a100_special": ["(None) - MPS PMIC + Renesas SPD", "1 - Richtek PMIC + Renesas SPD"],
+    "module_special_code2": ["(None)", "R - 1st Repair", "S - 2nd Repair", "B - Reball", "C - Reball Repair"],
+    "module_special_code3": ["(None)", "R - RMA", "M - RMA", "Y - Retest"],
+    "grade_code": ["TN - Normal", "HM - Speed Down"],
+    "product_bin": ["A00 - Normal"]
   }
 }

@@ -7,28 +7,7 @@ public sealed class ModuleService
 {
     private readonly SpecProvider _specProvider;
     private readonly ProductTextService _productTextService;
-    private static readonly string[] ModuleSourceCodes = { "RM", "TM", "CM", "BM" };
-    private static readonly string[] DramTypeCodes = { "4", "R" };
-    private static readonly string[] DimmTypeCodes = { "D", "S", "C" };
-    private static readonly string[] ModuleDensityCodes = { "1G", "2G", "4G", "8G", "AG", "BG", "CG" };
-    private static readonly string[] BankVddCodes = { "4", "5", "6", "7" };
-    private static readonly string[] DieDensityCodes = { "4", "8", "A", "H", "B", "C" };
-    private static readonly string[] CompositionCodes = { "4", "8", "6" };
-    private static readonly string[] RankCodes = { "0", "1", "2" };
     private static readonly string[] GenerationCodes = Enumerable.Range('A', 26).Select(x => ((char)x).ToString()).ToArray();
-    private static readonly string[] IcBrandCodes = { "S", "G", "H", "M", "C", "N", "A", "X" };
-    private static readonly string[] CompTypeCodes = { "P", "U", "N", "H", "M", "C", "D", "G", "T", "F", "E", "Q", "W", "J", "A", "X", "Y", "Z" };
-    private static readonly string[] TesterCodes = { "R", "S", "A", "W", "T", "G", "K", "Y", "D", "L", "1", "2", "3", "4", "5" };
-    private static readonly string[] AssemblySiteCodes = TesterCodes.Concat(new[] { "0" }).ToArray();
-    private static readonly string[] SpeedCodes = { "WE", "QK", "WM", "CM", "CQ", "CR", "CS" };
-    private static readonly string[] PcbCodes = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "G", "K" };
-    private static readonly string[] VendorCodes = { "S", "G", "B", "A", "X" };
-    private static readonly string[] PurchaserCodes = { "V", "H", "A" };
-    private static readonly string[] A100SpecialCodes = { "1" };
-    private static readonly string[] SpecialCode2Codes = { "R", "S", "B", "C" };
-    private static readonly string[] SpecialCode3Codes = { "R", "M", "Y" };
-    private static readonly string[] GradeCodes = { "TN", "HM" };
-    private static readonly string[] ProductBinCodes = { "A00" };
 
     public ModuleService(SpecProvider specProvider, ProductTextService productTextService)
     {
@@ -70,29 +49,29 @@ public sealed class ModuleService
         }
 
         ValidateAllowedCodes(
-            ("Source", effectiveRequest.ModuleSourceCode, ModuleSourceCodes, false),
-            ("DRAM Type", effectiveRequest.DramTypeCode, DramTypeCodes, false),
-            ("DIMM Type", effectiveRequest.DimmTypeCode, DimmTypeCodes, false),
-            ("Module Density", effectiveRequest.ModuleDensityCode, ModuleDensityCodes, false),
-            ("Bank / VDD", effectiveRequest.BankVddCode, BankVddCodes, true),
-            ("Die Density", effectiveRequest.DieDensityCode, DieDensityCodes, false),
-            ("Composition", effectiveRequest.CompositionCode, CompositionCodes, false),
-            ("Rank", effectiveRequest.RankCode, RankCodes, false),
+            ("Source", effectiveRequest.ModuleSourceCode, Codes("module_source"), false),
+            ("DRAM Type", effectiveRequest.DramTypeCode, Codes("dram_type").Select(code => code == "A" ? "4" : code).ToArray(), false),
+            ("DIMM Type", effectiveRequest.DimmTypeCode, CodesWithAdditions("dimm_type_common", "C"), false),
+            ("Module Density", effectiveRequest.ModuleDensityCode, Codes("module_density"), false),
+            ("Bank / VDD", effectiveRequest.BankVddCode, Codes("module_bank_vdd"), true),
+            ("Die Density", effectiveRequest.DieDensityCode, Codes("module_die_density"), false),
+            ("Composition", effectiveRequest.CompositionCode, Codes("bit").Select(code => code == "16" ? "6" : code.TrimStart('0')).ToArray(), false),
+            ("Rank", effectiveRequest.RankCode, CodesWithAdditions("rank", "0"), false),
             ("Generation", effectiveRequest.GenerationCode, GenerationCodes, false),
-            ("I.C Brand", effectiveRequest.IcBrandCode, IcBrandCodes, false),
-            ("Comp Type", effectiveRequest.ModuleCompTypeCode, CompTypeCodes, false),
-            ("Comp Test Site", effectiveRequest.CompTestCode, TesterCodes, false),
-            ("SMT Site", effectiveRequest.ModuleSmtCode, AssemblySiteCodes, false),
-            ("Module Test Site", effectiveRequest.ModuleTestCode, AssemblySiteCodes, false),
-            ("Speed", effectiveRequest.SpeedCode, SpeedCodes, false),
-            ("PCB", effectiveRequest.PcbCode, PcbCodes, false),
-            ("Vendor", effectiveRequest.VendorCode, VendorCodes, false),
-            ("Purchaser", effectiveRequest.PurchaserCode, PurchaserCodes, true),
-            ("A100 Special", effectiveRequest.A100SpecialCode, A100SpecialCodes, true),
-            ("Special Code 2", effectiveRequest.SpecialCode2Code, SpecialCode2Codes, true),
-            ("Special Code 3", effectiveRequest.SpecialCode3Code, SpecialCode3Codes, true),
-            ("Grade Code", effectiveRequest.GradeCode, GradeCodes, true),
-            ("Product Bin", effectiveRequest.ProductBinCode, ProductBinCodes, true));
+            ("I.C Brand", effectiveRequest.IcBrandCode, Codes("module_ic_brand"), false),
+            ("Comp Type", effectiveRequest.ModuleCompTypeCode, Codes("comp_type"), false),
+            ("Comp Test Site", effectiveRequest.CompTestCode, Codes("tester"), false),
+            ("SMT Site", effectiveRequest.ModuleSmtCode, CodesWithAdditions("tester", "0"), false),
+            ("Module Test Site", effectiveRequest.ModuleTestCode, CodesWithAdditions("tester", "0"), false),
+            ("Speed", effectiveRequest.SpeedCode, Codes("speed_ddr4", "speed_ddr5"), false),
+            ("PCB", effectiveRequest.PcbCode, Codes("pcb"), false),
+            ("Vendor", effectiveRequest.VendorCode, Codes("vendor"), false),
+            ("Purchaser", effectiveRequest.PurchaserCode, Codes("purchaser"), true),
+            ("A100 Special", effectiveRequest.A100SpecialCode, Codes("a100_special"), true),
+            ("Special Code 2", effectiveRequest.SpecialCode2Code, Codes("module_special_code2"), true),
+            ("Special Code 3", effectiveRequest.SpecialCode3Code, Codes("module_special_code3"), true),
+            ("Grade Code", effectiveRequest.GradeCode, Codes("grade_code"), true),
+            ("Product Bin", effectiveRequest.ProductBinCode, Codes("product_bin"), true));
         ValidateModuleSpeedAndBankVdd(effectiveRequest);
         ValidateA100Special(effectiveRequest, isThirdParty);
 
@@ -377,19 +356,19 @@ public sealed class ModuleService
         return IsThirdPartyModule(moduleSourceCode) && vendorCode == "A" && purchaserCode == "A";
     }
 
-    private static bool IsA100SpecialCode(string code)
+    private bool IsA100SpecialCode(string code)
     {
-        return A100SpecialCodes.Contains(code, StringComparer.OrdinalIgnoreCase);
+        return Codes("a100_special").Contains(code, StringComparer.OrdinalIgnoreCase);
     }
 
-    private static bool IsSpecialCode2(string code)
+    private bool IsSpecialCode2(string code)
     {
-        return SpecialCode2Codes.Contains(code, StringComparer.OrdinalIgnoreCase);
+        return Codes("module_special_code2").Contains(code, StringComparer.OrdinalIgnoreCase);
     }
 
-    private static bool IsSpecialCode3(string code)
+    private bool IsSpecialCode3(string code)
     {
-        return SpecialCode3Codes.Contains(code, StringComparer.OrdinalIgnoreCase);
+        return Codes("module_special_code3").Contains(code, StringComparer.OrdinalIgnoreCase);
     }
 
     private ModuleRequest BuildEffectiveRequest(ModuleRequest request, RevisionSpec revisionSpec)
@@ -486,7 +465,7 @@ public sealed class ModuleService
         return IsBlankCode(overrideValue) ? parsedValue : overrideValue;
     }
 
-    private static string BuildModuleBasePartCode(ModuleRequest request)
+    private string BuildModuleBasePartCode(ModuleRequest request)
     {
         var bankVddCode = IsBlankCode(request.BankVddCode)
             ? GetModuleBankVddCode(request.DramTypeCode, request.SpeedCode)
@@ -530,16 +509,14 @@ public sealed class ModuleService
         return $"{basePartCode}-{gradeCode}{request.ModuleDensityCode}{productBinCode}";
     }
 
-    private static string GetModuleBankVddCode(string dramTypeCode, string speedCode)
+    private string GetModuleBankVddCode(string dramTypeCode, string speedCode)
     {
-        return (dramTypeCode, speedCode) switch
-        {
-            ("4", "WE") => "4",
-            ("R", "QK") or ("R", "WM") => "5",
-            ("R", "CM") or ("R", "CQ") => "6",
-            ("R", "CR") or ("R", "CS") => "7",
-            _ => string.Empty
-        };
+        var ruleKey = dramTypeCode == "R" ? "DDR5" : dramTypeCode == "4" ? "DDR4" : string.Empty;
+        return !string.IsNullOrEmpty(ruleKey) &&
+               _specProvider.SharedSpec.ModuleSpeedRules.TryGetValue(ruleKey, out var rule) &&
+               rule.BankVddBySpeed.TryGetValue(speedCode, out var bankVddCode)
+            ? bankVddCode
+            : string.Empty;
     }
 
     private static string GetModuleDramTypeLabel(string dramTypeCode)
@@ -626,19 +603,17 @@ public sealed class ModuleService
         return rankCode == "2" ? $"{icCount} (2R)" : icCount.ToString();
     }
 
-    private static string GetModuleSpeedText(string speedCode)
+    private string GetModuleSpeedText(string speedCode)
     {
-        return speedCode switch
+        var option = OptionsForSpeed()
+            .FirstOrDefault(item => ExtractCode(item).Equals(speedCode, StringComparison.OrdinalIgnoreCase));
+        if (option is null)
         {
-            "WE" => "3200 MT/s",
-            "QK" => "4800 MT/s",
-            "WM" => "5600 MT/s",
-            "CM" => "6000 MT/s",
-            "CQ" => "6400 MT/s",
-            "CR" => "6800 MT/s",
-            "CS" => "7200 MT/s",
-            _ => speedCode
-        };
+            return speedCode;
+        }
+
+        var separatorIndex = option.IndexOf(" - ", StringComparison.Ordinal);
+        return separatorIndex > -1 ? option[(separatorIndex + 3)..].Trim() : speedCode;
     }
 
     private static bool IsThirdPartyModule(string moduleSourceCode)
@@ -675,22 +650,50 @@ public sealed class ModuleService
         }
     }
 
-    private static void ValidateModuleSpeedAndBankVdd(ModuleRequest request)
+    private IReadOnlyCollection<string> Codes(params string[] optionKeys)
     {
-        if (request.DramTypeCode == "4" && request.SpeedCode != "WE")
+        return optionKeys
+            .SelectMany(key => _specProvider.SharedSpec.CodeOptions.TryGetValue(key, out var options)
+                ? options.Select(ExtractCode).Where(code => !IsBlankCode(code))
+                : throw new KeyNotFoundException($"Code option set '{key}' was not found."))
+            .ToArray();
+    }
+
+    private IReadOnlyCollection<string> CodesWithAdditions(string optionKey, params string[] additions)
+    {
+        return Codes(optionKey).Concat(additions).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+    }
+
+    private static string ExtractCode(string option)
+    {
+        return NormalizeCode(option);
+    }
+
+    private IReadOnlyCollection<string> OptionsForSpeed()
+    {
+        return _specProvider.SharedSpec.CodeOptions.TryGetValue("speed_ddr4", out var ddr4Options) &&
+               _specProvider.SharedSpec.CodeOptions.TryGetValue("speed_ddr5", out var ddr5Options)
+            ? ddr4Options.Concat(ddr5Options).ToArray()
+            : Array.Empty<string>();
+    }
+    private void ValidateModuleSpeedAndBankVdd(ModuleRequest request)
+    {
+        var ruleKey = request.DramTypeCode == "R" ? "DDR5" : request.DramTypeCode == "4" ? "DDR4" : string.Empty;
+        if (string.IsNullOrEmpty(ruleKey) ||
+            !_specProvider.SharedSpec.ModuleSpeedRules.TryGetValue(ruleKey, out var rule))
         {
-            throw new InvalidOperationException("DDR4 Module은 Speed WE만 허용됩니다.");
+            throw new InvalidOperationException($"Unsupported Module DRAM Type: {request.DramTypeCode}");
         }
 
-        if (request.DramTypeCode == "R" && request.SpeedCode == "WE")
+        if (!rule.AllowedSpeeds.Contains(request.SpeedCode, StringComparer.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException("DDR5 Module은 Speed QK / WM / CM / CQ / CR / CS만 허용됩니다.");
+            throw new InvalidOperationException($"{ruleKey} Module allows only these Speed codes: {string.Join(" / ", rule.AllowedSpeeds)}");
         }
 
         var expectedBankVdd = GetModuleBankVddCode(request.DramTypeCode, request.SpeedCode);
         if (!IsBlankCode(request.BankVddCode) && request.BankVddCode != expectedBankVdd)
         {
-            throw new InvalidOperationException($"선택한 Speed에는 Bank/VDD {expectedBankVdd} 코드만 허용됩니다.");
+            throw new InvalidOperationException($"Selected Speed allows only Bank/VDD code {expectedBankVdd}.");
         }
     }
 

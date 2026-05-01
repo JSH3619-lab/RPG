@@ -6,19 +6,7 @@ public sealed class IncomingCompService
 {
     private readonly SpecProvider _specProvider;
     private readonly ProductTextService _productTextService;
-    private static readonly string[] IncomingSourceCodes = { "K", "T", "C", "B" };
-    private static readonly string[] DramTypeCodes = { "A", "R" };
-    private static readonly string[] BitOrganizationCodes = { "04", "08", "16" };
-    private static readonly string[] BankCodes = { "5", "6" };
-    private static readonly string[] InterfaceCodes = { "W", "V" };
     private static readonly string[] PartRevisionCodes = Enumerable.Range('A', 26).Select(x => ((char)x).ToString()).ToArray();
-    private static readonly string[] CompTypeCodes = { "P", "U", "N", "H", "M", "C", "D", "G", "T", "F", "E", "Q", "W", "J", "A", "X", "Y", "Z" };
-    private static readonly string[] DieBrandCodes = { "S", "G", "H", "M", "C", "N" };
-    private static readonly string[] VendorCodes = { "S", "G", "B", "A", "X" };
-    private static readonly string[] PurchaserCodes = { "V", "H", "A" };
-    private static readonly string[] CompType2Codes = { "B" };
-    private static readonly string[] PackageTypeCodes = { "B", "M", "R", "N" };
-    private static readonly string[] TesterCodes = { "R", "S", "A", "W", "T", "G", "K", "Y", "D", "L", "1", "2", "3", "4", "5" };
 
     public IncomingCompService(SpecProvider specProvider, ProductTextService productTextService)
     {
@@ -59,19 +47,19 @@ public sealed class IncomingCompService
             testerCode);
         ValidateDensity(dramTypeCode, densityCode);
         ValidateAllowedCodes(
-            ("Source", sourceCode, IncomingSourceCodes, false),
-            ("DRAM Type", dramTypeCode, DramTypeCodes, false),
-            ("Bit", bitOrganizationCode, BitOrganizationCodes, false),
-            ("Bank", bankCode, BankCodes, false),
-            ("Interface", interfaceCode, InterfaceCodes, false),
+            ("Source", sourceCode, Codes("incoming_source"), false),
+            ("DRAM Type", dramTypeCode, Codes("dram_type"), false),
+            ("Bit", bitOrganizationCode, Codes("bit"), false),
+            ("Bank", bankCode, Codes("bank_ddr4", "bank_ddr5"), false),
+            ("Interface", interfaceCode, Codes("interface_ddr4", "interface_ddr5"), false),
             ("Part Revision", partRevisionCode, PartRevisionCodes, false),
-            ("Comp Type", compTypeCode, CompTypeCodes, false),
-            ("Die Brand", dieBrandCode, DieBrandCodes, false),
-            ("Vendor", vendorCode, VendorCodes, false),
-            ("Purchaser", purchaserCode, PurchaserCodes, true),
-            ("Comp Type 2", compType2Code, CompType2Codes, true),
-            ("Package", packageTypeCode, PackageTypeCodes, false),
-            ("Tester", testerCode, TesterCodes, false));
+            ("Comp Type", compTypeCode, Codes("comp_type"), false),
+            ("Die Brand", dieBrandCode, Codes("die_brand"), false),
+            ("Vendor", vendorCode, Codes("vendor"), false),
+            ("Purchaser", purchaserCode, Codes("purchaser"), true),
+            ("Comp Type 2", compType2Code, Codes("comp_type2"), true),
+            ("Package", packageTypeCode, Codes("package_type"), false),
+            ("Tester", testerCode, Codes("tester"), false));
         ValidateDramDefaults(dramTypeCode, bankCode, interfaceCode);
         ValidateRev30Fields(isThirdParty, vendorCode, purchaserCode);
 
@@ -313,6 +301,20 @@ public sealed class IncomingCompService
                 throw new InvalidOperationException($"{fieldName} 코드가 허용 목록에 없습니다: {code}");
             }
         }
+    }
+
+    private IReadOnlyCollection<string> Codes(params string[] optionKeys)
+    {
+        return optionKeys
+            .SelectMany(key => _specProvider.SharedSpec.CodeOptions.TryGetValue(key, out var options)
+                ? options.Select(ExtractCode).Where(code => !IsBlankCode(code))
+                : throw new KeyNotFoundException($"Code option set '{key}' was not found."))
+            .ToArray();
+    }
+
+    private static string ExtractCode(string option)
+    {
+        return NormalizeCode(option);
     }
 
     private static void ValidateDramDefaults(string dramTypeCode, string bankCode, string interfaceCode)

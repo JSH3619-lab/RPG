@@ -24,6 +24,9 @@ public sealed class SharedSpec
 
     [JsonPropertyName("a100_rule")]
     public A100Rule A100Rule { get; set; } = new();
+
+    [JsonPropertyName("code_options")]
+    public Dictionary<string, List<string>> CodeOptions { get; set; } = new();
 }
 
 public sealed class ModuleSpeedRule
