@@ -1,6 +1,6 @@
 # 현재 확정 규칙
 
-원본 문서는 `RAMOS_DRAM_PART (Rev.30).pdf`를 기준으로 한다. Rev 28.1, Rev 29 문서는 현재 구현 기준 문서가 아니다.
+원본 문서는 `RAMOS_DRAM_PART (Rev.30).pdf`만 기준으로 한다.
 
 ## 지원 Rev
 - 현재 운영: `30`
