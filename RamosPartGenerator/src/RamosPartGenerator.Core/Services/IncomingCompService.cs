@@ -6,6 +6,19 @@ public sealed class IncomingCompService
 {
     private readonly SpecProvider _specProvider;
     private readonly ProductTextService _productTextService;
+    private static readonly string[] IncomingSourceCodes = { "K", "T", "C", "B" };
+    private static readonly string[] DramTypeCodes = { "A", "R" };
+    private static readonly string[] BitOrganizationCodes = { "04", "08", "16" };
+    private static readonly string[] BankCodes = { "5", "6" };
+    private static readonly string[] InterfaceCodes = { "W", "V" };
+    private static readonly string[] PartRevisionCodes = Enumerable.Range('A', 26).Select(x => ((char)x).ToString()).ToArray();
+    private static readonly string[] CompTypeCodes = { "P", "U", "N", "H", "M", "C", "D", "G", "T", "F", "E", "Q", "W", "J", "A", "X", "Y", "Z" };
+    private static readonly string[] DieBrandCodes = { "S", "G", "H", "M", "C", "N" };
+    private static readonly string[] VendorCodes = { "S", "G", "B", "A", "X" };
+    private static readonly string[] PurchaserCodes = { "V", "H", "A" };
+    private static readonly string[] CompType2Codes = { "B" };
+    private static readonly string[] PackageTypeCodes = { "B", "M", "R", "N" };
+    private static readonly string[] TesterCodes = { "R", "S", "A", "W", "T", "G", "K", "Y", "D", "L", "1", "2", "3", "4", "5" };
 
     public IncomingCompService(SpecProvider specProvider, ProductTextService productTextService)
     {
@@ -45,6 +58,21 @@ public sealed class IncomingCompService
             packageTypeCode,
             testerCode);
         ValidateDensity(dramTypeCode, densityCode);
+        ValidateAllowedCodes(
+            ("Source", sourceCode, IncomingSourceCodes, false),
+            ("DRAM Type", dramTypeCode, DramTypeCodes, false),
+            ("Bit", bitOrganizationCode, BitOrganizationCodes, false),
+            ("Bank", bankCode, BankCodes, false),
+            ("Interface", interfaceCode, InterfaceCodes, false),
+            ("Part Revision", partRevisionCode, PartRevisionCodes, false),
+            ("Comp Type", compTypeCode, CompTypeCodes, false),
+            ("Die Brand", dieBrandCode, DieBrandCodes, false),
+            ("Vendor", vendorCode, VendorCodes, false),
+            ("Purchaser", purchaserCode, PurchaserCodes, true),
+            ("Comp Type 2", compType2Code, CompType2Codes, true),
+            ("Package", packageTypeCode, PackageTypeCodes, false),
+            ("Tester", testerCode, TesterCodes, false));
+        ValidateDramDefaults(dramTypeCode, bankCode, interfaceCode);
         ValidateRev30Fields(isThirdParty, vendorCode, purchaserCode);
 
         var dddPartCode = BuildIncomingPartCode(
@@ -89,7 +117,7 @@ public sealed class IncomingCompService
 
         var rows = new List<GeneratedPartRow>
         {
-            new("ÀÔ°í", dddPartCode, incomingTexts.Name, incomingTexts.GeneralInfo, incomingTexts.Specification),
+            new("ì…ê³ ", dddPartCode, incomingTexts.Name, incomingTexts.GeneralInfo, incomingTexts.Specification),
             new("Comp", compPartCode, compTexts.Name, compTexts.GeneralInfo, compTexts.Specification)
         };
 
@@ -122,13 +150,13 @@ public sealed class IncomingCompService
         var normalizedPartCode = (partCode ?? string.Empty).Trim().ToUpperInvariant();
         if (string.IsNullOrWhiteSpace(normalizedPartCode))
         {
-            throw new InvalidOperationException("Comp Full Part°¡ ºñ¾î ÀÖ½À´Ï´Ù.");
+            throw new InvalidOperationException("Comp Full Partê°€ ë¹„ì–´ ìˆìŠµë‹ˆë‹¤.");
         }
 
         var separatorIndex = normalizedPartCode.IndexOf('-');
         if (separatorIndex <= 0 || separatorIndex >= normalizedPartCode.Length - 1)
         {
-            throw new InvalidOperationException("Comp Full Part Çü½ÄÀÌ Àß¸øµÇ¾ú½À´Ï´Ù. '-' À§Ä¡¸¦ È®ÀÎÇÏ¼¼¿ä.");
+            throw new InvalidOperationException("Comp Full Part í˜•ì‹ì´ ì˜ëª»ë˜ì—ˆìŠµë‹ˆë‹¤. '-' ìœ„ì¹˜ë¥¼ í™•ì¸í•˜ì„¸ìš”.");
         }
 
         var prefix = normalizedPartCode[..separatorIndex];
@@ -136,12 +164,12 @@ public sealed class IncomingCompService
 
         if (prefix.Length != 10)
         {
-            throw new InvalidOperationException("Comp Full Part prefix ±æÀÌ°¡ ¿Ã¹Ù¸£Áö ¾Ê½À´Ï´Ù.");
+            throw new InvalidOperationException("Comp Full Part prefix ê¸¸ì´ê°€ ì˜¬ë°”ë¥´ì§€ ì•ŠìŠµë‹ˆë‹¤.");
         }
 
         if (tail.Length < 4)
         {
-            throw new InvalidOperationException("Comp Full Part tail ±æÀÌ°¡ ¿Ã¹Ù¸£Áö ¾Ê½À´Ï´Ù.");
+            throw new InvalidOperationException("Comp Full Part tail ê¸¸ì´ê°€ ì˜¬ë°”ë¥´ì§€ ì•ŠìŠµë‹ˆë‹¤.");
         }
 
         var compFamily = prefix[..2];
@@ -165,7 +193,7 @@ public sealed class IncomingCompService
 
         if (remaining.Length < 1)
         {
-            throw new InvalidOperationException("Rev 30 Comp Full Part¿¡´Â Vendor°¡ ÇÊ¿äÇÕ´Ï´Ù.");
+            throw new InvalidOperationException("Rev 30 Comp Full Partì—ëŠ” Vendorê°€ í•„ìš”í•©ë‹ˆë‹¤.");
         }
 
         vendorCode = remaining.Substring(0, 1);
@@ -217,8 +245,15 @@ public sealed class IncomingCompService
 
     private static string NormalizeCode(string? code)
     {
-        var value = (code ?? string.Empty).Trim().ToUpperInvariant();
-        return value is "" or "0" or "(¾øÀ½)" ? "0" : value;
+        var value = (code ?? string.Empty).Trim();
+        var separatorIndex = value.IndexOf(" - ", StringComparison.Ordinal);
+        if (separatorIndex > -1)
+        {
+            value = value[..separatorIndex].Trim();
+        }
+
+        value = value.ToUpperInvariant();
+        return value is "" or "0" or "(ì—†ìŒ)" or "(NONE)" or "NONE" ? "0" : value;
     }
 
     private static bool IsBlankCode(string code) => code == "0";
@@ -227,7 +262,7 @@ public sealed class IncomingCompService
     {
         if (requiredCodes.Any(IsBlankCode))
         {
-            throw new InvalidOperationException("ÀÔ°í/Comp »ı¼º ÇÊ¼ö ÄÚµå°¡ ºñ¾î ÀÖ½À´Ï´Ù.");
+            throw new InvalidOperationException("ì…ê³ /Comp ìƒì„± í•„ìˆ˜ ì½”ë“œê°€ ë¹„ì–´ ìˆìŠµë‹ˆë‹¤.");
         }
     }
 
@@ -244,9 +279,9 @@ public sealed class IncomingCompService
         {
             throw new InvalidOperationException(dramTypeCode switch
             {
-                "A" => "DDR4: Density´Â 4G / 8G / AG¸¸ Çã¿ëµË´Ï´Ù.",
-                "R" => "DDR5: Density´Â AH / HE / BH¸¸ Çã¿ëµË´Ï´Ù.",
-                _ => "Áö¿øÇÏÁö ¾Ê´Â DRAM TypeÀÔ´Ï´Ù."
+                "A" => "DDR4: DensityëŠ” 4G / 8G / AGë§Œ í—ˆìš©ë©ë‹ˆë‹¤.",
+                "R" => "DDR5: DensityëŠ” AH / HE / BHë§Œ í—ˆìš©ë©ë‹ˆë‹¤.",
+                _ => "ì§€ì›í•˜ì§€ ì•ŠëŠ” DRAM Typeì…ë‹ˆë‹¤."
             });
         }
     }
@@ -255,12 +290,41 @@ public sealed class IncomingCompService
     {
         if (IsBlankCode(vendorCode))
         {
-            throw new InvalidOperationException("Rev 30¿¡¼­´Â Vendor°¡ ¹İµå½Ã ÇÊ¿äÇÕ´Ï´Ù.");
+            throw new InvalidOperationException("Rev 30ì—ì„œëŠ” Vendorê°€ ë°˜ë“œì‹œ í•„ìš”í•©ë‹ˆë‹¤.");
         }
 
         if (isThirdParty && IsBlankCode(purchaserCode))
         {
-            throw new InvalidOperationException("Third-Party Comp´Â Purchaser°¡ ¹İµå½Ã ÇÊ¿äÇÕ´Ï´Ù.");
+            throw new InvalidOperationException("Third-Party CompëŠ” Purchaserê°€ ë°˜ë“œì‹œ í•„ìš”í•©ë‹ˆë‹¤.");
+        }
+    }
+
+    private static void ValidateAllowedCodes(params (string FieldName, string Code, IReadOnlyCollection<string> AllowedCodes, bool AllowBlank)[] checks)
+    {
+        foreach (var (fieldName, code, allowedCodes, allowBlank) in checks)
+        {
+            if (allowBlank && IsBlankCode(code))
+            {
+                continue;
+            }
+
+            if (!allowedCodes.Contains(code, StringComparer.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException($"{fieldName} ì½”ë“œê°€ í—ˆìš© ëª©ë¡ì— ì—†ìŠµë‹ˆë‹¤: {code}");
+            }
+        }
+    }
+
+    private static void ValidateDramDefaults(string dramTypeCode, string bankCode, string interfaceCode)
+    {
+        if (dramTypeCode == "A" && (bankCode != "5" || interfaceCode != "W"))
+        {
+            throw new InvalidOperationException("DDR4ëŠ” Bank 5 / Interface Wë§Œ í—ˆìš©ë©ë‹ˆë‹¤.");
+        }
+
+        if (dramTypeCode == "R" && (bankCode != "6" || interfaceCode != "V"))
+        {
+            throw new InvalidOperationException("DDR5ëŠ” Bank 6 / Interface Vë§Œ í—ˆìš©ë©ë‹ˆë‹¤.");
         }
     }
 
@@ -352,7 +416,7 @@ public sealed class IncomingCompService
             "T" => "TC",
             "C" => "CC",
             "B" => "BC",
-            _ => throw new InvalidOperationException($"Áö¿øÇÏÁö ¾Ê´Â ÀÔ°í SourceCodeÀÔ´Ï´Ù: {sourceCode}")
+            _ => throw new InvalidOperationException($"ì§€ì›í•˜ì§€ ì•ŠëŠ” ì…ê³  SourceCodeì…ë‹ˆë‹¤: {sourceCode}")
         };
     }
 
@@ -365,7 +429,7 @@ public sealed class IncomingCompService
             "TC" => "T",
             "CC" => "C",
             "BC" => "B",
-            _ => throw new InvalidOperationException($"Áö¿øÇÏÁö ¾Ê´Â Comp FamilyÀÔ´Ï´Ù: {compFamily}")
+            _ => throw new InvalidOperationException($"ì§€ì›í•˜ì§€ ì•ŠëŠ” Comp Familyì…ë‹ˆë‹¤: {compFamily}")
         };
     }
 

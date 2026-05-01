@@ -213,4 +213,98 @@ public class UnitTest1
 
         Assert.Equal("DDR5 16Gb x8 G-die GIGA S1 MDL(GOX) Comp TP", texts.Specification);
     }
+
+    [Fact]
+    public void GeneratePreview_IncomingComp_RejectsInvalidTesterCode()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new IncomingCompService(provider, new ProductTextService(provider));
+
+        var ex = Assert.Throws<InvalidOperationException>(() => service.GeneratePreview(new IncomingCompRequest
+        {
+            Revision = "30",
+            SourceCode = "K",
+            DramTypeCode = "R",
+            DensityCode = "AH",
+            BitOrganizationCode = "08",
+            BankCode = "6",
+            InterfaceCode = "V",
+            RevisionCode = "A",
+            CompTypeCode = "P",
+            DieBrandCode = "G",
+            VendorCode = "G",
+            PackageTypeCode = "B",
+            TesterCode = "Z"
+        }));
+
+        Assert.Contains("Tester", ex.Message);
+    }
+
+    [Fact]
+    public void GeneratePreview_Module_RejectsInvalidSpeedForDdr4()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var ex = Assert.Throws<InvalidOperationException>(() => service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleSourceCode = "RM",
+            DramTypeCode = "4",
+            DimmTypeCode = "D",
+            ModuleDensityCode = "8G",
+            DieDensityCode = "8",
+            CompositionCode = "8",
+            RankCode = "1",
+            GenerationCode = "A",
+            IcBrandCode = "G",
+            ModuleCompTypeCode = "P",
+            CompTestCode = "W",
+            ModuleSmtCode = "R",
+            ModuleTestCode = "R",
+            SpeedCode = "QK",
+            PcbCode = "1",
+            VendorCode = "G"
+        }));
+
+        Assert.Contains("DDR4 Module", ex.Message);
+    }
+
+    [Fact]
+    public void GeneratePreview_Module_A100NoneOptionIsTreatedAsBlank()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleSourceCode = "TM",
+            DramTypeCode = "R",
+            DimmTypeCode = "D",
+            ModuleDensityCode = "AG",
+            DieDensityCode = "A",
+            CompositionCode = "8",
+            RankCode = "1",
+            GenerationCode = "P",
+            IcBrandCode = "G",
+            ModuleCompTypeCode = "P",
+            CompTestCode = "W",
+            ModuleSmtCode = "R",
+            ModuleTestCode = "R",
+            SpeedCode = "WM",
+            PcbCode = "7",
+            VendorCode = "G",
+            PurchaserCode = "H",
+            A100SpecialCode = "(None) - MPS PMIC + Renesas SPD"
+        });
+
+        Assert.Equal("TMRDAG58A1P-GPWRRWM7GH", rows[0].PartCode);
+    }
 }

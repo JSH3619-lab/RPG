@@ -268,7 +268,7 @@ function buildFieldView(field: LookupField, request: ModuleRequest): DisplayFiel
 
 function extractCode(rawValue: string): string {
   const trimmed = rawValue.trim();
-  if (!trimmed || trimmed === "(None)") {
+  if (!trimmed || trimmed === "(None)" || trimmed.startsWith("(None) - ")) {
     return "";
   }
 

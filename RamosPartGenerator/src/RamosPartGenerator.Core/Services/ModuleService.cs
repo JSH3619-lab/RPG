@@ -7,6 +7,28 @@ public sealed class ModuleService
 {
     private readonly SpecProvider _specProvider;
     private readonly ProductTextService _productTextService;
+    private static readonly string[] ModuleSourceCodes = { "RM", "TM", "CM", "BM" };
+    private static readonly string[] DramTypeCodes = { "4", "R" };
+    private static readonly string[] DimmTypeCodes = { "D", "S", "C" };
+    private static readonly string[] ModuleDensityCodes = { "1G", "2G", "4G", "8G", "AG", "BG", "CG" };
+    private static readonly string[] BankVddCodes = { "4", "5", "6", "7" };
+    private static readonly string[] DieDensityCodes = { "4", "8", "A", "H", "B", "C" };
+    private static readonly string[] CompositionCodes = { "4", "8", "6" };
+    private static readonly string[] RankCodes = { "0", "1", "2" };
+    private static readonly string[] GenerationCodes = Enumerable.Range('A', 26).Select(x => ((char)x).ToString()).ToArray();
+    private static readonly string[] IcBrandCodes = { "S", "G", "H", "M", "C", "N", "A", "X" };
+    private static readonly string[] CompTypeCodes = { "P", "U", "N", "H", "M", "C", "D", "G", "T", "F", "E", "Q", "W", "J", "A", "X", "Y", "Z" };
+    private static readonly string[] TesterCodes = { "R", "S", "A", "W", "T", "G", "K", "Y", "D", "L", "1", "2", "3", "4", "5" };
+    private static readonly string[] AssemblySiteCodes = TesterCodes.Concat(new[] { "0" }).ToArray();
+    private static readonly string[] SpeedCodes = { "WE", "QK", "WM", "CM", "CQ", "CR", "CS" };
+    private static readonly string[] PcbCodes = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "G", "K" };
+    private static readonly string[] VendorCodes = { "S", "G", "B", "A", "X" };
+    private static readonly string[] PurchaserCodes = { "V", "H", "A" };
+    private static readonly string[] A100SpecialCodes = { "1" };
+    private static readonly string[] SpecialCode2Codes = { "R", "S", "B", "C" };
+    private static readonly string[] SpecialCode3Codes = { "R", "M", "Y" };
+    private static readonly string[] GradeCodes = { "TN", "HM" };
+    private static readonly string[] ProductBinCodes = { "A00" };
 
     public ModuleService(SpecProvider specProvider, ProductTextService productTextService)
     {
@@ -39,13 +61,40 @@ public sealed class ModuleService
 
         if (IsBlankCode(effectiveRequest.IcBrandCode))
         {
-            throw new InvalidOperationException("Rev 30 Module?� I.C Brand가 반드???�요?�니??");
+            throw new InvalidOperationException("Rev 30 Module은 I.C Brand가 반드시 필요합니다.");
         }
 
         if (isThirdParty && IsBlankCode(effectiveRequest.PurchaserCode))
         {
-            throw new InvalidOperationException("Third-Party Module?� Purchaser가 반드???�요?�니??");
+            throw new InvalidOperationException("Third-Party Module은 Purchaser가 반드시 필요합니다.");
         }
+
+        ValidateAllowedCodes(
+            ("Source", effectiveRequest.ModuleSourceCode, ModuleSourceCodes, false),
+            ("DRAM Type", effectiveRequest.DramTypeCode, DramTypeCodes, false),
+            ("DIMM Type", effectiveRequest.DimmTypeCode, DimmTypeCodes, false),
+            ("Module Density", effectiveRequest.ModuleDensityCode, ModuleDensityCodes, false),
+            ("Bank / VDD", effectiveRequest.BankVddCode, BankVddCodes, true),
+            ("Die Density", effectiveRequest.DieDensityCode, DieDensityCodes, false),
+            ("Composition", effectiveRequest.CompositionCode, CompositionCodes, false),
+            ("Rank", effectiveRequest.RankCode, RankCodes, false),
+            ("Generation", effectiveRequest.GenerationCode, GenerationCodes, false),
+            ("I.C Brand", effectiveRequest.IcBrandCode, IcBrandCodes, false),
+            ("Comp Type", effectiveRequest.ModuleCompTypeCode, CompTypeCodes, false),
+            ("Comp Test Site", effectiveRequest.CompTestCode, TesterCodes, false),
+            ("SMT Site", effectiveRequest.ModuleSmtCode, AssemblySiteCodes, false),
+            ("Module Test Site", effectiveRequest.ModuleTestCode, AssemblySiteCodes, false),
+            ("Speed", effectiveRequest.SpeedCode, SpeedCodes, false),
+            ("PCB", effectiveRequest.PcbCode, PcbCodes, false),
+            ("Vendor", effectiveRequest.VendorCode, VendorCodes, false),
+            ("Purchaser", effectiveRequest.PurchaserCode, PurchaserCodes, true),
+            ("A100 Special", effectiveRequest.A100SpecialCode, A100SpecialCodes, true),
+            ("Special Code 2", effectiveRequest.SpecialCode2Code, SpecialCode2Codes, true),
+            ("Special Code 3", effectiveRequest.SpecialCode3Code, SpecialCode3Codes, true),
+            ("Grade Code", effectiveRequest.GradeCode, GradeCodes, true),
+            ("Product Bin", effectiveRequest.ProductBinCode, ProductBinCodes, true));
+        ValidateModuleSpeedAndBankVdd(effectiveRequest);
+        ValidateA100Special(effectiveRequest, isThirdParty);
 
         var basePartCode = BuildModuleBasePartCode(effectiveRequest);
         var binPartCode = BuildModuleBinPartCode(basePartCode, effectiveRequest);
@@ -116,14 +165,14 @@ public sealed class ModuleService
         var parts = normalizedPartCode.Split('-');
         if (parts.Length != 2)
         {
-            throw new InvalidOperationException("Comp Full Part ?�식???�바르�? ?�습?�다.");
+            throw new InvalidOperationException("Comp Full Part 형식이 올바르지 않습니다.");
         }
 
         var headPart = parts[0];
         var tailPart = parts[1];
         if (headPart.Length < 10 || tailPart.Length < 5)
         {
-            throw new InvalidOperationException("Comp Full Part 길이가 ?�상 ?�식�?맞�? ?�습?�다.");
+            throw new InvalidOperationException("Comp Full Part 길이가 예상 형식과 맞지 않습니다.");
         }
 
         var compFamilyCode = headPart[..2];
@@ -147,7 +196,7 @@ public sealed class ModuleService
             string.IsNullOrWhiteSpace(compositionCode) ||
             string.IsNullOrWhiteSpace(dieDensityCode))
         {
-            throw new InvalidOperationException("Comp Full Part?�서 Module???�동 매핑??만들 ???�습?�다.");
+            throw new InvalidOperationException("Comp Full Part에서 Module 기본값을 자동 매핑할 수 없습니다.");
         }
 
         return new ModuleRequest
@@ -174,7 +223,7 @@ public sealed class ModuleService
         var parts = normalizedPartCode.Split('-');
         if (parts.Length is < 2 or > 3)
         {
-            throw new InvalidOperationException("Module Full Part ?�식???�바르�? ?�습?�다.");
+            throw new InvalidOperationException("Module Full Part 형식이 올바르지 않습니다.");
         }
 
         var headPart = parts[0];
@@ -182,12 +231,12 @@ public sealed class ModuleService
         var binTail = parts.Length == 3 ? parts[2] : string.Empty;
         if (headPart.Length != 11)
         {
-            throw new InvalidOperationException($"Module Full Part ?��?�?길이가 ?�바르�? ?�습?�다. ?�재 길이: {headPart.Length} / 기�? 길이: 11");
+            throw new InvalidOperationException($"Module Full Part 앞부분 길이가 올바르지 않습니다. 현재 길이: {headPart.Length} / 기대 길이: 11");
         }
 
         if (!string.IsNullOrEmpty(binTail) && binTail.Length != 7)
         {
-            throw new InvalidOperationException("Module BIN suffix 길이가 ?�바르�? ?�습?�다. ?? TNAGA00");
+            throw new InvalidOperationException("Module BIN suffix 길이가 올바르지 않습니다. 예: TNAGA00");
         }
 
         var request = new ModuleRequest
@@ -212,7 +261,7 @@ public sealed class ModuleService
 
         if (tailPart.Length < 9)
         {
-            throw new InvalidOperationException($"Rev {revisionSpec.DisplayRevision} Module tail 길이가 부족합?�다.");
+            throw new InvalidOperationException($"Rev {revisionSpec.DisplayRevision} Module tail 길이가 부족합니다.");
         }
 
         request.IcBrandCode = tailPart.Substring(0, 1);
@@ -251,7 +300,7 @@ public sealed class ModuleService
 
         if (!string.IsNullOrEmpty(trailingText))
         {
-            throw new InvalidOperationException($"Rev 30 Module tail�� �ؼ����� ���� �ڵ尡 ���� �ֽ��ϴ�: {trailingText}");
+            throw new InvalidOperationException($"Rev 30 Module tail에 해석되지 않은 코드가 남아 있습니다: {trailingText}");
         }
 
         return request;
@@ -259,7 +308,15 @@ public sealed class ModuleService
 
     private static string NormalizeCode(string? partCode)
     {
-        return (partCode ?? string.Empty).Trim().ToUpperInvariant().Replace(" ", string.Empty);
+        var value = (partCode ?? string.Empty).Trim();
+        var separatorIndex = value.IndexOf(" - ", StringComparison.Ordinal);
+        if (separatorIndex > -1)
+        {
+            value = value[..separatorIndex].Trim();
+        }
+
+        value = value.ToUpperInvariant().Replace(" ", string.Empty);
+        return value is "" or "0" or "(없음)" or "(NONE)" or "NONE" ? "0" : value;
     }
 
     private static string MapCompFamilyToModuleFamily(string compFamilyCode)
@@ -317,13 +374,13 @@ public sealed class ModuleService
     {
         var effective = NormalizeRequest(request);
 
-        if (!string.IsNullOrWhiteSpace(effective.CompFullPartCode))
+        if (!IsBlankCode(effective.CompFullPartCode))
         {
             var parsedComp = ParseCompPart(revisionSpec.Revision, effective.CompFullPartCode);
             effective = MergeRequests(parsedComp, effective);
         }
 
-        if (!string.IsNullOrWhiteSpace(effective.ModuleFullPartCode))
+        if (!IsBlankCode(effective.ModuleFullPartCode))
         {
             var parsedModule = ParseModuleFullPart(revisionSpec.Revision, effective.ModuleFullPartCode);
             effective = MergeRequests(effective, parsedModule);
@@ -414,7 +471,7 @@ public sealed class ModuleService
             : request.BankVddCode;
         if (IsBlankCode(bankVddCode))
         {
-            throw new InvalidOperationException("?�택??Speed??맞는 Module Bank/VDD 코드�?계산?????�습?�다.");
+            throw new InvalidOperationException("선택한 Speed에 맞는 Module Bank/VDD 코드를 계산할 수 없습니다.");
         }
 
         var basePartCode = request.ModuleSourceCode + request.DramTypeCode + request.DimmTypeCode + request.ModuleDensityCode + bankVddCode + request.CompositionCode + request.DieDensityCode + request.RankCode + request.GenerationCode;
@@ -576,7 +633,55 @@ public sealed class ModuleService
     {
         if (requiredCodes.Any(IsBlankCode))
         {
-            throw new InvalidOperationException("Module ?�성 ?�수 코드가 비어 ?�습?�다.");
+            throw new InvalidOperationException("Module 생성 필수 코드가 비어 있습니다.");
+        }
+    }
+
+    private static void ValidateAllowedCodes(params (string FieldName, string Code, IReadOnlyCollection<string> AllowedCodes, bool AllowBlank)[] checks)
+    {
+        foreach (var (fieldName, code, allowedCodes, allowBlank) in checks)
+        {
+            if (allowBlank && IsBlankCode(code))
+            {
+                continue;
+            }
+
+            if (!allowedCodes.Contains(code, StringComparer.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException($"{fieldName} 코드가 허용 목록에 없습니다: {code}");
+            }
+        }
+    }
+
+    private static void ValidateModuleSpeedAndBankVdd(ModuleRequest request)
+    {
+        if (request.DramTypeCode == "4" && request.SpeedCode != "WE")
+        {
+            throw new InvalidOperationException("DDR4 Module은 Speed WE만 허용됩니다.");
+        }
+
+        if (request.DramTypeCode == "R" && request.SpeedCode == "WE")
+        {
+            throw new InvalidOperationException("DDR5 Module은 Speed QK / WM / CM / CQ / CR / CS만 허용됩니다.");
+        }
+
+        var expectedBankVdd = GetModuleBankVddCode(request.DramTypeCode, request.SpeedCode);
+        if (!IsBlankCode(request.BankVddCode) && request.BankVddCode != expectedBankVdd)
+        {
+            throw new InvalidOperationException($"선택한 Speed에는 Bank/VDD {expectedBankVdd} 코드만 허용됩니다.");
+        }
+    }
+
+    private static void ValidateA100Special(ModuleRequest request, bool isThirdParty)
+    {
+        if (IsBlankCode(request.A100SpecialCode))
+        {
+            return;
+        }
+
+        if (!isThirdParty || request.VendorCode != "A" || request.PurchaserCode != "A")
+        {
+            throw new InvalidOperationException("A100 Special Code는 Third-Party + Vendor A + Purchaser A 조건에서만 사용할 수 있습니다.");
         }
     }
 }
