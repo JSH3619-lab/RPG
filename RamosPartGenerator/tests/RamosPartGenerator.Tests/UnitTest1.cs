@@ -307,4 +307,34 @@ public class UnitTest1
 
         Assert.Equal("TMRDAG58A1P-GPWRRWM7GH", rows[0].PartCode);
     }
+
+    [Fact]
+    public void ParseModuleFullPart_NonA100SpecialCode2_DoesNotPopulateA100Special()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var request = service.ParseModuleFullPart("30", "TMRDAG58A1P-GPWRRWM7GHR");
+
+        Assert.True(string.IsNullOrEmpty(request.A100SpecialCode));
+        Assert.Equal("R", request.SpecialCode2Code);
+        Assert.True(string.IsNullOrEmpty(request.SpecialCode3Code));
+    }
+
+    [Fact]
+    public void ParseModuleFullPart_A100SpecialCode_RequiresA100Condition()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var request = service.ParseModuleFullPart("30", "TMRDAG58A1P-GPWRRWM7AA1R");
+
+        Assert.Equal("1", request.A100SpecialCode);
+        Assert.Equal("R", request.SpecialCode2Code);
+        Assert.True(string.IsNullOrEmpty(request.SpecialCode3Code));
+    }
 }

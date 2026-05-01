@@ -280,19 +280,21 @@ public sealed class ModuleService
             trailingText = trailingText[1..];
         }
 
-        if (!string.IsNullOrEmpty(trailingText))
+        if (IsA100SpecialEligible(request.ModuleSourceCode, request.VendorCode, request.PurchaserCode) &&
+            !string.IsNullOrEmpty(trailingText) &&
+            IsA100SpecialCode(trailingText[..1]))
         {
             request.A100SpecialCode = trailingText[..1];
             trailingText = trailingText[1..];
         }
 
-        if (!string.IsNullOrEmpty(trailingText))
+        if (!string.IsNullOrEmpty(trailingText) && IsSpecialCode2(trailingText[..1]))
         {
             request.SpecialCode2Code = trailingText[..1];
             trailingText = trailingText[1..];
         }
 
-        if (!string.IsNullOrEmpty(trailingText))
+        if (!string.IsNullOrEmpty(trailingText) && IsSpecialCode3(trailingText[..1]))
         {
             request.SpecialCode3Code = trailingText[..1];
             trailingText = trailingText[1..];
@@ -368,6 +370,26 @@ public sealed class ModuleService
     private static bool IsPurchaserCode(string code)
     {
         return code is "V" or "H" or "A" or "0";
+    }
+
+    private static bool IsA100SpecialEligible(string moduleSourceCode, string vendorCode, string purchaserCode)
+    {
+        return IsThirdPartyModule(moduleSourceCode) && vendorCode == "A" && purchaserCode == "A";
+    }
+
+    private static bool IsA100SpecialCode(string code)
+    {
+        return A100SpecialCodes.Contains(code, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static bool IsSpecialCode2(string code)
+    {
+        return SpecialCode2Codes.Contains(code, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static bool IsSpecialCode3(string code)
+    {
+        return SpecialCode3Codes.Contains(code, StringComparer.OrdinalIgnoreCase);
     }
 
     private ModuleRequest BuildEffectiveRequest(ModuleRequest request, RevisionSpec revisionSpec)
