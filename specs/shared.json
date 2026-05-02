@@ -70,7 +70,7 @@
     "comp_type2": ["(None)", "B - Reball"],
     "package_type": ["B - FBGA(Flip Chip)", "M - FBGA(DDP)", "R - FBGA(FC-ReMark)", "N - FBGA(DDP-ReMark)"],
     "tester": ["R - Ramos", "S - No-Test", "A - ADATA", "W - Winpac", "T - DynaCard", "G - GoldKey", "K - CKMT", "Y - Yueyin", "D - OM", "L - SemiconTest", "1 - HTSI", "2 - DLI", "3 - Rayson", "4 - Ramsun", "5 - Powev"],
-    "dimm_type_common": ["D - UDIMM 288pin", "S - SODIMM 262pin"],
+    "dimm_type_common": ["D - UDIMM 288pin", "S - SODIMM 262pin", "G - x64 288pin GamingUDIMM (RGB)"],
     "module_density": ["4G - 4GB", "8G - 8GB", "AG - 16GB", "BG - 32GB"],
     "module_die_density": ["4 - 4Gb", "8 - 8Gb", "A - 16Gb", "H - 24Gb", "B - 32Gb"],
     "module_bank_vdd": ["4 - 16Bank / 1.2V", "5 - 32Bank / 1.1V", "6 - 32Bank / 1.35V", "7 - 32Bank / 1.4V"],
