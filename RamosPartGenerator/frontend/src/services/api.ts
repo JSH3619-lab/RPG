@@ -9,6 +9,31 @@ import type {
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL?.toString() ?? "";
 
+async function readErrorMessage(response: Response, fallback: string): Promise<string> {
+  const contentType = response.headers.get("content-type") ?? "";
+
+  if (contentType.includes("application/json")) {
+    try {
+      const body = await response.json();
+      return body.message ?? fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  return "API 응답이 JSON이 아닙니다. API 서버 실행 상태와 프론트 프록시 설정을 확인하세요.";
+}
+
+async function readJson<T>(response: Response): Promise<T> {
+  const contentType = response.headers.get("content-type") ?? "";
+
+  if (!contentType.includes("application/json")) {
+    throw new Error("API 응답이 JSON이 아닙니다. API 서버 실행 상태와 프론트 프록시 설정을 확인하세요.");
+  }
+
+  return response.json() as Promise<T>;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     headers: {
@@ -19,17 +44,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
-    let message = "요청 처리에 실패했습니다.";
-    try {
-      const body = await response.json();
-      message = body.message ?? message;
-    } catch {
-      // ignore
-    }
+    const message = await readErrorMessage(response, "요청 처리에 실패했습니다.");
     throw new Error(message);
   }
 
-  return response.json() as Promise<T>;
+  return readJson<T>(response);
 }
 
 export const api = {
@@ -82,13 +101,7 @@ export const api = {
     });
 
     if (!response.ok) {
-      let message = "Export failed.";
-      try {
-        const body = await response.json();
-        message = body.message ?? message;
-      } catch {
-        // ignore
-      }
+      const message = await readErrorMessage(response, "Export failed.");
       throw new Error(message);
     }
 
