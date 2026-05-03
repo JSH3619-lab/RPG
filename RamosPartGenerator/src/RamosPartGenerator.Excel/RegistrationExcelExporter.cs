@@ -7,7 +7,7 @@ namespace RamosPartGenerator.Excel;
 
 public sealed class RegistrationExcelExporter
 {
-    public string DefaultFileName => $"DRAM 품목정보({DateTime.Now:yyyyMMdd}).xlsx";
+    public string DefaultFileName => $"DRAM 품목정보({DateTime.Now:yyMMdd}).xlsx";
 
     public byte[] Export(IReadOnlyList<GeneratedPartRow> rows)
     {
@@ -35,21 +35,17 @@ public sealed class RegistrationExcelExporter
     private static string BuildWorksheetXml(IReadOnlyList<GeneratedPartRow> rows)
     {
         var sheetData = new StringBuilder();
-        var headers = new[] { "구분", "품목코드", "품목명", "품목일반정보", "품목규격" };
+        var includeSalesCode = rows.Any(row => IsModuleKind(row.Kind));
+        var headers = includeSalesCode
+            ? new[] { "구분", "품목코드", "품목명", "영업코드", "품목일반정보", "품목규격" }
+            : new[] { "구분", "품목코드", "품목명", "품목일반정보", "품목규격" };
 
         AppendRow(sheetData, 1, headers, 1);
 
         for (var index = 0; index < rows.Count; index++)
         {
             var row = rows[index];
-            AppendRow(sheetData, index + 2, new[]
-            {
-                FormatKind(row.Kind),
-                row.PartCode,
-                row.Name,
-                row.GeneralInfo,
-                row.Specification
-            }, 0);
+            AppendRow(sheetData, index + 2, BuildRowValues(row, includeSalesCode), 0);
         }
 
         return $$"""
@@ -60,17 +56,51 @@ public sealed class RegistrationExcelExporter
           </sheetViews>
           <sheetFormatPr defaultRowHeight="15"/>
           <cols>
-            <col min="1" max="1" width="14" customWidth="1"/>
-            <col min="2" max="2" width="28" customWidth="1"/>
-            <col min="3" max="3" width="28" customWidth="1"/>
-            <col min="4" max="4" width="24" customWidth="1"/>
-            <col min="5" max="5" width="56" customWidth="1"/>
+        {{BuildColumnsXml(includeSalesCode)}}
           </cols>
           <sheetData>
         {{sheetData}}
           </sheetData>
         </worksheet>
         """;
+    }
+
+    private static IReadOnlyList<string> BuildRowValues(GeneratedPartRow row, bool includeSalesCode)
+    {
+        return includeSalesCode
+            ? new[]
+            {
+                FormatKind(row.Kind),
+                row.PartCode,
+                row.Name,
+                string.Empty,
+                row.GeneralInfo,
+                row.Specification
+            }
+            : new[]
+            {
+                FormatKind(row.Kind),
+                row.PartCode,
+                row.Name,
+                row.GeneralInfo,
+                row.Specification
+            };
+    }
+
+    private static string BuildColumnsXml(bool includeSalesCode)
+    {
+        var widths = includeSalesCode
+            ? new[] { 14, 28, 28, 18, 24, 56 }
+            : new[] { 14, 28, 28, 24, 56 };
+
+        var builder = new StringBuilder();
+        for (var index = 0; index < widths.Length; index++)
+        {
+            var column = index + 1;
+            builder.AppendLine($"            <col min=\"{column}\" max=\"{column}\" width=\"{widths[index]}\" customWidth=\"1\"/>");
+        }
+
+        return builder.ToString().TrimEnd();
     }
 
     private static void AppendRow(StringBuilder builder, int rowIndex, IReadOnlyList<string> values, uint styleIndex)
@@ -113,7 +143,15 @@ public sealed class RegistrationExcelExporter
         };
     }
 
-    private static string Escape(string value) => SecurityElement.Escape(value) ?? string.Empty;
+    private static bool IsModuleKind(string kind)
+    {
+        return string.Equals(kind, "Module", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(kind, "Module BIN", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(kind, "MDL", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(kind, "MDL BIN", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string Escape(string? value) => SecurityElement.Escape(value ?? string.Empty) ?? string.Empty;
 
     private const string ContentTypesXml = """
     <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -157,12 +195,12 @@ public sealed class RegistrationExcelExporter
       <fonts count="2">
         <font>
           <sz val="11"/>
-          <name val="Segoe UI"/>
+          <name val="Arial"/>
         </font>
         <font>
           <b/>
           <sz val="11"/>
-          <name val="Segoe UI"/>
+          <name val="Arial"/>
           <color rgb="FFFFFFFF"/>
         </font>
       </fonts>

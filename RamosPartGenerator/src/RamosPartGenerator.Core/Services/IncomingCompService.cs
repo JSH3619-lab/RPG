@@ -95,13 +95,13 @@ public sealed class IncomingCompService
         var dramTypeLabel = dramTypeCode == "R" ? "DDR5" : "DDR4";
         var densityLabel = GetDensityLabel(densityCode);
         var bitLabel = $"x{bitOrganizationCode.TrimStart('0')}";
-        var dieBrandLabel = $"{dieBrandCode}-die";
+        var dieRevisionLabel = $"{partRevisionCode}-die";
         var compTypeLabel = ProductTextService.GetCompTypeDescription(compTypeCode);
 
         var incomingTexts = _productTextService.BuildIncomingCompTexts(
-            dddPartCode, dramTypeLabel, densityLabel, bitLabel, dieBrandLabel, compTypeLabel, isThirdParty);
+            dddPartCode, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty);
         var compTexts = _productTextService.BuildIncomingCompTexts(
-            compPartCode, dramTypeLabel, densityLabel, bitLabel, dieBrandLabel, compTypeLabel, isThirdParty);
+            compPartCode, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty);
 
         var rows = new List<GeneratedPartRow>
         {
@@ -115,7 +115,7 @@ public sealed class IncomingCompService
             {
                 var code = $"{compPartCode}-{pair.Key}";
                 var text = _productTextService.BuildIncomingCompTexts(
-                    code, dramTypeLabel, densityLabel, bitLabel, dieBrandLabel, compTypeLabel, isThirdParty, pair.Value);
+                    code, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, pair.Value);
                 rows.Add(new("Comp BIN", code, text.Name, text.GeneralInfo, text.Specification));
             }
         }
@@ -124,7 +124,7 @@ public sealed class IncomingCompService
             var speed = _specProvider.SharedSpec.CompBinSpeedMap["CA"];
             var code = $"{compPartCode}-CA";
             var text = _productTextService.BuildIncomingCompTexts(
-                code, dramTypeLabel, densityLabel, bitLabel, dieBrandLabel, compTypeLabel, isThirdParty, speed);
+                code, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, speed);
             rows.Add(new("Comp BIN", code, text.Name, text.GeneralInfo, text.Specification));
         }
 
@@ -205,6 +205,7 @@ public sealed class IncomingCompService
         }
 
         ValidateDensity(dramTypeCode, densityCode);
+        ValidateDramDefaults(dramTypeCode, bankCode, interfaceCode);
 
         return new IncomingCompRequest
         {

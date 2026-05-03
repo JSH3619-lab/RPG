@@ -73,6 +73,8 @@ public sealed class ModuleService
             ("Grade Code", effectiveRequest.GradeCode, Codes("grade_code"), true),
             ("Product Bin", effectiveRequest.ProductBinCode, Codes("product_bin"), true));
         ValidateModuleSpeedAndBankVdd(effectiveRequest);
+        ValidateModuleDieDensity(effectiveRequest);
+        ValidateModuleDensityCombination(effectiveRequest);
         ValidateA100Special(effectiveRequest, isThirdParty);
 
         var basePartCode = BuildModuleBasePartCode(effectiveRequest);
@@ -283,6 +285,10 @@ public sealed class ModuleService
         {
             throw new InvalidOperationException($"Rev 30 Module tail에 해석되지 않은 코드가 남아 있습니다: {trailingText}");
         }
+
+        ValidateModuleSpeedAndBankVdd(request);
+        ValidateModuleDieDensity(request);
+        ValidateModuleDensityCombination(request);
 
         return request;
     }
@@ -564,37 +570,9 @@ public sealed class ModuleService
 
     private static string CalculateModuleIcCount(string moduleDensityCode, string dieDensityCode, string compositionCode, string rankCode)
     {
-        var moduleDensityGb = moduleDensityCode switch
-        {
-            "1G" => 1d,
-            "2G" => 2d,
-            "4G" => 4d,
-            "8G" => 8d,
-            "AG" => 16d,
-            "BG" => 32d,
-            "CG" => 64d,
-            _ => 0d
-        };
-
-        var dieDensityGb = dieDensityCode switch
-        {
-            "4" => 4d,
-            "8" => 8d,
-            "A" => 16d,
-            "H" => 24d,
-            "B" => 32d,
-            _ => 0d
-        };
-
-        var bitFactor = compositionCode switch
-        {
-            "4" => 0.5d,
-            "8" => 1d,
-            "6" => 2d,
-            _ => 0d
-        };
-
-        if (dieDensityGb <= 0 || bitFactor <= 0)
+        if (!TryGetModuleDensityGb(moduleDensityCode, out var moduleDensityGb) ||
+            !TryGetDieDensityGb(dieDensityCode, out var dieDensityGb) ||
+            !TryGetBitFactor(compositionCode, out var bitFactor))
         {
             return "ERR";
         }
@@ -676,24 +654,140 @@ public sealed class ModuleService
             ? ddr4Options.Concat(ddr5Options).ToArray()
             : Array.Empty<string>();
     }
+
+    private static bool TryGetModuleDensityGb(string moduleDensityCode, out double densityGb)
+    {
+        densityGb = moduleDensityCode switch
+        {
+            "1G" => 1d,
+            "2G" => 2d,
+            "4G" => 4d,
+            "8G" => 8d,
+            "AG" => 16d,
+            "BG" => 32d,
+            "CG" => 64d,
+            _ => 0d
+        };
+
+        return densityGb > 0;
+    }
+
+    private static bool TryGetDieDensityGb(string dieDensityCode, out double densityGb)
+    {
+        densityGb = dieDensityCode switch
+        {
+            "4" => 4d,
+            "8" => 8d,
+            "A" => 16d,
+            "H" => 24d,
+            "B" => 32d,
+            _ => 0d
+        };
+
+        return densityGb > 0;
+    }
+
+    private static bool TryGetBitFactor(string compositionCode, out double bitFactor)
+    {
+        bitFactor = compositionCode switch
+        {
+            "4" => 0.5d,
+            "8" => 1d,
+            "6" => 2d,
+            _ => 0d
+        };
+
+        return bitFactor > 0;
+    }
+
+    private static bool TryGetCompositionWidth(string compositionCode, out int width)
+    {
+        width = compositionCode switch
+        {
+            "4" => 4,
+            "8" => 8,
+            "6" => 16,
+            _ => 0
+        };
+
+        return width > 0;
+    }
+
+    private static bool TryGetRankCount(string rankCode, out int rankCount)
+    {
+        rankCount = rankCode switch
+        {
+            "1" => 1,
+            "2" => 2,
+            _ => 0
+        };
+
+        return rankCount > 0;
+    }
+
+    private static void ValidateModuleDieDensity(ModuleRequest request)
+    {
+        var valid = request.DramTypeCode switch
+        {
+            "4" => request.DieDensityCode is "4" or "8" or "A",
+            "R" => request.DieDensityCode is "A" or "H" or "B",
+            _ => false
+        };
+
+        if (!valid)
+        {
+            throw new InvalidOperationException(request.DramTypeCode switch
+            {
+                "4" => "DDR4 Module은 Die Density 4Gb / 8Gb / 16Gb만 허용됩니다.",
+                "R" => "DDR5 Module은 Die Density 16Gb / 24Gb / 32Gb만 허용됩니다.",
+                _ => "지원하지 않는 Module DRAM Type입니다."
+            });
+        }
+    }
+
+    private static void ValidateModuleDensityCombination(ModuleRequest request)
+    {
+        if (!TryGetModuleDensityGb(request.ModuleDensityCode, out var selectedModuleGb) ||
+            !TryGetDieDensityGb(request.DieDensityCode, out var dieDensityGb) ||
+            !TryGetCompositionWidth(request.CompositionCode, out var compositionWidth) ||
+            !TryGetRankCount(request.RankCode, out var rankCount))
+        {
+            throw new InvalidOperationException("Module Density/Die Density/Composition/Rank 조합을 계산할 수 없습니다.");
+        }
+
+        var calculatedModuleGb = dieDensityGb * (64d / compositionWidth) * rankCount / 8d;
+        if (Math.Abs(selectedModuleGb - calculatedModuleGb) > 0.001d)
+        {
+            throw new InvalidOperationException($"Module Density/Die Density/Composition/Rank 조합이 맞지 않습니다. 선택값은 {FormatGb(selectedModuleGb)}이지만 계산값은 {FormatGb(calculatedModuleGb)}입니다.");
+        }
+    }
+
+    private static string FormatGb(double value)
+    {
+        return Math.Abs(value - Math.Round(value)) < 0.001d
+            ? $"{Math.Round(value):0}GB"
+            : $"{value:0.##}GB";
+    }
+
     private void ValidateModuleSpeedAndBankVdd(ModuleRequest request)
     {
         var ruleKey = request.DramTypeCode == "R" ? "DDR5" : request.DramTypeCode == "4" ? "DDR4" : string.Empty;
         if (string.IsNullOrEmpty(ruleKey) ||
             !_specProvider.SharedSpec.ModuleSpeedRules.TryGetValue(ruleKey, out var rule))
         {
-            throw new InvalidOperationException($"Unsupported Module DRAM Type: {request.DramTypeCode}");
+            throw new InvalidOperationException($"지원하지 않는 Module DRAM Type입니다: {request.DramTypeCode}");
         }
 
         if (!rule.AllowedSpeeds.Contains(request.SpeedCode, StringComparer.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException($"{ruleKey} Module allows only these Speed codes: {string.Join(" / ", rule.AllowedSpeeds)}");
+            throw new InvalidOperationException($"{ruleKey} Module은 Speed {string.Join(" / ", rule.AllowedSpeeds)}만 허용됩니다.");
         }
 
         var expectedBankVdd = GetModuleBankVddCode(request.DramTypeCode, request.SpeedCode);
-        if (!IsBlankCode(request.BankVddCode) && request.BankVddCode != expectedBankVdd)
+        if (!IsBlankCode(request.BankVddCode) &&
+            !request.BankVddCode.Equals(expectedBankVdd, StringComparison.OrdinalIgnoreCase))
         {
-            throw new InvalidOperationException($"Selected Speed allows only Bank/VDD code {expectedBankVdd}.");
+            throw new InvalidOperationException($"{ruleKey} Module의 선택 Speed는 Bank/VDD code {expectedBankVdd}만 허용됩니다.");
         }
     }
 

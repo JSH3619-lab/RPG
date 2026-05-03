@@ -19,8 +19,7 @@ public sealed class ProductTextService
         bool isThirdParty,
         string? speedText = null)
     {
-        var shared = _specProvider.SharedSpec;
-        var name = shared.ItemTextRules.NameEqualsCode ? partCode : partCode;
+        var name = partCode;
         var generalInfo = string.Empty;
 
         var pieces = new List<string>
@@ -68,7 +67,7 @@ public sealed class ProductTextService
         bool isCompSale = false)
     {
         var shared = _specProvider.SharedSpec;
-        var name = shared.ItemTextRules.NameEqualsCode ? partCode : partCode;
+        var name = partCode;
         var generalInfo = isCompSale
             ? $"{dramTypeLabel} Comp {capacityLabel} COO : {shared.ItemTextRules.CooDefault}"
             : $"{formFactorLabel} {capacityLabel} COO : {shared.ItemTextRules.CooDefault}";

@@ -40,7 +40,7 @@ public sealed class SpecProvider
     public IReadOnlyList<string> GetSupportedRevisions()
     {
         EnsureLoaded();
-        return SharedSpec.SupportedRevisions;
+        return SharedSpec.SupportedRevisions.ToArray();
     }
 
     public RevisionSpec GetRevisionSpec(string revision)

@@ -123,10 +123,25 @@ public class UnitTest1
             TesterCode = "W"
         });
 
-        Assert.Contains($"{expectedCompTypeText} Comp", rows[0].Specification);
-        Assert.Contains($"{expectedCompTypeText} Comp", rows[1].Specification);
+        Assert.Contains($"A-die {expectedCompTypeText} Comp", rows[0].Specification);
+        Assert.Contains($"A-die {expectedCompTypeText} Comp", rows[1].Specification);
         Assert.DoesNotContain($"{compTypeCode} Comp", rows[0].Specification);
         Assert.DoesNotContain($"{compTypeCode} Comp", rows[1].Specification);
+    }
+
+    [Fact]
+    public void GeneratePreview_IncomingCompSpecification_UsesPartRevisionForDieLabel()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new IncomingCompService(provider, new ProductTextService(provider));
+
+        var parsed = service.ParseCompPart("30", "TCRAH086VP-GBGWGH");
+        var rows = service.GeneratePreview(parsed);
+
+        Assert.Contains("P-die", rows[1].Specification);
+        Assert.DoesNotContain("G-die", rows[1].Specification);
     }
 
     [Fact]
@@ -292,6 +307,88 @@ public class UnitTest1
     }
 
     [Fact]
+    public void ParseCompPart_RejectsDdr5WithDdr4Bank()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new IncomingCompService(provider, new ProductTextService(provider));
+
+        var ex = Assert.Throws<InvalidOperationException>(() => service.ParseCompPart("30", "TCRAH085VP-GBGWGH"));
+
+        Assert.Contains("DDR5", ex.Message);
+        Assert.Contains("Bank 6", ex.Message);
+    }
+
+    [Fact]
+    public void GeneratePreview_Module_RejectsDdr5WithDdr4DieDensity()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var ex = Assert.Throws<InvalidOperationException>(() => service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleSourceCode = "TM",
+            DramTypeCode = "R",
+            DimmTypeCode = "D",
+            ModuleDensityCode = "AG",
+            DieDensityCode = "8",
+            CompositionCode = "8",
+            RankCode = "2",
+            GenerationCode = "A",
+            IcBrandCode = "G",
+            ModuleCompTypeCode = "P",
+            CompTestCode = "W",
+            ModuleSmtCode = "R",
+            ModuleTestCode = "R",
+            SpeedCode = "WM",
+            PcbCode = "7",
+            VendorCode = "G",
+            PurchaserCode = "H"
+        }));
+
+        Assert.Contains("DDR5 Module", ex.Message);
+        Assert.Contains("Die Density", ex.Message);
+    }
+
+    [Fact]
+    public void GeneratePreview_Module_RejectsDensityCompositionRankMismatch()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var ex = Assert.Throws<InvalidOperationException>(() => service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleSourceCode = "TM",
+            DramTypeCode = "R",
+            DimmTypeCode = "D",
+            ModuleDensityCode = "AG",
+            DieDensityCode = "A",
+            CompositionCode = "8",
+            RankCode = "2",
+            GenerationCode = "A",
+            IcBrandCode = "G",
+            ModuleCompTypeCode = "P",
+            CompTestCode = "W",
+            ModuleSmtCode = "R",
+            ModuleTestCode = "R",
+            SpeedCode = "WM",
+            PcbCode = "7",
+            VendorCode = "G",
+            PurchaserCode = "H"
+        }));
+
+        Assert.Contains("선택값은 16GB", ex.Message);
+        Assert.Contains("계산값은 32GB", ex.Message);
+    }
+
+    [Fact]
     public void GeneratePreview_Module_A100NoneOptionIsTreatedAsBlank()
     {
         var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
@@ -408,9 +505,37 @@ public class UnitTest1
         using var sheetReader = new StreamReader(archive.GetEntry("xl/worksheets/sheet1.xml")!.Open());
         var sheetXml = sheetReader.ReadToEnd();
         Assert.Contains("품목코드", sheetXml);
+        Assert.DoesNotContain("영업코드", sheetXml);
         Assert.Contains("Comp", sheetXml);
         Assert.DoesNotContain("비고", sheetXml);
         Assert.Contains("TEST-PART", sheetXml);
         Assert.Contains("DDR5 test spec", sheetXml);
+    }
+
+    [Fact]
+    public void ExportRegistration_AddsSalesCodeColumnAndArialFontWhenModuleRowsExist()
+    {
+        var exporter = new RegistrationExcelExporter();
+        var content = exporter.Export(new[]
+        {
+            new GeneratedPartRow("Comp", "COMP-PART", "COMP-PART", "", "DDR5 comp spec"),
+            new GeneratedPartRow("Module", "MDL-PART", "MDL-PART", "UDIMM 16GB COO : KR", "DDR5 module spec")
+        });
+
+        using var stream = new MemoryStream(content);
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+
+        using var sheetReader = new StreamReader(archive.GetEntry("xl/worksheets/sheet1.xml")!.Open());
+        var sheetXml = sheetReader.ReadToEnd();
+        Assert.Contains("<c r=\"B1\" t=\"inlineStr\" s=\"1\"><is><t>품목코드</t></is></c>", sheetXml);
+        Assert.Contains("<c r=\"C1\" t=\"inlineStr\" s=\"1\"><is><t>품목명</t></is></c>", sheetXml);
+        Assert.Contains("<c r=\"D1\" t=\"inlineStr\" s=\"1\"><is><t>영업코드</t></is></c>", sheetXml);
+        Assert.Contains("<c r=\"E1\" t=\"inlineStr\" s=\"1\"><is><t>품목일반정보</t></is></c>", sheetXml);
+        Assert.Contains("<c r=\"A3\" t=\"inlineStr\" s=\"0\"><is><t>MDL</t></is></c>", sheetXml);
+
+        using var stylesReader = new StreamReader(archive.GetEntry("xl/styles.xml")!.Open());
+        var stylesXml = stylesReader.ReadToEnd();
+        Assert.Contains("<name val=\"Arial\"/>", stylesXml);
+        Assert.DoesNotContain("Segoe UI", stylesXml);
     }
 }

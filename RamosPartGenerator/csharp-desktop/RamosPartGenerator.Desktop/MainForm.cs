@@ -945,13 +945,34 @@ public sealed class MainForm : Form
                 speedCode = ReadModuleCode("speedCode");
             }
 
+            if (_moduleFields.TryGetValue("dieDensityCode", out var dieDensityCombo))
+            {
+                var dieDensityOptions = dramTypeCode switch
+                {
+                    "4" => ModuleOptions("dieDensityCode").Where(option => new[] { "4", "8", "A" }.Contains(DisplayHelpers.ExtractCode(option))).ToArray(),
+                    "R" => ModuleOptions("dieDensityCode").Where(option => new[] { "A", "H", "B" }.Contains(DisplayHelpers.ExtractCode(option))).ToArray(),
+                    _ => ModuleOptions("dieDensityCode")
+                };
+                SetComboOptions(dieDensityCombo, dieDensityOptions);
+            }
+
             if (_moduleFields.TryGetValue("bankVddCode", out var bankVddCombo))
             {
                 var bankVddCode = ResolveModuleBankVdd(dramTypeCode, speedCode);
+                var bankVddOptions = !string.IsNullOrEmpty(bankVddCode)
+                    ? ModuleOptions("bankVddCode").Where(option => DisplayHelpers.ExtractCode(option) == DisplayHelpers.ExtractCode(bankVddCode)).ToArray()
+                    : dramTypeCode switch
+                    {
+                        "4" => ModuleOptions("bankVddCode").Where(option => DisplayHelpers.ExtractCode(option) == "4").ToArray(),
+                        "R" => ModuleOptions("bankVddCode").Where(option => new[] { "5", "6", "7" }.Contains(DisplayHelpers.ExtractCode(option))).ToArray(),
+                        _ => ModuleOptions("bankVddCode")
+                    };
+                SetComboOptions(bankVddCombo, bankVddOptions);
                 if (!string.IsNullOrEmpty(bankVddCode))
                 {
                     bankVddCombo.Text = bankVddCode;
                 }
+                bankVddCombo.Enabled = string.IsNullOrEmpty(bankVddCode);
             }
 
             if (_moduleFields.TryGetValue("purchaserCode", out var purchaserCombo))
@@ -1090,7 +1111,7 @@ public sealed class MainForm : Form
 
     private string BuildExportFileName()
     {
-        return $"DRAM 품목정보({DateTime.Now:yyyyMMdd}).xlsx";
+        return $"DRAM 품목정보({DateTime.Now:yyMMdd}).xlsx";
     }
 
     private static void RunGuarded(Label statusLabel, Action action)
