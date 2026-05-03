@@ -7,7 +7,7 @@ namespace RamosPartGenerator.Excel;
 
 public sealed class RegistrationExcelExporter
 {
-    public string DefaultFileName => $"RamosPartRegistration_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx";
+    public string DefaultFileName => $"DRAM 품목정보({DateTime.Now:yyyyMMdd}).xlsx";
 
     public byte[] Export(IReadOnlyList<GeneratedPartRow> rows)
     {
@@ -35,7 +35,7 @@ public sealed class RegistrationExcelExporter
     private static string BuildWorksheetXml(IReadOnlyList<GeneratedPartRow> rows)
     {
         var sheetData = new StringBuilder();
-        var headers = new[] { "Type", "Part Code", "Name", "General Info", "Specification", "Note" };
+        var headers = new[] { "구분", "품목코드", "품목명", "품목일반정보", "품목규격" };
 
         AppendRow(sheetData, 1, headers, 1);
 
@@ -44,12 +44,11 @@ public sealed class RegistrationExcelExporter
             var row = rows[index];
             AppendRow(sheetData, index + 2, new[]
             {
-                row.Kind,
+                FormatKind(row.Kind),
                 row.PartCode,
                 row.Name,
                 row.GeneralInfo,
-                row.Specification,
-                row.Note ?? string.Empty
+                row.Specification
             }, 0);
         }
 
@@ -66,7 +65,6 @@ public sealed class RegistrationExcelExporter
             <col min="3" max="3" width="28" customWidth="1"/>
             <col min="4" max="4" width="24" customWidth="1"/>
             <col min="5" max="5" width="56" customWidth="1"/>
-            <col min="6" max="6" width="18" customWidth="1"/>
           </cols>
           <sheetData>
         {{sheetData}}
@@ -102,6 +100,19 @@ public sealed class RegistrationExcelExporter
         return columnName;
     }
 
+    private static string FormatKind(string kind)
+    {
+        return kind switch
+        {
+            "Incoming" or "입고" => "입고",
+            "Comp" => "Comp",
+            "Comp BIN" => "Comp BIN",
+            "Module" => "MDL",
+            "Module BIN" => "MDL BIN",
+            _ => kind
+        };
+    }
+
     private static string Escape(string value) => SecurityElement.Escape(value) ?? string.Empty;
 
     private const string ContentTypesXml = """
@@ -127,7 +138,7 @@ public sealed class RegistrationExcelExporter
     <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
               xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
       <sheets>
-        <sheet name="Registration" sheetId="1" r:id="rId1"/>
+        <sheet name="등록데이터" sheetId="1" r:id="rId1"/>
       </sheets>
     </workbook>
     """;

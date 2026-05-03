@@ -144,8 +144,7 @@ app.MapPost("/api/export/registration", (ExportRegistrationRequest request, Regi
             row.PartCode,
             row.Name,
             row.GeneralInfo,
-            row.Specification,
-            row.Note))
+            row.Specification))
         .ToArray();
 
     var content = exporter.Export(rows);

@@ -133,7 +133,7 @@ public sealed class ModuleService
         return new List<GeneratedPartRow>
         {
             new("Module", basePartCode, baseText.Name, baseText.GeneralInfo, baseText.Specification),
-            new("Module BIN", binPartCode, binText.Name, binText.GeneralInfo, binText.Specification, speedText)
+            new("Module BIN", binPartCode, binText.Name, binText.GeneralInfo, binText.Specification)
         };
     }
 

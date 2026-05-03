@@ -486,7 +486,7 @@ public sealed class MainForm : Form
         var grid = new DataGridView
         {
             Dock = DockStyle.Fill,
-            AutoGenerateColumns = true,
+            AutoGenerateColumns = false,
             AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
             DataSource = dataSource,
             ReadOnly = true,
@@ -509,7 +509,46 @@ public sealed class MainForm : Form
         grid.DefaultCellStyle.SelectionBackColor = RamosTheme.Blue;
         grid.DefaultCellStyle.SelectionForeColor = Color.White;
         grid.AlternatingRowsDefaultCellStyle.BackColor = RamosTheme.BlueLight;
+        grid.Columns.Add(BuildTextColumn(nameof(GeneratedPartRow.Kind), "구분", 80));
+        grid.Columns.Add(BuildTextColumn(nameof(GeneratedPartRow.PartCode), "품목코드", 150));
+        grid.Columns.Add(BuildTextColumn(nameof(GeneratedPartRow.Name), "품목명", 150));
+        grid.Columns.Add(BuildTextColumn(nameof(GeneratedPartRow.GeneralInfo), "품목일반정보", 140));
+        grid.Columns.Add(BuildTextColumn(nameof(GeneratedPartRow.Specification), "품목규격", 260));
+        grid.CellFormatting += (_, args) =>
+        {
+            if (args.ColumnIndex >= 0 &&
+                grid.Columns[args.ColumnIndex].DataPropertyName == nameof(GeneratedPartRow.Kind) &&
+                args.Value is string kind)
+            {
+                args.Value = FormatKind(kind);
+                args.FormattingApplied = true;
+            }
+        };
         return grid;
+    }
+
+    private static DataGridViewTextBoxColumn BuildTextColumn(string propertyName, string headerText, float fillWeight)
+    {
+        return new DataGridViewTextBoxColumn
+        {
+            DataPropertyName = propertyName,
+            HeaderText = headerText,
+            FillWeight = fillWeight,
+            SortMode = DataGridViewColumnSortMode.Automatic
+        };
+    }
+
+    private static string FormatKind(string kind)
+    {
+        return kind switch
+        {
+            "Incoming" or "입고" => "입고",
+            "Comp" => "Comp",
+            "Comp BIN" => "Comp BIN",
+            "Module" => "MDL",
+            "Module BIN" => "MDL BIN",
+            _ => kind
+        };
     }
 
     private IEnumerable<DesktopLookupField> IncomingFields(string section)
@@ -577,7 +616,7 @@ public sealed class MainForm : Form
 
     private void ExportIncoming()
     {
-        ExportRows(_incomingRows, $"incoming_comp_{Revision}.xlsx", _incomingStatusLabel);
+        ExportRows(_incomingStatusLabel);
     }
 
     private void ResetIncoming()
@@ -787,7 +826,7 @@ public sealed class MainForm : Form
 
     private void ExportModule()
     {
-        ExportRows(_moduleRows, $"module_{Revision}.xlsx", _moduleStatusLabel);
+        ExportRows(_moduleStatusLabel);
     }
 
     private void ResetModule()
@@ -1016,20 +1055,21 @@ public sealed class MainForm : Form
             : resolved;
     }
 
-    private void ExportRows(BindingList<GeneratedPartRow> rows, string defaultFileName, Label statusLabel)
+    private void ExportRows(Label statusLabel)
     {
         RunGuarded(statusLabel, () =>
         {
-            if (rows.Count == 0)
+            var rows = BuildExportRows();
+            if (rows.Length == 0)
             {
-                throw new InvalidOperationException("Generate results first.");
+                throw new InvalidOperationException("먼저 생성 결과를 만들어 주세요.");
             }
 
             using var dialog = new SaveFileDialog
             {
                 AddExtension = true,
                 DefaultExt = "xlsx",
-                FileName = defaultFileName,
+                FileName = BuildExportFileName(),
                 Filter = "Excel Workbook (*.xlsx)|*.xlsx"
             };
 
@@ -1038,9 +1078,19 @@ public sealed class MainForm : Form
                 return;
             }
 
-            File.WriteAllBytes(dialog.FileName, _services.Exporter.Export(rows.ToArray()));
-            SetInfo(statusLabel, $"Excel exported: {dialog.FileName}");
+            File.WriteAllBytes(dialog.FileName, _services.Exporter.Export(rows));
+            SetInfo(statusLabel, $"Excel 내보내기 완료: {dialog.FileName}");
         });
+    }
+
+    private GeneratedPartRow[] BuildExportRows()
+    {
+        return _incomingRows.Concat(_moduleRows).ToArray();
+    }
+
+    private string BuildExportFileName()
+    {
+        return $"DRAM 품목정보({DateTime.Now:yyyyMMdd}).xlsx";
     }
 
     private static void RunGuarded(Label statusLabel, Action action)

@@ -24,5 +24,4 @@ public sealed record ExportRowRequest(
     string PartCode,
     string Name,
     string GeneralInfo,
-    string Specification,
-    string? Note);
+    string Specification);

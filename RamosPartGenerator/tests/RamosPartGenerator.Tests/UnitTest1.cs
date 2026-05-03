@@ -395,7 +395,7 @@ public class UnitTest1
         var exporter = new RegistrationExcelExporter();
         var content = exporter.Export(new[]
         {
-            new GeneratedPartRow("Comp", "TEST-PART", "TEST-PART", "", "DDR5 test spec", "note")
+            new GeneratedPartRow("Comp", "TEST-PART", "TEST-PART", "", "DDR5 test spec")
         });
 
         using var stream = new MemoryStream(content);
@@ -407,6 +407,9 @@ public class UnitTest1
 
         using var sheetReader = new StreamReader(archive.GetEntry("xl/worksheets/sheet1.xml")!.Open());
         var sheetXml = sheetReader.ReadToEnd();
+        Assert.Contains("품목코드", sheetXml);
+        Assert.Contains("Comp", sheetXml);
+        Assert.DoesNotContain("비고", sheetXml);
         Assert.Contains("TEST-PART", sheetXml);
         Assert.Contains("DDR5 test spec", sheetXml);
     }

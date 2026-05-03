@@ -116,7 +116,7 @@ public sealed class IncomingCompService
                 var code = $"{compPartCode}-{pair.Key}";
                 var text = _productTextService.BuildIncomingCompTexts(
                     code, dramTypeLabel, densityLabel, bitLabel, dieBrandLabel, compTypeLabel, isThirdParty, pair.Value);
-                rows.Add(new("Comp BIN", code, text.Name, text.GeneralInfo, text.Specification, pair.Value));
+                rows.Add(new("Comp BIN", code, text.Name, text.GeneralInfo, text.Specification));
             }
         }
         else
@@ -125,7 +125,7 @@ public sealed class IncomingCompService
             var code = $"{compPartCode}-CA";
             var text = _productTextService.BuildIncomingCompTexts(
                 code, dramTypeLabel, densityLabel, bitLabel, dieBrandLabel, compTypeLabel, isThirdParty, speed);
-            rows.Add(new("Comp BIN", code, text.Name, text.GeneralInfo, text.Specification, speed));
+            rows.Add(new("Comp BIN", code, text.Name, text.GeneralInfo, text.Specification));
         }
 
         return rows;

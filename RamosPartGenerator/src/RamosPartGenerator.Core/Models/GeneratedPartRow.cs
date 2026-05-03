@@ -5,6 +5,5 @@ public sealed record GeneratedPartRow(
     string PartCode,
     string Name,
     string GeneralInfo,
-    string Specification,
-    string? Note = null
+    string Specification
 );
