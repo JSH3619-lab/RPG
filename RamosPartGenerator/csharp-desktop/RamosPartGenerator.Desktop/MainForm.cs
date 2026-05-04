@@ -12,6 +12,12 @@ public sealed class MainForm : Form
     private const int ActionButtonColumnWidth = 470;
     private const int ActionRowHeight = 36;
     private const int FieldLabelWidth = 220;
+    private static readonly string[] IncomingDdr4DensityCodes = { "4G", "8G", "AG" };
+    private static readonly string[] IncomingDdr5DensityCodes = { "AH", "HE", "BH" };
+    private static readonly string[] ModuleDdr5SpeedCodes = { "QK", "WM", "CM", "CQ", "CR", "CS" };
+    private static readonly string[] ModuleDdr4DieDensityCodes = { "4", "8", "A" };
+    private static readonly string[] ModuleDdr5DieDensityCodes = { "A", "H", "B" };
+    private static readonly string[] ModuleDdr5BankVddCodes = { "5", "6", "7" };
 
     private readonly DesktopAppServices _services;
     private readonly DesktopLookupPage _incomingLookups;
@@ -589,6 +595,16 @@ public sealed class MainForm : Form
         return _moduleLookups.Fields.First(field => field.Key == key).Options;
     }
 
+    private string[] IncomingOptionsByCodes(string key, params string[] codes)
+    {
+        return OptionsByCodes(IncomingOptions(key), codes);
+    }
+
+    private string[] ModuleOptionsByCodes(string key, params string[] codes)
+    {
+        return OptionsByCodes(ModuleOptions(key), codes);
+    }
+
     private void HandleIncomingFieldChanged(string key)
     {
         if (_updatingIncoming)
@@ -723,8 +739,8 @@ public sealed class MainForm : Form
             {
                 var densityOptions = dramTypeCode switch
                 {
-                    "A" => IncomingOptions("densityCode").Where(option => new[] { "4G", "8G", "AG" }.Contains(DisplayHelpers.ExtractCode(option))).ToArray(),
-                    "R" => IncomingOptions("densityCode").Where(option => new[] { "AH", "HE", "BH" }.Contains(DisplayHelpers.ExtractCode(option))).ToArray(),
+                    "A" => IncomingOptionsByCodes("densityCode", IncomingDdr4DensityCodes),
+                    "R" => IncomingOptionsByCodes("densityCode", IncomingDdr5DensityCodes),
                     _ => IncomingOptions("densityCode")
                 };
                 SetComboOptions(densityCombo, densityOptions);
@@ -735,8 +751,8 @@ public sealed class MainForm : Form
             {
                 var bankOptions = dramTypeCode switch
                 {
-                    "A" => IncomingOptions("bankCode").Where(option => DisplayHelpers.ExtractCode(option) == "5").ToArray(),
-                    "R" => IncomingOptions("bankCode").Where(option => DisplayHelpers.ExtractCode(option) == "6").ToArray(),
+                    "A" => IncomingOptionsByCodes("bankCode", "5"),
+                    "R" => IncomingOptionsByCodes("bankCode", "6"),
                     _ => IncomingOptions("bankCode")
                 };
                 SetComboOptions(bankCombo, bankOptions);
@@ -756,8 +772,8 @@ public sealed class MainForm : Form
             {
                 var interfaceOptions = dramTypeCode switch
                 {
-                    "A" => IncomingOptions("interfaceCode").Where(option => DisplayHelpers.ExtractCode(option) == "W").ToArray(),
-                    "R" => IncomingOptions("interfaceCode").Where(option => DisplayHelpers.ExtractCode(option) == "V").ToArray(),
+                    "A" => IncomingOptionsByCodes("interfaceCode", "W"),
+                    "R" => IncomingOptionsByCodes("interfaceCode", "V"),
                     _ => IncomingOptions("interfaceCode")
                 };
                 SetComboOptions(interfaceCombo, interfaceOptions);
@@ -959,8 +975,8 @@ public sealed class MainForm : Form
             {
                 var speedOptions = dramTypeCode switch
                 {
-                    "4" => ModuleOptions("speedCode").Where(option => DisplayHelpers.ExtractCode(option) == "WE").ToArray(),
-                    "R" => ModuleOptions("speedCode").Where(option => new[] { "QK", "WM", "CM", "CQ", "CR", "CS" }.Contains(DisplayHelpers.ExtractCode(option))).ToArray(),
+                    "4" => ModuleOptionsByCodes("speedCode", "WE"),
+                    "R" => ModuleOptionsByCodes("speedCode", ModuleDdr5SpeedCodes),
                     _ => ModuleOptions("speedCode")
                 };
                 SetComboOptions(speedCombo, speedOptions);
@@ -972,8 +988,8 @@ public sealed class MainForm : Form
             {
                 var dieDensityOptions = dramTypeCode switch
                 {
-                    "4" => ModuleOptions("dieDensityCode").Where(option => new[] { "4", "8", "A" }.Contains(DisplayHelpers.ExtractCode(option))).ToArray(),
-                    "R" => ModuleOptions("dieDensityCode").Where(option => new[] { "A", "H", "B" }.Contains(DisplayHelpers.ExtractCode(option))).ToArray(),
+                    "4" => ModuleOptionsByCodes("dieDensityCode", ModuleDdr4DieDensityCodes),
+                    "R" => ModuleOptionsByCodes("dieDensityCode", ModuleDdr5DieDensityCodes),
                     _ => ModuleOptions("dieDensityCode")
                 };
                 SetComboOptions(dieDensityCombo, dieDensityOptions);
@@ -984,11 +1000,11 @@ public sealed class MainForm : Form
             {
                 var bankVddCode = ResolveModuleBankVdd(dramTypeCode, speedCode);
                 var bankVddOptions = !string.IsNullOrEmpty(bankVddCode)
-                    ? ModuleOptions("bankVddCode").Where(option => DisplayHelpers.ExtractCode(option) == DisplayHelpers.ExtractCode(bankVddCode)).ToArray()
+                    ? ModuleOptionsByCodes("bankVddCode", DisplayHelpers.ExtractCode(bankVddCode))
                     : dramTypeCode switch
                     {
-                        "4" => ModuleOptions("bankVddCode").Where(option => DisplayHelpers.ExtractCode(option) == "4").ToArray(),
-                        "R" => ModuleOptions("bankVddCode").Where(option => new[] { "5", "6", "7" }.Contains(DisplayHelpers.ExtractCode(option))).ToArray(),
+                        "4" => ModuleOptionsByCodes("bankVddCode", "4"),
+                        "R" => ModuleOptionsByCodes("bankVddCode", ModuleDdr5BankVddCodes),
                         _ => ModuleOptions("bankVddCode")
                     };
                 SetComboOptions(bankVddCombo, bankVddOptions);
@@ -1010,7 +1026,7 @@ public sealed class MainForm : Form
 
             if (_moduleFields.TryGetValue("a100SpecialCode", out var a100Combo))
             {
-                var enabled = isThirdParty && ReadModuleCode("vendorCode") == "A" && ReadModuleCode("purchaserCode") == "A";
+                var enabled = IsModuleA100SpecialEnabled(isThirdParty);
                 a100Combo.Enabled = enabled;
                 if (!enabled)
                 {
@@ -1058,17 +1074,32 @@ public sealed class MainForm : Form
 
     private string ResolveModuleBankVdd(string dramTypeCode, string speedCode)
     {
-        var bankVddCode = dramTypeCode == "4" && speedCode == "WE"
-            ? "4"
-            : dramTypeCode == "R" && new[] { "QK", "WM" }.Contains(speedCode)
-                ? "5"
-                : dramTypeCode == "R" && new[] { "CM", "CQ" }.Contains(speedCode)
-                    ? "6"
-                    : dramTypeCode == "R" && new[] { "CR", "CS" }.Contains(speedCode)
-                        ? "7"
-                        : string.Empty;
+        var bankVddCode = (dramTypeCode, speedCode) switch
+        {
+            ("4", "WE") => "4",
+            ("R", "QK") or ("R", "WM") => "5",
+            ("R", "CM") or ("R", "CQ") => "6",
+            ("R", "CR") or ("R", "CS") => "7",
+            _ => string.Empty
+        };
 
         return DisplayHelpers.ResolveDisplayValue(bankVddCode, ModuleOptions("bankVddCode"));
+    }
+
+    private bool IsModuleA100SpecialEnabled(bool isThirdParty)
+    {
+        return isThirdParty &&
+               ReadModuleCode("compTestCode") == "A" &&
+               ReadModuleCode("vendorCode") == "A" &&
+               ReadModuleCode("purchaserCode") == "A";
+    }
+
+    private static string[] OptionsByCodes(IEnumerable<string> options, params string[] codes)
+    {
+        var allowedCodes = new HashSet<string>(codes, StringComparer.OrdinalIgnoreCase);
+        return options
+            .Where(option => allowedCodes.Contains(DisplayHelpers.ExtractCode(option)))
+            .ToArray();
     }
 
     private static bool ShouldRefreshOptions(string? changedKey, params string[] dependencyKeys)

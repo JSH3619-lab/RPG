@@ -87,7 +87,8 @@ public sealed class ProductTextService
         string specialCode2Code,
         string specialCode3Code,
         string? speedText = null,
-        bool isCompSale = false)
+        bool isCompSale = false,
+        string compTestCode = "")
     {
         var shared = _specProvider.SharedSpec;
         var name = partCode;
@@ -103,6 +104,7 @@ public sealed class ProductTextService
                 generationCode,
                 icBrandCode,
                 moduleCompTypeCode,
+                compTestCode,
                 vendorCode,
                 purchaserCode,
                 isThirdParty,
@@ -118,6 +120,7 @@ public sealed class ProductTextService
                 compositionCode,
                 icCountText,
                 icBrandCode,
+                compTestCode,
                 vendorCode,
                 purchaserCode,
                 pcbCode,
@@ -138,6 +141,7 @@ public sealed class ProductTextService
         string compositionCode,
         string icCountText,
         string icBrandCode,
+        string compTestCode,
         string vendorCode,
         string purchaserCode,
         string pcbCode,
@@ -168,13 +172,14 @@ public sealed class ProductTextService
             specPieces.Add(icBrandLabel);
         }
 
-        var ownerLabel = ResolveModuleOwnerLabel(moduleSourceCode, vendorCode, purchaserCode, isThirdParty);
+        var isA100 = IsModuleA100(isThirdParty, compTestCode, vendorCode, purchaserCode);
+        var ownerLabel = ResolveModuleOwnerLabel(moduleSourceCode, isA100);
         if (!string.IsNullOrWhiteSpace(ownerLabel))
         {
             specPieces.Add(ownerLabel);
         }
 
-        if (isThirdParty && !IsA100Owner(ownerLabel))
+        if (isThirdParty && !isA100)
         {
             specPieces.Add("TP");
         }
@@ -202,6 +207,7 @@ public sealed class ProductTextService
         string generationCode,
         string icBrandCode,
         string moduleCompTypeCode,
+        string compTestCode,
         string vendorCode,
         string purchaserCode,
         bool isThirdParty,
@@ -209,6 +215,7 @@ public sealed class ProductTextService
         string specialCode3Code,
         string? speedText)
     {
+        var isA100 = IsModuleA100(isThirdParty, compTestCode, vendorCode, purchaserCode);
         var specPieces = new List<string>
         {
             dramTypeLabel,
@@ -220,7 +227,7 @@ public sealed class ProductTextService
             "Comp"
         };
 
-        if (isThirdParty && !IsA100Owner(GetPartnerLabel(purchaserCode)) && !IsA100Owner(GetPartnerLabel(vendorCode)))
+        if (isThirdParty && !isA100)
         {
             specPieces.Add("TP");
         }
@@ -251,21 +258,11 @@ public sealed class ProductTextService
         };
     }
 
-    private static string ResolveModuleOwnerLabel(string moduleSourceCode, string vendorCode, string purchaserCode, bool isThirdParty)
+    private static string ResolveModuleOwnerLabel(string moduleSourceCode, bool isA100)
     {
-        if (isThirdParty)
+        if (isA100)
         {
-            var purchaserLabel = GetPartnerLabel(purchaserCode);
-            if (!string.IsNullOrWhiteSpace(purchaserLabel))
-            {
-                return purchaserLabel;
-            }
-
-            var vendorLabel = GetPartnerLabel(vendorCode);
-            if (!string.IsNullOrWhiteSpace(vendorLabel))
-            {
-                return vendorLabel;
-            }
+            return "A100";
         }
 
         return moduleSourceCode switch
@@ -273,22 +270,6 @@ public sealed class ProductTextService
             "RM" or "TM" => "RAmos",
             "CM" or "BM" => "CT",
             _ => string.Empty
-        };
-    }
-
-    private static string GetPartnerLabel(string code)
-    {
-        return code switch
-        {
-            "V" => "VM",
-            "H" => "RMHK",
-            "A" => "A100",
-            "G" => "GIGA",
-            "B" => "BY20",
-            "S" => "S1",
-            "X" => "Ramaxel",
-            "0" or "" => string.Empty,
-            _ => code
         };
     }
 
@@ -328,9 +309,12 @@ public sealed class ProductTextService
                NormalizeLookupCode(purchaserCode).Equals("A", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool IsA100Owner(string ownerLabel)
+    private static bool IsModuleA100(bool isThirdParty, string compTestCode, string vendorCode, string purchaserCode)
     {
-        return ownerLabel.Equals("A100", StringComparison.OrdinalIgnoreCase);
+        return isThirdParty &&
+               NormalizeLookupCode(compTestCode).Equals("A", StringComparison.OrdinalIgnoreCase) &&
+               NormalizeLookupCode(vendorCode).Equals("A", StringComparison.OrdinalIgnoreCase) &&
+               NormalizeLookupCode(purchaserCode).Equals("A", StringComparison.OrdinalIgnoreCase);
     }
 
     private static IEnumerable<string> GetModuleStatusLabels(string specialCode2Code, string specialCode3Code)

@@ -202,8 +202,33 @@ public class UnitTest1
         });
 
         Assert.Equal("UDIMM 16GB COO : KR", rows[0].GeneralInfo);
-        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) S1 RMHK TP BP PCB", rows[0].Specification);
-        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) S1 RMHK TP BP PCB 5600 MT/s", rows[1].Specification);
+        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) S1 RAmos TP BP PCB", rows[0].Specification);
+        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) S1 RAmos TP BP PCB 5600 MT/s", rows[1].Specification);
+    }
+
+    [Theory]
+    [InlineData("TMRDAG58A1P-GPWRRWM7GH", "RAmos TP", "RMHK")]
+    [InlineData("BMRDAG58A1P-GPWRRWM7GH", "CT TP", "RMHK")]
+    [InlineData("BMRDAG58A1P-GPWRRWM7GA", "CT TP", "A100")]
+    [InlineData("BMRDAG58A1P-GPWRRWMBAA", "CT TP", "A100")]
+    public void GeneratePreview_ModuleFullPart_UsesSourceOwnerForThirdPartyUnlessA100(
+        string moduleFullPartCode,
+        string expectedOwnerText,
+        string unexpectedOwnerText)
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleFullPartCode = moduleFullPartCode
+        });
+
+        Assert.Contains(expectedOwnerText, rows[0].Specification);
+        Assert.DoesNotContain(unexpectedOwnerText, rows[0].Specification);
     }
 
     [Fact]
@@ -317,6 +342,25 @@ public class UnitTest1
         Assert.Equal("DDR5 UDIMM 8GB (16Gb x16 *4) S3 A100 BP PCB 5600 MT/s", rows[1].Specification);
         Assert.DoesNotContain("TP", rows[0].Specification);
         Assert.DoesNotContain("ADATA", rows[0].Specification);
+    }
+
+    [Fact]
+    public void GeneratePreview_ModuleFullPart_DoesNotUseA100OwnerForInternalSource()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleFullPartCode = "RMRDAG58A1P-GPARRWM7AA"
+        });
+
+        Assert.Contains("RAmos", rows[0].Specification);
+        Assert.DoesNotContain("A100", rows[0].Specification);
+        Assert.DoesNotContain("TP", rows[0].Specification);
     }
 
     [Theory]
@@ -569,11 +613,25 @@ public class UnitTest1
         provider.Load();
         var service = new ModuleService(provider, new ProductTextService(provider));
 
-        var request = service.ParseModuleFullPart("30", "TMRDAG58A1P-GPWRRWM7AA1R");
+        var request = service.ParseModuleFullPart("30", "TMRDAG58A1P-GPARRWM7AA1R");
 
         Assert.Equal("1", request.A100SpecialCode);
         Assert.Equal("R", request.SpecialCode2Code);
         Assert.True(string.IsNullOrEmpty(request.SpecialCode3Code));
+    }
+
+    [Fact]
+    public void ParseModuleFullPart_A100SpecialCode_RequiresCompTestVendorAndPurchaserA()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            service.ParseModuleFullPart("30", "TMRDAG58A1P-GPWRRWM7AA1R"));
+
+        Assert.Contains("1R", ex.Message);
     }
 
     [Fact]

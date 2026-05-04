@@ -5,6 +5,10 @@ namespace RamosPartGenerator.Core.Services;
 
 public sealed class ModuleService
 {
+    private const string A100Code = "A";
+    private const string Ddr4RuleKey = "DDR4";
+    private const string Ddr5RuleKey = "DDR5";
+
     private readonly SpecProvider _specProvider;
     private readonly ProductTextService _productTextService;
     private static readonly string[] GenerationCodes = Enumerable.Range('A', 26).Select(x => ((char)x).ToString()).ToArray();
@@ -75,7 +79,7 @@ public sealed class ModuleService
         ValidateModuleSpeedAndBankVdd(effectiveRequest);
         ValidateModuleDieDensity(effectiveRequest);
         ValidateModuleDensityCombination(effectiveRequest);
-        ValidateA100Special(effectiveRequest, isThirdParty);
+        ValidateA100Special(effectiveRequest);
 
         var basePartCode = BuildModuleBasePartCode(effectiveRequest);
         var binPartCode = BuildModuleBinPartCode(basePartCode, effectiveRequest);
@@ -110,7 +114,8 @@ public sealed class ModuleService
             effectiveRequest.SpecialCode2Code,
             effectiveRequest.SpecialCode3Code,
             null,
-            isCompSale);
+            isCompSale,
+            effectiveRequest.CompTestCode);
         var binText = _productTextService.BuildModuleTexts(
             binPartCode,
             effectiveRequest.ModuleSourceCode,
@@ -130,7 +135,8 @@ public sealed class ModuleService
             effectiveRequest.SpecialCode2Code,
             effectiveRequest.SpecialCode3Code,
             speedText,
-            isCompSale);
+            isCompSale,
+            effectiveRequest.CompTestCode);
 
         var rows = new List<GeneratedPartRow>
         {
@@ -278,7 +284,7 @@ public sealed class ModuleService
             trailingText = trailingText[1..];
         }
 
-        if (IsA100SpecialEligible(request.ModuleSourceCode, request.VendorCode, request.PurchaserCode) &&
+        if (IsA100SpecialEligible(request) &&
             !string.IsNullOrEmpty(trailingText) &&
             IsA100SpecialCode(trailingText[..1]))
         {
@@ -374,9 +380,17 @@ public sealed class ModuleService
         return code is "V" or "H" or "A" or "0";
     }
 
-    private static bool IsA100SpecialEligible(string moduleSourceCode, string vendorCode, string purchaserCode)
+    private static bool IsA100SpecialEligible(ModuleRequest request)
     {
-        return IsThirdPartyModule(moduleSourceCode) && vendorCode == "A" && purchaserCode == "A";
+        return IsThirdPartyModule(request.ModuleSourceCode) &&
+               IsA100Code(request.CompTestCode) &&
+               IsA100Code(request.VendorCode) &&
+               IsA100Code(request.PurchaserCode);
+    }
+
+    private static bool IsA100Code(string code)
+    {
+        return code.Equals(A100Code, StringComparison.OrdinalIgnoreCase);
     }
 
     private bool IsA100SpecialCode(string code)
@@ -587,9 +601,7 @@ public sealed class ModuleService
 
     private string GetModuleBankVddCode(string dramTypeCode, string speedCode)
     {
-        var ruleKey = dramTypeCode == "R" ? "DDR5" : dramTypeCode == "4" ? "DDR4" : string.Empty;
-        return !string.IsNullOrEmpty(ruleKey) &&
-               _specProvider.SharedSpec.ModuleSpeedRules.TryGetValue(ruleKey, out var rule) &&
+        return TryGetModuleSpeedRule(dramTypeCode, out _, out var rule) &&
                rule.BankVddBySpeed.TryGetValue(speedCode, out var bankVddCode)
             ? bankVddCode
             : string.Empty;
@@ -827,9 +839,7 @@ public sealed class ModuleService
 
     private void ValidateModuleSpeedAndBankVdd(ModuleRequest request)
     {
-        var ruleKey = request.DramTypeCode == "R" ? "DDR5" : request.DramTypeCode == "4" ? "DDR4" : string.Empty;
-        if (string.IsNullOrEmpty(ruleKey) ||
-            !_specProvider.SharedSpec.ModuleSpeedRules.TryGetValue(ruleKey, out var rule))
+        if (!TryGetModuleSpeedRule(request.DramTypeCode, out var ruleKey, out var rule))
         {
             throw new InvalidOperationException($"지원하지 않는 Module DRAM Type입니다: {request.DramTypeCode}");
         }
@@ -847,16 +857,45 @@ public sealed class ModuleService
         }
     }
 
-    private static void ValidateA100Special(ModuleRequest request, bool isThirdParty)
+    private bool TryGetModuleSpeedRule(string dramTypeCode, out string ruleKey, out ModuleSpeedRule rule)
+    {
+        ruleKey = GetModuleSpeedRuleKey(dramTypeCode);
+        if (string.IsNullOrEmpty(ruleKey))
+        {
+            rule = new ModuleSpeedRule();
+            return false;
+        }
+
+        if (_specProvider.SharedSpec.ModuleSpeedRules.TryGetValue(ruleKey, out var speedRule))
+        {
+            rule = speedRule;
+            return true;
+        }
+
+        rule = new ModuleSpeedRule();
+        return false;
+    }
+
+    private static string GetModuleSpeedRuleKey(string dramTypeCode)
+    {
+        return dramTypeCode switch
+        {
+            "4" => Ddr4RuleKey,
+            "R" => Ddr5RuleKey,
+            _ => string.Empty
+        };
+    }
+
+    private static void ValidateA100Special(ModuleRequest request)
     {
         if (IsBlankCode(request.A100SpecialCode))
         {
             return;
         }
 
-        if (!isThirdParty || request.VendorCode != "A" || request.PurchaserCode != "A")
+        if (!IsA100SpecialEligible(request))
         {
-            throw new InvalidOperationException("A100 Special Code는 Third-Party + Vendor A + Purchaser A 조건에서만 사용할 수 있습니다.");
+            throw new InvalidOperationException("A100 Special Code는 Third-Party + Comp Test Site A + Vendor A + Purchaser A 조건에서만 사용할 수 있습니다.");
         }
     }
 }
