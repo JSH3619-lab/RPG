@@ -67,7 +67,7 @@ internal sealed class DesktopLookupCatalog
             new("moduleDensityCode", "Module Density", "base", true, true, Options("module_density")),
             new("bankVddCode", "Bank / VDD", "base", true, true, Options("module_bank_vdd")),
             new("dieDensityCode", "Die Density", "base", true, true, Options("module_die_density")),
-            new("compositionCode", "Composition", "base", true, true, Options("bit")),
+            new("compositionCode", "Composition", "base", true, true, ModuleCompositionOptions()),
             new("rankCode", "Rank", "base", true, true, rankItems),
             new("generationCode", "Generation", "base", true, true, AlphabetOptions()),
             new("icBrandCode", "I.C Brand", "structure", true, true, Options("module_ic_brand")),
@@ -95,6 +95,19 @@ internal sealed class DesktopLookupCatalog
             .SelectMany(key => _specProvider.SharedSpec.CodeOptions.TryGetValue(key, out var options)
                 ? options
                 : throw new KeyNotFoundException($"Lookup option set '{key}' was not found."))
+            .ToArray();
+    }
+
+    private IReadOnlyList<string> ModuleCompositionOptions()
+    {
+        return Options("bit")
+            .Select(option => DisplayHelpers.ExtractCode(option) switch
+            {
+                "04" => "4 - x4",
+                "08" => "8 - x8",
+                "16" => "6 - x16",
+                _ => option
+            })
             .ToArray();
     }
 

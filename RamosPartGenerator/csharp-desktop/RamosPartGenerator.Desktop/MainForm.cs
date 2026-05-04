@@ -58,6 +58,7 @@ public sealed class MainForm : Form
         SuspendLayout();
 
         Text = "Ramos Part Generator - C#";
+        ApplyApplicationIcon();
         StartPosition = FormStartPosition.CenterScreen;
         MinimumSize = new Size(1180, 740);
         Size = new Size(1380, 860);
@@ -86,6 +87,22 @@ public sealed class MainForm : Form
         Controls.Add(root);
 
         ResumeLayout(false);
+    }
+
+    private void ApplyApplicationIcon()
+    {
+        try
+        {
+            using var icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            if (icon is not null)
+            {
+                Icon = (Icon)icon.Clone();
+            }
+        }
+        catch
+        {
+            // Icon loading should not block app startup.
+        }
     }
 
     private static TabControl BuildTabControl()
@@ -546,6 +563,7 @@ public sealed class MainForm : Form
             "Comp" => "Comp",
             "Comp BIN" => "Comp BIN",
             "Module" => "MDL",
+            "Module Dummy" => "MDL Dummy",
             "Module BIN" => "MDL BIN",
             _ => kind
         };
@@ -578,7 +596,7 @@ public sealed class MainForm : Form
             return;
         }
 
-        RefreshIncomingFieldRules();
+        RefreshIncomingFieldRules(key);
     }
 
     private void HandleModuleFieldChanged(string key)
@@ -588,7 +606,7 @@ public sealed class MainForm : Form
             return;
         }
 
-        RefreshModuleFieldRules();
+        RefreshModuleFieldRules(key);
     }
 
     private void ParseIncoming()
@@ -692,7 +710,7 @@ public sealed class MainForm : Form
         RefreshIncomingFieldRules();
     }
 
-    private void RefreshIncomingFieldRules()
+    private void RefreshIncomingFieldRules(string? changedKey = null)
     {
         _updatingIncoming = true;
         try
@@ -700,7 +718,8 @@ public sealed class MainForm : Form
             var dramTypeCode = ReadIncomingCode("dramTypeCode");
             var sourceCode = ReadIncomingCode("sourceCode");
 
-            if (_incomingFields.TryGetValue("densityCode", out var densityCombo))
+            if (ShouldRefreshOptions(changedKey, "dramTypeCode") &&
+                _incomingFields.TryGetValue("densityCode", out var densityCombo))
             {
                 var densityOptions = dramTypeCode switch
                 {
@@ -711,7 +730,8 @@ public sealed class MainForm : Form
                 SetComboOptions(densityCombo, densityOptions);
             }
 
-            if (_incomingFields.TryGetValue("bankCode", out var bankCombo))
+            if (ShouldRefreshOptions(changedKey, "dramTypeCode") &&
+                _incomingFields.TryGetValue("bankCode", out var bankCombo))
             {
                 var bankOptions = dramTypeCode switch
                 {
@@ -731,7 +751,8 @@ public sealed class MainForm : Form
                 }
             }
 
-            if (_incomingFields.TryGetValue("interfaceCode", out var interfaceCombo))
+            if (ShouldRefreshOptions(changedKey, "dramTypeCode") &&
+                _incomingFields.TryGetValue("interfaceCode", out var interfaceCombo))
             {
                 var interfaceOptions = dramTypeCode switch
                 {
@@ -923,7 +944,7 @@ public sealed class MainForm : Form
         RefreshModuleFieldRules();
     }
 
-    private void RefreshModuleFieldRules()
+    private void RefreshModuleFieldRules(string? changedKey = null)
     {
         _updatingModule = true;
         try
@@ -933,7 +954,8 @@ public sealed class MainForm : Form
             var speedCode = ReadModuleCode("speedCode");
             var isThirdParty = sourceCode is "TM" or "BM";
 
-            if (_moduleFields.TryGetValue("speedCode", out var speedCombo))
+            if (ShouldRefreshOptions(changedKey, "dramTypeCode") &&
+                _moduleFields.TryGetValue("speedCode", out var speedCombo))
             {
                 var speedOptions = dramTypeCode switch
                 {
@@ -945,7 +967,8 @@ public sealed class MainForm : Form
                 speedCode = ReadModuleCode("speedCode");
             }
 
-            if (_moduleFields.TryGetValue("dieDensityCode", out var dieDensityCombo))
+            if (ShouldRefreshOptions(changedKey, "dramTypeCode") &&
+                _moduleFields.TryGetValue("dieDensityCode", out var dieDensityCombo))
             {
                 var dieDensityOptions = dramTypeCode switch
                 {
@@ -956,7 +979,8 @@ public sealed class MainForm : Form
                 SetComboOptions(dieDensityCombo, dieDensityOptions);
             }
 
-            if (_moduleFields.TryGetValue("bankVddCode", out var bankVddCombo))
+            if (ShouldRefreshOptions(changedKey, "dramTypeCode", "speedCode") &&
+                _moduleFields.TryGetValue("bankVddCode", out var bankVddCombo))
             {
                 var bankVddCode = ResolveModuleBankVdd(dramTypeCode, speedCode);
                 var bankVddOptions = !string.IsNullOrEmpty(bankVddCode)
@@ -1047,33 +1071,73 @@ public sealed class MainForm : Form
         return DisplayHelpers.ResolveDisplayValue(bankVddCode, ModuleOptions("bankVddCode"));
     }
 
+    private static bool ShouldRefreshOptions(string? changedKey, params string[] dependencyKeys)
+    {
+        return changedKey is null || dependencyKeys.Contains(changedKey, StringComparer.OrdinalIgnoreCase);
+    }
+
     private static void SetComboOptions(ComboBox combo, IEnumerable<string> options)
     {
         var optionList = options.ToArray();
         var currentText = combo.Text;
         var currentCode = DisplayHelpers.ExtractCode(currentText);
 
-        combo.BeginUpdate();
-        try
+        if (!HasSameOptions(combo, optionList))
         {
-            combo.Items.Clear();
-            combo.Items.AddRange(optionList.Cast<object>().ToArray());
-        }
-        finally
-        {
-            combo.EndUpdate();
+            var autoCompleteMode = combo.AutoCompleteMode;
+            var autoCompleteSource = combo.AutoCompleteSource;
+
+            combo.BeginUpdate();
+            try
+            {
+                combo.AutoCompleteMode = AutoCompleteMode.None;
+                combo.AutoCompleteSource = AutoCompleteSource.None;
+                combo.Items.Clear();
+                combo.Items.AddRange(optionList.Cast<object>().ToArray());
+            }
+            finally
+            {
+                combo.AutoCompleteSource = autoCompleteSource;
+                combo.AutoCompleteMode = autoCompleteMode;
+                combo.EndUpdate();
+            }
         }
 
         if (string.IsNullOrEmpty(currentCode))
         {
-            combo.Text = string.Empty;
+            if (!string.IsNullOrEmpty(combo.Text))
+            {
+                combo.Text = string.Empty;
+            }
             return;
         }
 
         var resolved = DisplayHelpers.ResolveDisplayValue(currentCode, optionList);
-        combo.Text = string.IsNullOrEmpty(resolved) || resolved == currentCode && !optionList.Any(option => DisplayHelpers.ExtractCode(option) == currentCode)
+        var nextText = string.IsNullOrEmpty(resolved) || resolved == currentCode && !optionList.Any(option => DisplayHelpers.ExtractCode(option) == currentCode)
             ? string.Empty
             : resolved;
+        if (!string.Equals(combo.Text, nextText, StringComparison.Ordinal))
+        {
+            combo.Text = nextText;
+        }
+    }
+
+    private static bool HasSameOptions(ComboBox combo, IReadOnlyList<string> options)
+    {
+        if (combo.Items.Count != options.Count)
+        {
+            return false;
+        }
+
+        for (var index = 0; index < options.Count; index++)
+        {
+            if (!string.Equals(combo.Items[index]?.ToString(), options[index], StringComparison.Ordinal))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private void ExportRows(Label statusLabel)

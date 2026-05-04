@@ -138,6 +138,7 @@ public sealed class RegistrationExcelExporter
             "Comp" => "Comp",
             "Comp BIN" => "Comp BIN",
             "Module" => "MDL",
+            "Module Dummy" => "MDL Dummy",
             "Module BIN" => "MDL BIN",
             _ => kind
         };
@@ -146,8 +147,10 @@ public sealed class RegistrationExcelExporter
     private static bool IsModuleKind(string kind)
     {
         return string.Equals(kind, "Module", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(kind, "Module Dummy", StringComparison.OrdinalIgnoreCase) ||
                string.Equals(kind, "Module BIN", StringComparison.OrdinalIgnoreCase) ||
                string.Equals(kind, "MDL", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(kind, "MDL Dummy", StringComparison.OrdinalIgnoreCase) ||
                string.Equals(kind, "MDL BIN", StringComparison.OrdinalIgnoreCase);
     }
 

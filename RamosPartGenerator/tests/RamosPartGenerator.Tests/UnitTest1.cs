@@ -17,8 +17,10 @@ public class UnitTest1
 
         var page = catalog.BuildModule("30");
         var dieDensityField = Assert.Single(page.Fields, field => field.Key == "dieDensityCode");
+        var pcbField = Assert.Single(page.Fields, field => field.Key == "pcbCode");
 
         Assert.Equal(new[] { "4 - 4Gb", "8 - 8Gb", "A - 16Gb", "H - 24Gb", "B - 32Gb" }, dieDensityField.Options);
+        Assert.Contains("B - AD5U8C0(ADATA/BP) PCB (Black)", pcbField.Options);
     }
 
     [Fact]
@@ -93,6 +95,10 @@ public class UnitTest1
         Assert.Equal("TCRAH086VA-PBGWGHB", rows[1].PartCode);
         Assert.Equal(8, rows.Count);
         Assert.Equal("TCRAH086VA-PBGWGHB-CF", rows[^1].PartCode);
+        Assert.Contains("TP Reball", rows[0].Specification);
+        Assert.Contains("TP Reball", rows[1].Specification);
+        Assert.Contains("TP Reball 7200 MT/s", rows[2].Specification);
+        Assert.Contains("TP Reball 4800 MT/s", rows[^1].Specification);
     }
 
     [Theory]
@@ -123,8 +129,8 @@ public class UnitTest1
             TesterCode = "W"
         });
 
-        Assert.Contains($"A-die {expectedCompTypeText} Comp", rows[0].Specification);
-        Assert.Contains($"A-die {expectedCompTypeText} Comp", rows[1].Specification);
+        Assert.Contains($"A-die S1 {expectedCompTypeText} Comp", rows[0].Specification);
+        Assert.Contains($"A-die S1 {expectedCompTypeText} Comp", rows[1].Specification);
         Assert.DoesNotContain($"{compTypeCode} Comp", rows[0].Specification);
         Assert.DoesNotContain($"{compTypeCode} Comp", rows[1].Specification);
     }
@@ -142,6 +148,23 @@ public class UnitTest1
 
         Assert.Contains("P-die", rows[1].Specification);
         Assert.DoesNotContain("G-die", rows[1].Specification);
+    }
+
+    [Fact]
+    public void GeneratePreview_IncomingCompSpecification_UsesA100AndIcBrandRules()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new IncomingCompService(provider, new ProductTextService(provider));
+
+        var parsed = service.ParseCompPart("30", "BCRAH166VH-PBMAAAB");
+        var rows = service.GeneratePreview(parsed);
+
+        Assert.Equal("DDR5 16Gb x16 H-die A100 S3 Partial Comp Reball", rows[1].Specification);
+        Assert.Equal("DDR5 16Gb x16 H-die A100 S3 Partial Comp Reball 7200 MT/s", rows[2].Specification);
+        Assert.DoesNotContain("TP", rows[1].Specification);
+        Assert.DoesNotContain("ADATA", rows[1].Specification);
     }
 
     [Fact]
@@ -179,8 +202,8 @@ public class UnitTest1
         });
 
         Assert.Equal("UDIMM 16GB COO : KR", rows[0].GeneralInfo);
-        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) RMHK (BP PCB) TP", rows[0].Specification);
-        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) RMHK (BP PCB) TP 5600 MT/s", rows[1].Specification);
+        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) S1 RMHK TP BP PCB", rows[0].Specification);
+        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) S1 RMHK TP BP PCB 5600 MT/s", rows[1].Specification);
     }
 
     [Fact]
@@ -244,6 +267,107 @@ public class UnitTest1
             isCompSale: true);
 
         Assert.Equal("DDR5 16Gb x8 G-die GIGA S1 MDL(GOX) Comp TP", texts.Specification);
+    }
+
+    [Fact]
+    public void BuildModuleTexts_MapsAd5u8c0PcbCode()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ProductTextService(provider);
+
+        var texts = service.BuildModuleTexts(
+            partCode: "TEST",
+            moduleSourceCode: "RM",
+            dramTypeLabel: "DDR5",
+            formFactorLabel: "UDIMM",
+            capacityLabel: "16GB",
+            dieDensityLabel: "16Gb",
+            compositionCode: "8",
+            icCountText: "8",
+            generationCode: "G",
+            icBrandCode: "G",
+            moduleCompTypeCode: "P",
+            vendorCode: "G",
+            purchaserCode: "",
+            pcbCode: "B",
+            isThirdParty: false,
+            specialCode2Code: "",
+            specialCode3Code: "");
+
+        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) S1 RAmos BP PCB", texts.Specification);
+    }
+
+    [Fact]
+    public void GeneratePreview_ModuleFullPart_UsesStandardModuleSpecRulesForA100AndPcb()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleFullPartCode = "BMRD8G56A1H-MPARRWMBAA"
+        });
+
+        Assert.Equal("DDR5 UDIMM 8GB (16Gb x16 *4) S3 A100 BP PCB", rows[0].Specification);
+        Assert.Equal("DDR5 UDIMM 8GB (16Gb x16 *4) S3 A100 BP PCB 5600 MT/s", rows[1].Specification);
+        Assert.DoesNotContain("TP", rows[0].Specification);
+        Assert.DoesNotContain("ADATA", rows[0].Specification);
+    }
+
+    [Theory]
+    [InlineData("BMRDAG58A1A-CPARRWMAAAR", "BMRDAG58A1A-CPARRWMAAA00", "1st Repair", "1st Repair Dummy")]
+    [InlineData("BMRDAG58A1A-CPARRWMAAAS", "BMRDAG58A1A-CPARRWMAAAR0", "2nd Repair", "2nd Repair Dummy")]
+    [InlineData("BMRDAG58A1A-CPARRWMAAAC", "BMRDAG58A1A-CPARRWMAAAB0", "Reball Repair", "Reball Repair Dummy")]
+    public void GeneratePreview_ModuleFullPart_GeneratesRepairDummy(
+        string moduleFullPartCode,
+        string expectedDummyPartCode,
+        string sourceStatusLabel,
+        string expectedDummyStatusLabel)
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleFullPartCode = moduleFullPartCode
+        });
+
+        Assert.Equal(3, rows.Count);
+        Assert.Equal("Module", rows[0].Kind);
+        Assert.Equal("Module Dummy", rows[1].Kind);
+        Assert.Equal("Module BIN", rows[2].Kind);
+        Assert.Equal(expectedDummyPartCode, rows[1].PartCode);
+        Assert.Equal(expectedDummyPartCode, rows[1].Name);
+        Assert.Equal(rows[0].GeneralInfo, rows[1].GeneralInfo);
+        Assert.EndsWith(expectedDummyStatusLabel, rows[1].Specification);
+        Assert.DoesNotContain($"{sourceStatusLabel} {expectedDummyStatusLabel}", rows[1].Specification);
+    }
+
+    [Fact]
+    public void GeneratePreview_ModuleFullPart_DoesNotGenerateDummyForReball()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleFullPartCode = "BMRDAG58A1A-CPARRWMAAAB"
+        });
+
+        Assert.Equal(2, rows.Count);
+        Assert.DoesNotContain(rows, row => row.Kind == "Module Dummy");
+        Assert.Contains("Reball", rows[0].Specification);
     }
 
     [Fact]
@@ -537,5 +661,23 @@ public class UnitTest1
         var stylesXml = stylesReader.ReadToEnd();
         Assert.Contains("<name val=\"Arial\"/>", stylesXml);
         Assert.DoesNotContain("Segoe UI", stylesXml);
+    }
+
+    [Fact]
+    public void ExportRegistration_FormatsModuleDummyKindAsMdlDummy()
+    {
+        var exporter = new RegistrationExcelExporter();
+        var content = exporter.Export(new[]
+        {
+            new GeneratedPartRow("Module Dummy", "DUMMY-PART", "DUMMY-PART", "UDIMM 16GB COO : KR", "DDR5 module dummy spec")
+        });
+
+        using var stream = new MemoryStream(content);
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+
+        using var sheetReader = new StreamReader(archive.GetEntry("xl/worksheets/sheet1.xml")!.Open());
+        var sheetXml = sheetReader.ReadToEnd();
+        Assert.Contains("<c r=\"A2\" t=\"inlineStr\" s=\"0\"><is><t>MDL Dummy</t></is></c>", sheetXml);
+        Assert.Contains("영업코드", sheetXml);
     }
 }

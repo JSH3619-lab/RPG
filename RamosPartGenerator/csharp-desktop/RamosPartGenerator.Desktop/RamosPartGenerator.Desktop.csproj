@@ -5,16 +5,13 @@
     <ProjectReference Include="..\..\src\RamosPartGenerator.Excel\RamosPartGenerator.Excel.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="..\..\..\specs\*.json" Link="specs\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net7.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <ApplicationIcon>Assets\RamosPartGenerator.ico</ApplicationIcon>
   </PropertyGroup>
 
 </Project>

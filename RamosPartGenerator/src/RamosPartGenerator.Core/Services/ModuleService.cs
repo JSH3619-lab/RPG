@@ -132,11 +132,28 @@ public sealed class ModuleService
             speedText,
             isCompSale);
 
-        return new List<GeneratedPartRow>
+        var rows = new List<GeneratedPartRow>
         {
             new("Module", basePartCode, baseText.Name, baseText.GeneralInfo, baseText.Specification),
             new("Module BIN", binPartCode, binText.Name, binText.GeneralInfo, binText.Specification)
         };
+
+        if (TryBuildModuleRepairDummy(
+                basePartCode,
+                baseText.Specification,
+                effectiveRequest.SpecialCode2Code,
+                out var dummyPartCode,
+                out var dummySpecification))
+        {
+            rows.Insert(1, new GeneratedPartRow(
+                "Module Dummy",
+                dummyPartCode,
+                dummyPartCode,
+                baseText.GeneralInfo,
+                dummySpecification));
+        }
+
+        return rows;
     }
 
     public ModuleRequest ParseCompPart(string revision, string partCode)
@@ -515,6 +532,59 @@ public sealed class ModuleService
         return $"{basePartCode}-{gradeCode}{request.ModuleDensityCode}{productBinCode}";
     }
 
+    private static bool TryBuildModuleRepairDummy(
+        string basePartCode,
+        string baseSpecification,
+        string specialCode2Code,
+        out string dummyPartCode,
+        out string dummySpecification)
+    {
+        dummyPartCode = string.Empty;
+        dummySpecification = string.Empty;
+
+        if (!TryGetModuleRepairDummyRule(
+                specialCode2Code,
+                out var sourceStatusLabel,
+                out var replacementSuffix,
+                out var dummyStatusLabel) ||
+            !basePartCode.EndsWith(specialCode2Code, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        dummyPartCode = basePartCode[..^specialCode2Code.Length] + replacementSuffix;
+        var specificationCore = RemoveTrailingStatusLabel(baseSpecification, sourceStatusLabel);
+        dummySpecification = string.Join(
+            " ",
+            new[] { specificationCore, dummyStatusLabel }.Where(x => !string.IsNullOrWhiteSpace(x)));
+        return true;
+    }
+
+    private static bool TryGetModuleRepairDummyRule(
+        string specialCode2Code,
+        out string sourceStatusLabel,
+        out string replacementSuffix,
+        out string dummyStatusLabel)
+    {
+        (sourceStatusLabel, replacementSuffix, dummyStatusLabel) = specialCode2Code switch
+        {
+            "R" => ("1st Repair", "00", "1st Repair Dummy"),
+            "S" => ("2nd Repair", "R0", "2nd Repair Dummy"),
+            "C" => ("Reball Repair", "B0", "Reball Repair Dummy"),
+            _ => (string.Empty, string.Empty, string.Empty)
+        };
+
+        return !string.IsNullOrWhiteSpace(dummyStatusLabel);
+    }
+
+    private static string RemoveTrailingStatusLabel(string specification, string statusLabel)
+    {
+        var trimmed = specification.Trim();
+        return trimmed.EndsWith(statusLabel, StringComparison.OrdinalIgnoreCase)
+            ? trimmed[..^statusLabel.Length].TrimEnd()
+            : trimmed;
+    }
+
     private string GetModuleBankVddCode(string dramTypeCode, string speedCode)
     {
         var ruleKey = dramTypeCode == "R" ? "DDR5" : dramTypeCode == "4" ? "DDR4" : string.Empty;
@@ -570,14 +640,13 @@ public sealed class ModuleService
 
     private static string CalculateModuleIcCount(string moduleDensityCode, string dieDensityCode, string compositionCode, string rankCode)
     {
-        if (!TryGetModuleDensityGb(moduleDensityCode, out var moduleDensityGb) ||
-            !TryGetDieDensityGb(dieDensityCode, out var dieDensityGb) ||
-            !TryGetBitFactor(compositionCode, out var bitFactor))
+        if (!TryGetCompositionWidth(compositionCode, out var compositionWidth) ||
+            !TryGetRankCount(rankCode, out var rankCount))
         {
             return "ERR";
         }
 
-        var icCount = (int)Math.Round((moduleDensityGb * 8d) / (dieDensityGb * bitFactor), MidpointRounding.AwayFromZero);
+        var icCount = 64 / compositionWidth * rankCount;
         return rankCode == "2" ? $"{icCount} (2R)" : icCount.ToString();
     }
 
@@ -685,19 +754,6 @@ public sealed class ModuleService
         };
 
         return densityGb > 0;
-    }
-
-    private static bool TryGetBitFactor(string compositionCode, out double bitFactor)
-    {
-        bitFactor = compositionCode switch
-        {
-            "4" => 0.5d,
-            "8" => 1d,
-            "6" => 2d,
-            _ => 0d
-        };
-
-        return bitFactor > 0;
     }
 
     private static bool TryGetCompositionWidth(string compositionCode, out int width)

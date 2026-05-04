@@ -2,3 +2,6 @@
 *.tmp
 ~$*.xlsx
 ~$*.xlsm
+.code-review-graph/
+RamosPartGenerator/publish/
+DRAM 품목정보*.xlsx

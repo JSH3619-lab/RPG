@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Reflection;
 using RamosPartGenerator.Core.Specs;
 
 namespace RamosPartGenerator.Core.Services;
@@ -25,14 +26,12 @@ public sealed class SpecProvider
 
     public void Load()
     {
-        var sharedPath = Path.Combine(_specDirectory, "shared.json");
-        _sharedSpec = DeserializeFile<SharedSpec>(sharedPath);
+        _sharedSpec = DeserializeSpec<SharedSpec>("shared.json");
 
         _revisionSpecs.Clear();
         foreach (var revision in _sharedSpec.SupportedRevisions)
         {
-            var revisionPath = Path.Combine(_specDirectory, $"rev{revision}.json");
-            var revisionSpec = DeserializeFile<RevisionSpec>(revisionPath);
+            var revisionSpec = DeserializeSpec<RevisionSpec>($"rev{revision}.json");
             _revisionSpecs[NormalizeRevision(revision)] = revisionSpec;
         }
     }
@@ -63,16 +62,28 @@ public sealed class SpecProvider
         }
     }
 
-    private T DeserializeFile<T>(string path)
+    private T DeserializeSpec<T>(string fileName)
     {
-        if (!File.Exists(path))
-        {
-            throw new FileNotFoundException($"Spec file not found: {path}");
-        }
-
-        var json = File.ReadAllText(path);
+        var path = Path.Combine(_specDirectory, fileName);
+        var json = File.Exists(path)
+            ? File.ReadAllText(path)
+            : ReadEmbeddedSpec(fileName, path);
         var value = JsonSerializer.Deserialize<T>(json, _jsonOptions);
         return value ?? throw new InvalidOperationException($"Failed to deserialize spec file: {path}");
+    }
+
+    private static string ReadEmbeddedSpec(string fileName, string fallbackPath)
+    {
+        var resourceName = $"RamosPartGenerator.Core.specs.{fileName}";
+        var assembly = typeof(SpecProvider).Assembly;
+        using var stream = assembly.GetManifestResourceStream(resourceName);
+        if (stream is null)
+        {
+            throw new FileNotFoundException($"Spec file not found: {fallbackPath} or embedded resource {resourceName}");
+        }
+
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
     }
 
     private static string NormalizeRevision(string revision)

@@ -99,9 +99,9 @@ public sealed class IncomingCompService
         var compTypeLabel = ProductTextService.GetCompTypeDescription(compTypeCode);
 
         var incomingTexts = _productTextService.BuildIncomingCompTexts(
-            dddPartCode, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty);
+            dddPartCode, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
         var compTexts = _productTextService.BuildIncomingCompTexts(
-            compPartCode, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty);
+            compPartCode, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
 
         var rows = new List<GeneratedPartRow>
         {
@@ -115,7 +115,7 @@ public sealed class IncomingCompService
             {
                 var code = $"{compPartCode}-{pair.Key}";
                 var text = _productTextService.BuildIncomingCompTexts(
-                    code, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, pair.Value);
+                    code, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, speedText: pair.Value, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
                 rows.Add(new("Comp BIN", code, text.Name, text.GeneralInfo, text.Specification));
             }
         }
@@ -124,7 +124,7 @@ public sealed class IncomingCompService
             var speed = _specProvider.SharedSpec.CompBinSpeedMap["CA"];
             var code = $"{compPartCode}-CA";
             var text = _productTextService.BuildIncomingCompTexts(
-                code, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, speed);
+                code, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, speedText: speed, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
             rows.Add(new("Comp BIN", code, text.Name, text.GeneralInfo, text.Specification));
         }
 
