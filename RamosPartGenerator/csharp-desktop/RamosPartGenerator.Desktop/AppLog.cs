@@ -5,7 +5,9 @@ namespace RamosPartGenerator.Desktop;
 
 internal static class AppLog
 {
+    private const int RetentionDays = 30;
     private static readonly object Sync = new();
+    private static bool _retentionChecked;
 
     public static string LogDirectory =>
         Path.Combine(
@@ -34,6 +36,7 @@ internal static class AppLog
 
             lock (Sync)
             {
+                DeleteExpiredLogFiles();
                 File.AppendAllText(CurrentLogPath, line + Environment.NewLine, Encoding.UTF8);
             }
         }
@@ -41,6 +44,39 @@ internal static class AppLog
         {
             // Logging must never block normal program execution.
         }
+    }
+
+    private static void DeleteExpiredLogFiles()
+    {
+        if (_retentionChecked)
+        {
+            return;
+        }
+
+        _retentionChecked = true;
+        var cutoffDate = DateTime.Today.AddDays(-RetentionDays);
+
+        foreach (var path in Directory.EnumerateFiles(LogDirectory, "*.log"))
+        {
+            var logDate = GetLogDate(path);
+            if (logDate < cutoffDate)
+            {
+                File.Delete(path);
+            }
+        }
+    }
+
+    private static DateTime GetLogDate(string path)
+    {
+        var fileName = Path.GetFileNameWithoutExtension(path);
+        return DateTime.TryParseExact(
+            fileName,
+            "yyyyMMdd",
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out var logDate)
+            ? logDate.Date
+            : File.GetLastWriteTime(path).Date;
     }
 
     private static string BuildLine(string level, string eventName, Exception? exception, IEnumerable<(string Key, string? Value)> details)
