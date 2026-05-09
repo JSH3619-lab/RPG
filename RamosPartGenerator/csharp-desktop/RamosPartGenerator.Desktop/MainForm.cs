@@ -10,7 +10,7 @@ public sealed class MainForm : Form
     private const string Revision = "30";
     private const int ActionLabelWidth = 190;
     private const int ActionButtonColumnWidth = 470;
-    private const int ActionRowHeight = 36;
+    private const int ActionRowHeight = 44;
     private const int ModeRowHeight = 34;
     private const int FieldLabelWidth = 220;
     private static readonly string[] IncomingDdr4DensityCodes = { "4G", "8G", "AG" };
@@ -66,6 +66,7 @@ public sealed class MainForm : Form
         InitializeComponent();
         ResetIncoming();
         ResetModule();
+        AppLog.Info("MainForm.Initialized", ("revision", Revision));
     }
 
     private void InitializeComponent()
@@ -250,10 +251,9 @@ public sealed class MainForm : Form
 
         var inputPanel = new Panel { Dock = DockStyle.Fill, BackColor = RamosTheme.Surface };
         _incomingCompPartText = new TextBox { Dock = DockStyle.Fill, CharacterCasing = CharacterCasing.Upper };
-        inputPanel.Controls.Add(BuildActionTextRow("Comp Full Part", _incomingCompPartText));
+        inputPanel.Controls.Add(BuildActionTextRow("Comp Full Part", _incomingCompPartText, BuildButton("Parse", ParseIncoming)));
 
         var buttons = BuildButtonFlow();
-        buttons.Controls.Add(BuildButton("Parse", ParseIncoming));
         buttons.Controls.Add(BuildButton("Generate", GenerateIncoming));
         buttons.Controls.Add(BuildButton("Export Excel", ExportIncoming));
         buttons.Controls.Add(BuildButton("Reset", ResetIncoming));
@@ -472,7 +472,7 @@ public sealed class MainForm : Form
 
         row.Controls.Add(BuildActionLabel(labelText), 0, 0);
         textBox.Dock = DockStyle.Fill;
-        textBox.Margin = new Padding(0, 5, 10, 5);
+        textBox.Margin = new Padding(0, 4, 10, 4);
         textBox.BorderStyle = BorderStyle.FixedSingle;
         textBox.BackColor = Color.White;
         textBox.ForeColor = RamosTheme.Text;
@@ -735,6 +735,16 @@ public sealed class MainForm : Form
         return _moduleManufacturingMode.Checked;
     }
 
+    private string IncomingModeName()
+    {
+        return _incomingManufacturingMode.Checked ? _incomingManufacturingMode.Text : _incomingStandardMode.Text;
+    }
+
+    private string ModuleModeName()
+    {
+        return _moduleManufacturingMode.Checked ? _moduleManufacturingMode.Text : _moduleStandardMode.Text;
+    }
+
     private void SetIncomingManufacturingMode(bool isManufacturing, bool clearFields)
     {
         if (_incomingManufacturingMode.Checked != isManufacturing)
@@ -755,6 +765,11 @@ public sealed class MainForm : Form
         if (!_updatingIncoming)
         {
             RefreshIncomingFieldRules();
+        }
+
+        if (clearFields && !_updatingIncoming)
+        {
+            AppLog.Info("Mode.Change", ("area", "IncomingComp"), ("mode", IncomingModeName()));
         }
     }
 
@@ -778,6 +793,11 @@ public sealed class MainForm : Form
         if (!_updatingModule)
         {
             RefreshModuleFieldRules();
+        }
+
+        if (clearFields && !_updatingModule)
+        {
+            AppLog.Info("Mode.Change", ("area", "Module"), ("mode", ModuleModeName()));
         }
     }
 
@@ -825,30 +845,53 @@ public sealed class MainForm : Form
 
     private void ParseIncoming()
     {
-        RunGuarded(_incomingStatusLabel, () =>
+        RunGuarded(_incomingStatusLabel, "Incoming.Parse", () =>
         {
-            var parsed = _services.Incoming.ParseCompPart(Revision, _incomingCompPartText.Text);
+            var partCode = _incomingCompPartText.Text.Trim().ToUpperInvariant();
+            AppLog.Info("Incoming.Parse.Start", ("mode", IncomingModeName()), ("partCode", partCode));
+
+            var parsed = _services.Incoming.ParseCompPart(Revision, partCode);
             ApplyIncomingRequest(parsed);
+            AppLog.Info(
+                "Incoming.Parse.Success",
+                ("mode", IncomingModeName()),
+                ("partCode", partCode),
+                ("sourceCode", parsed.SourceCode),
+                ("compTypeCode", parsed.CompTypeCode));
             SetInfo(_incomingStatusLabel, "Incoming/Comp part parsed.");
         });
     }
 
     private void GenerateIncoming()
     {
-        RunGuarded(_incomingStatusLabel, () =>
+        RunGuarded(_incomingStatusLabel, "Incoming.Generate", () =>
         {
-            foreach (var row in _services.Incoming.GeneratePreview(CreateIncomingRequest()))
+            var request = CreateIncomingRequest();
+            AppLog.Info(
+                "Incoming.Generate.Start",
+                ("mode", IncomingModeName()),
+                ("sourceCode", request.SourceCode),
+                ("compTypeCode", request.CompTypeCode));
+
+            var generatedRows = _services.Incoming.GeneratePreview(request).ToArray();
+            foreach (var row in generatedRows)
             {
                 _incomingRows.Add(row);
             }
 
+            AppLog.Info(
+                "Incoming.Generate.Success",
+                ("mode", IncomingModeName()),
+                ("generatedRows", generatedRows.Length.ToString()),
+                ("totalRows", _incomingRows.Count.ToString()),
+                ("firstPartCode", FirstPartCode(generatedRows)));
             SetInfo(_incomingStatusLabel, $"Generated {_incomingRows.Count} incoming/comp rows.");
         });
     }
 
     private void ExportIncoming()
     {
-        ExportRows(_incomingStatusLabel);
+        ExportRows(_incomingStatusLabel, "IncomingComp");
     }
 
     private void ResetIncoming()
@@ -1052,40 +1095,72 @@ public sealed class MainForm : Form
 
     private void ParseModuleComp()
     {
-        RunGuarded(_moduleStatusLabel, () =>
+        RunGuarded(_moduleStatusLabel, "Module.ParseComp", () =>
         {
-            var parsed = _services.Module.ParseCompPart(Revision, _moduleCompPartText.Text);
+            var partCode = _moduleCompPartText.Text.Trim().ToUpperInvariant();
+            AppLog.Info("Module.ParseComp.Start", ("mode", ModuleModeName()), ("partCode", partCode));
+
+            var parsed = _services.Module.ParseCompPart(Revision, partCode);
             ApplyModuleRequest(parsed);
+            AppLog.Info(
+                "Module.ParseComp.Success",
+                ("mode", ModuleModeName()),
+                ("partCode", partCode),
+                ("moduleSourceCode", parsed.ModuleSourceCode),
+                ("moduleCompTypeCode", parsed.ModuleCompTypeCode));
             SetInfo(_moduleStatusLabel, "Comp Full Part parsed into module fields.");
         });
     }
 
     private void ParseModuleFull()
     {
-        RunGuarded(_moduleStatusLabel, () =>
+        RunGuarded(_moduleStatusLabel, "Module.ParseFull", () =>
         {
-            var parsed = _services.Module.ParseModuleFullPart(Revision, _moduleFullPartText.Text);
+            var partCode = _moduleFullPartText.Text.Trim().ToUpperInvariant();
+            AppLog.Info("Module.ParseFull.Start", ("mode", ModuleModeName()), ("partCode", partCode));
+
+            var parsed = _services.Module.ParseModuleFullPart(Revision, partCode);
             ApplyModuleRequest(parsed);
+            AppLog.Info(
+                "Module.ParseFull.Success",
+                ("mode", ModuleModeName()),
+                ("partCode", partCode),
+                ("moduleSourceCode", parsed.ModuleSourceCode),
+                ("moduleCompTypeCode", parsed.ModuleCompTypeCode));
             SetInfo(_moduleStatusLabel, "Module Full Part parsed.");
         });
     }
 
     private void GenerateModule()
     {
-        RunGuarded(_moduleStatusLabel, () =>
+        RunGuarded(_moduleStatusLabel, "Module.Generate", () =>
         {
-            foreach (var row in _services.Module.GeneratePreview(CreateModuleRequest()))
+            var request = CreateModuleRequest();
+            AppLog.Info(
+                "Module.Generate.Start",
+                ("mode", ModuleModeName()),
+                ("moduleSourceCode", request.ModuleSourceCode),
+                ("moduleCompTypeCode", request.ModuleCompTypeCode));
+
+            var generatedRows = _services.Module.GeneratePreview(request).ToArray();
+            foreach (var row in generatedRows)
             {
                 _moduleRows.Add(row);
             }
 
+            AppLog.Info(
+                "Module.Generate.Success",
+                ("mode", ModuleModeName()),
+                ("generatedRows", generatedRows.Length.ToString()),
+                ("totalRows", _moduleRows.Count.ToString()),
+                ("firstPartCode", FirstPartCode(generatedRows)));
             SetInfo(_moduleStatusLabel, $"Generated {_moduleRows.Count} module rows.");
         });
     }
 
     private void ExportModule()
     {
-        ExportRows(_moduleStatusLabel);
+        ExportRows(_moduleStatusLabel, "Module");
     }
 
     private void ResetModule()
@@ -1435,11 +1510,17 @@ public sealed class MainForm : Form
         return true;
     }
 
-    private void ExportRows(Label statusLabel)
+    private void ExportRows(Label statusLabel, string area)
     {
-        RunGuarded(statusLabel, () =>
+        RunGuarded(statusLabel, $"{area}.Export", () =>
         {
             var rows = BuildExportRows();
+            AppLog.Info(
+                "Export.Start",
+                ("area", area),
+                ("rowCount", rows.Length.ToString()),
+                ("incomingRows", _incomingRows.Count.ToString()),
+                ("moduleRows", _moduleRows.Count.ToString()));
             if (rows.Length == 0)
             {
                 throw new InvalidOperationException("먼저 생성 결과를 만들어 주세요.");
@@ -1455,10 +1536,16 @@ public sealed class MainForm : Form
 
             if (dialog.ShowDialog(this) != DialogResult.OK)
             {
+                AppLog.Info("Export.Canceled", ("area", area), ("rowCount", rows.Length.ToString()));
                 return;
             }
 
             File.WriteAllBytes(dialog.FileName, _services.Exporter.Export(rows));
+            AppLog.Info(
+                "Export.Success",
+                ("area", area),
+                ("rowCount", rows.Length.ToString()),
+                ("filePath", dialog.FileName));
             SetInfo(statusLabel, $"Excel 내보내기 완료: {dialog.FileName}");
         });
     }
@@ -1473,7 +1560,17 @@ public sealed class MainForm : Form
         return $"DRAM 품목정보({DateTime.Now:yyMMdd}).xlsx";
     }
 
+    private static string FirstPartCode(IReadOnlyList<GeneratedPartRow> rows)
+    {
+        return rows.Count == 0 ? string.Empty : rows[0].PartCode;
+    }
+
     private static void RunGuarded(Label statusLabel, Action action)
+    {
+        RunGuarded(statusLabel, "Action", action);
+    }
+
+    private static void RunGuarded(Label statusLabel, string operationName, Action action)
     {
         try
         {
@@ -1481,6 +1578,7 @@ public sealed class MainForm : Form
         }
         catch (Exception ex)
         {
+            AppLog.Error($"{operationName}.Failed", ex);
             statusLabel.ForeColor = RamosTheme.Danger;
             statusLabel.Text = ex.Message;
         }
@@ -1515,7 +1613,20 @@ public sealed class MainForm : Form
         {
             var specDirectory = Path.Combine(AppContext.BaseDirectory, "specs");
             var specProvider = new SpecProvider(specDirectory);
-            specProvider.Load();
+            AppLog.Info("Spec.Load.Start", ("specDirectory", specDirectory));
+            try
+            {
+                specProvider.Load();
+                AppLog.Info(
+                    "Spec.Load.Success",
+                    ("specDirectory", specDirectory),
+                    ("revisions", string.Join(",", specProvider.GetSupportedRevisions())));
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error("Spec.Load.Failed", ex, ("specDirectory", specDirectory));
+                throw;
+            }
 
             var textService = new ProductTextService(specProvider);
             return new DesktopAppServices(
