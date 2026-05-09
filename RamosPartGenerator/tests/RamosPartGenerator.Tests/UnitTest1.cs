@@ -7,35 +7,227 @@ namespace RamosPartGenerator.Tests;
 
 public class UnitTest1
 {
-    [Fact]
-    public void BuildModuleLookups_UsesModuleDieDensityCodes()
+    private static SpecProvider LoadProvider()
     {
         var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
         var provider = new SpecProvider(specDirectory);
         provider.Load();
-        var catalog = new RamosPartGenerator.Api.Services.LookupCatalog(provider);
+        return provider;
+    }
 
-        var page = catalog.BuildModule("30");
-        var dieDensityField = Assert.Single(page.Fields, field => field.Key == "dieDensityCode");
-        var pcbField = Assert.Single(page.Fields, field => field.Key == "pcbCode");
+    private static string[] SharedOptions(SpecProvider provider, params string[] optionKeys)
+    {
+        return optionKeys
+            .SelectMany(key => provider.SharedSpec.CodeOptions[key])
+            .ToArray();
+    }
 
-        Assert.Equal(new[] { "4 - 4Gb", "8 - 8Gb", "A - 16Gb", "H - 24Gb", "B - 32Gb" }, dieDensityField.Options);
-        Assert.Contains("B - AD5U8C0(ADATA/BP) PCB (Black)", pcbField.Options);
+    [Fact]
+    public void BuildModuleLookups_UsesModuleDieDensityCodes()
+    {
+        var provider = LoadProvider();
+        var dieDensityOptions = SharedOptions(provider, "module_die_density");
+        var pcbOptions = SharedOptions(provider, "pcb");
+
+        Assert.Equal(new[] { "4 - 4Gb", "8 - 8Gb", "A - 16Gb", "H - 24Gb", "B - 32Gb" }, dieDensityOptions);
+        Assert.Contains("B - AD5U8C0(ADATA/BP) PCB (Black)", pcbOptions);
     }
 
     [Fact]
     public void BuildModuleLookups_UsesSpecOptionsForRev30CompDimm()
     {
+        var provider = LoadProvider();
+        var revisionSpec = provider.GetRevisionSpec("30");
+        var dimmTypeOptions = SharedOptions(provider, "dimm_type_common")
+            .Concat(revisionSpec.Module.DimmTypeAdditions.Select(code => $"{code} - Comp"))
+            .ToArray();
+
+        Assert.Contains("C - Comp", dimmTypeOptions);
+        Assert.DoesNotContain("Comp - Comp", dimmTypeOptions);
+    }
+
+    [Fact]
+    public void BuildModuleLookups_IncludesSmallCompDensitiesAndPcbNoAssy()
+    {
+        var provider = LoadProvider();
+        var moduleDensityOptions = SharedOptions(provider, "module_density");
+        var pcbOptions = SharedOptions(provider, "pcb");
+
+        Assert.Contains("1G - 1GB", moduleDensityOptions);
+        Assert.Contains("2G - 2GB", moduleDensityOptions);
+        Assert.Contains("0 - No Ass'y", pcbOptions);
+    }
+
+    [Fact]
+    public void BuildLookups_IncludesManufacturingSourcesCompTypesAndRamboVendor()
+    {
+        var provider = LoadProvider();
+        var incomingSourceOptions = SharedOptions(provider, "incoming_source", "manufacturing_comp_source");
+        var incomingCompTypeOptions = SharedOptions(provider, "comp_type", "manufacturing_comp_type");
+        var incomingVendorOptions = SharedOptions(provider, "vendor");
+
+        Assert.Contains("XC - RAmos I.C TM", incomingSourceOptions);
+        Assert.Contains("0 - Only Test", incomingCompTypeOptions);
+        Assert.Contains("X - RAMBO", incomingVendorOptions);
+
+        var moduleSourceOptions = SharedOptions(provider, "module_source", "manufacturing_module_source");
+        var moduleCompTypeOptions = SharedOptions(provider, "comp_type", "manufacturing_comp_type");
+
+        Assert.Contains("XM - Ramos Module TM", moduleSourceOptions);
+        Assert.Contains("7 - EMC/Laser-Marking", moduleCompTypeOptions);
+    }
+
+    [Fact]
+    public void GeneratePreview_ManufacturingComp_AllowsZeroCompTypeAndUsesXcSource()
+    {
         var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
         var provider = new SpecProvider(specDirectory);
         provider.Load();
-        var catalog = new RamosPartGenerator.Api.Services.LookupCatalog(provider);
+        var service = new IncomingCompService(provider, new ProductTextService(provider));
 
-        var page = catalog.BuildModule("30");
-        var dimmTypeField = Assert.Single(page.Fields, field => field.Key == "dimmTypeCode");
+        var rows = service.GeneratePreview(new IncomingCompRequest
+        {
+            Revision = "30",
+            SourceCode = "XC",
+            DramTypeCode = "R",
+            DensityCode = "AH",
+            BitOrganizationCode = "08",
+            BankCode = "6",
+            InterfaceCode = "V",
+            RevisionCode = "A",
+            CompTypeCode = "0",
+            DieBrandCode = "G",
+            VendorCode = "G",
+            PackageTypeCode = "B",
+            TesterCode = "W"
+        });
 
-        Assert.Contains("C - Comp", dimmTypeField.Options);
-        Assert.DoesNotContain("Comp - Comp", dimmTypeField.Options);
+        Assert.Equal("Comp", rows[0].Kind);
+        Assert.Equal("XCRAH086VA-0BGWG", rows[0].PartCode);
+        Assert.Equal(7, rows.Count);
+        Assert.Contains("Only Test Comp", rows[0].Specification);
+        Assert.DoesNotContain("TP", rows[0].Specification);
+    }
+
+    [Fact]
+    public void ParseCompPart_ManufacturingCompMapsToModuleManufacturingSource()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var incomingService = new IncomingCompService(provider, new ProductTextService(provider));
+        var moduleService = new ModuleService(provider, new ProductTextService(provider));
+
+        var parsedComp = incomingService.ParseCompPart("30", "XCRAH086VA-0BGWG");
+        var parsedModule = moduleService.ParseCompPart("30", "XCRAH086VA-0BGWG");
+
+        Assert.Equal("XC", parsedComp.SourceCode);
+        Assert.Equal("0", parsedComp.CompTypeCode);
+        Assert.Equal("XM", parsedModule.ModuleSourceCode);
+        Assert.Equal("0", parsedModule.ModuleCompTypeCode);
+    }
+
+    [Fact]
+    public void GeneratePreview_ManufacturingModule_AllowsZeroCompTypeAndXmSource()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleSourceCode = "XM",
+            DramTypeCode = "R",
+            DimmTypeCode = "D",
+            ModuleDensityCode = "AG",
+            DieDensityCode = "A",
+            CompositionCode = "8",
+            RankCode = "1",
+            GenerationCode = "A",
+            IcBrandCode = "G",
+            ModuleCompTypeCode = "0",
+            CompTestCode = "W",
+            ModuleSmtCode = "R",
+            ModuleTestCode = "R",
+            SpeedCode = "WM",
+            PcbCode = "7",
+            VendorCode = "G"
+        });
+
+        Assert.Equal("XMRDAG58A1A-G0WRRWM7G", rows[0].PartCode);
+        Assert.Equal("XMRDAG58A1A-G0WRRWM7G-TNAGA00", rows[1].PartCode);
+        Assert.Contains("RAmos", rows[0].Specification);
+        Assert.DoesNotContain("TP", rows[0].Specification);
+    }
+
+    [Fact]
+    public void GeneratePreview_Module_RejectsSmallDensityForStandardDimm()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var ex = Assert.Throws<InvalidOperationException>(() => service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleSourceCode = "TM",
+            DramTypeCode = "R",
+            DimmTypeCode = "D",
+            ModuleDensityCode = "1G",
+            DieDensityCode = "A",
+            CompositionCode = "8",
+            RankCode = "1",
+            GenerationCode = "A",
+            IcBrandCode = "G",
+            ModuleCompTypeCode = "P",
+            CompTestCode = "W",
+            ModuleSmtCode = "R",
+            ModuleTestCode = "R",
+            SpeedCode = "WM",
+            PcbCode = "7",
+            VendorCode = "G",
+            PurchaserCode = "H"
+        }));
+
+        Assert.Contains("Comp", ex.Message);
+    }
+
+    [Fact]
+    public void GeneratePreview_Module_AllowsSmallDensityAndNoAssyForCompDimm()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleSourceCode = "TM",
+            DramTypeCode = "R",
+            DimmTypeCode = "C",
+            ModuleDensityCode = "1G",
+            DieDensityCode = "A",
+            CompositionCode = "8",
+            RankCode = "0",
+            GenerationCode = "A",
+            IcBrandCode = "G",
+            ModuleCompTypeCode = "P",
+            CompTestCode = "W",
+            ModuleSmtCode = "0",
+            ModuleTestCode = "0",
+            SpeedCode = "WM",
+            PcbCode = "0",
+            VendorCode = "G",
+            PurchaserCode = "H"
+        });
+
+        Assert.Equal("DDR5 Comp 1GB COO : KR", rows[0].GeneralInfo);
+        Assert.Contains("DDR5 16Gb x8 A-die GIGA S1 Partial Comp TP", rows[0].Specification);
+        Assert.DoesNotContain("PCB", rows[0].Specification);
     }
 
     [Fact]

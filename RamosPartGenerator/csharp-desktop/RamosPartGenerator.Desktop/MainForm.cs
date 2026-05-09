@@ -11,13 +11,18 @@ public sealed class MainForm : Form
     private const int ActionLabelWidth = 190;
     private const int ActionButtonColumnWidth = 470;
     private const int ActionRowHeight = 36;
+    private const int ModeRowHeight = 34;
     private const int FieldLabelWidth = 220;
     private static readonly string[] IncomingDdr4DensityCodes = { "4G", "8G", "AG" };
     private static readonly string[] IncomingDdr5DensityCodes = { "AH", "HE", "BH" };
     private static readonly string[] ModuleDdr5SpeedCodes = { "QK", "WM", "CM", "CQ", "CR", "CS" };
+    private static readonly string[] ModuleStandardDensityCodes = { "4G", "8G", "AG", "BG" };
     private static readonly string[] ModuleDdr4DieDensityCodes = { "4", "8", "A" };
     private static readonly string[] ModuleDdr5DieDensityCodes = { "A", "H", "B" };
     private static readonly string[] ModuleDdr5BankVddCodes = { "5", "6", "7" };
+    private static readonly string[] ManufacturingCompSourceCodes = { "XC", "ZC" };
+    private static readonly string[] ManufacturingModuleSourceCodes = { "XM", "ZM" };
+    private static readonly string[] ManufacturingCompTypeCodes = { "0", "1", "2", "3", "4", "5", "6", "7" };
 
     private readonly DesktopAppServices _services;
     private readonly DesktopLookupPage _incomingLookups;
@@ -32,6 +37,10 @@ public sealed class MainForm : Form
     private TextBox _moduleFullPartText = null!;
     private Label _incomingStatusLabel = null!;
     private Label _moduleStatusLabel = null!;
+    private RadioButton _incomingStandardMode = null!;
+    private RadioButton _incomingManufacturingMode = null!;
+    private RadioButton _moduleStandardMode = null!;
+    private RadioButton _moduleManufacturingMode = null!;
     private bool _updatingIncoming;
     private bool _updatingModule;
 
@@ -195,7 +204,7 @@ public sealed class MainForm : Form
             Padding = new Padding(8),
             BackColor = RamosTheme.Surface
         };
-        page.RowStyles.Add(new RowStyle(SizeType.Absolute, 76F));
+        page.RowStyles.Add(new RowStyle(SizeType.Absolute, ModeRowHeight + ActionRowHeight + 8F));
         page.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
         page.RowStyles.Add(new RowStyle(SizeType.Percent, 48F));
         page.RowStyles.Add(new RowStyle(SizeType.Percent, 52F));
@@ -230,12 +239,14 @@ public sealed class MainForm : Form
         {
             Dock = DockStyle.Fill,
             ColumnCount = 2,
-            RowCount = 1,
+            RowCount = 2,
             Padding = new Padding(0, 4, 0, 4),
             BackColor = RamosTheme.Surface
         };
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, ActionButtonColumnWidth));
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, ModeRowHeight));
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, ActionRowHeight));
 
         var inputPanel = new Panel { Dock = DockStyle.Fill, BackColor = RamosTheme.Surface };
         _incomingCompPartText = new TextBox { Dock = DockStyle.Fill, CharacterCasing = CharacterCasing.Upper };
@@ -247,8 +258,10 @@ public sealed class MainForm : Form
         buttons.Controls.Add(BuildButton("Export Excel", ExportIncoming));
         buttons.Controls.Add(BuildButton("Reset", ResetIncoming));
 
-        panel.Controls.Add(inputPanel, 0, 0);
+        panel.Controls.Add(BuildIncomingModeSelector(), 0, 0);
+        panel.Controls.Add(inputPanel, 0, 1);
         panel.Controls.Add(buttons, 1, 0);
+        panel.SetRowSpan(buttons, 2);
         return panel;
     }
 
@@ -263,7 +276,7 @@ public sealed class MainForm : Form
             Padding = new Padding(8),
             BackColor = RamosTheme.Surface
         };
-        page.RowStyles.Add(new RowStyle(SizeType.Absolute, 108F));
+        page.RowStyles.Add(new RowStyle(SizeType.Absolute, 142F));
         page.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
         page.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
         page.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
@@ -298,14 +311,15 @@ public sealed class MainForm : Form
         {
             Dock = DockStyle.Fill,
             ColumnCount = 2,
-            RowCount = 2,
+            RowCount = 3,
             Padding = new Padding(0, 4, 0, 4),
             BackColor = RamosTheme.Surface
         };
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, ActionButtonColumnWidth));
-        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, ModeRowHeight));
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, ActionRowHeight));
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, ActionRowHeight));
 
         var inputRows = new TableLayoutPanel
         {
@@ -327,11 +341,117 @@ public sealed class MainForm : Form
         buttons.Controls.Add(BuildButton("Export Excel", ExportModule));
         buttons.Controls.Add(BuildButton("Reset", ResetModule));
 
-        panel.Controls.Add(inputRows, 0, 0);
+        panel.Controls.Add(BuildModuleModeSelector(), 0, 0);
+        panel.Controls.Add(inputRows, 0, 1);
         panel.SetRowSpan(inputRows, 2);
         panel.Controls.Add(buttons, 1, 0);
-        panel.SetRowSpan(buttons, 2);
+        panel.SetRowSpan(buttons, 3);
         return panel;
+    }
+
+    private Control BuildIncomingModeSelector()
+    {
+        (_incomingStandardMode, _incomingManufacturingMode) = CreateModeSelector(
+            isManufacturing =>
+            {
+                if (!_updatingIncoming)
+                {
+                    SetIncomingManufacturingMode(isManufacturing, clearFields: true);
+                }
+            },
+            "Standard",
+            "TM");
+        return BuildModeRow(_incomingStandardMode, _incomingManufacturingMode);
+    }
+
+    private Control BuildModuleModeSelector()
+    {
+        (_moduleStandardMode, _moduleManufacturingMode) = CreateModeSelector(
+            isManufacturing =>
+            {
+                if (!_updatingModule)
+                {
+                    SetModuleManufacturingMode(isManufacturing, clearFields: true);
+                }
+            },
+            "Standard",
+            "TM");
+        return BuildModeRow(_moduleStandardMode, _moduleManufacturingMode);
+    }
+
+    private static (RadioButton Standard, RadioButton Manufacturing) CreateModeSelector(
+        Action<bool> onModeChanged,
+        string standardText,
+        string manufacturingText)
+    {
+        var standard = new RadioButton
+        {
+            Text = standardText,
+            AutoSize = false,
+            Size = new Size(150, ModeRowHeight),
+            Checked = true,
+            CheckAlign = ContentAlignment.MiddleLeft,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Margin = new Padding(0, 0, 12, 0)
+        };
+        var manufacturing = new RadioButton
+        {
+            Text = manufacturingText,
+            AutoSize = false,
+            Size = new Size(110, ModeRowHeight),
+            CheckAlign = ContentAlignment.MiddleLeft,
+            TextAlign = ContentAlignment.MiddleLeft,
+            Margin = Padding.Empty
+        };
+
+        standard.CheckedChanged += (_, _) =>
+        {
+            if (standard.Checked)
+            {
+                onModeChanged(false);
+            }
+        };
+        manufacturing.CheckedChanged += (_, _) =>
+        {
+            if (manufacturing.Checked)
+            {
+                onModeChanged(true);
+            }
+        };
+
+        return (standard, manufacturing);
+    }
+
+    private static Control BuildModeRow(RadioButton standard, RadioButton manufacturing)
+    {
+        var row = new TableLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            Height = ModeRowHeight,
+            ColumnCount = 2,
+            RowCount = 1,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty,
+            BackColor = RamosTheme.Surface
+        };
+        row.RowStyles.Add(new RowStyle(SizeType.Absolute, ModeRowHeight));
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, ActionLabelWidth));
+        row.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        row.Controls.Add(BuildActionLabel("Part Mode"), 0, 0);
+
+        var options = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = false,
+            Margin = Padding.Empty,
+            Padding = Padding.Empty,
+            BackColor = RamosTheme.Surface
+        };
+        options.Controls.Add(standard);
+        options.Controls.Add(manufacturing);
+        row.Controls.Add(options, 1, 0);
+        return row;
     }
 
     private static TableLayoutPanel BuildActionTextRow(string labelText, TextBox textBox, Button? trailingButton = null)
@@ -605,6 +725,84 @@ public sealed class MainForm : Form
         return OptionsByCodes(ModuleOptions(key), codes);
     }
 
+    private bool IsIncomingManufacturingMode()
+    {
+        return _incomingManufacturingMode.Checked;
+    }
+
+    private bool IsModuleManufacturingMode()
+    {
+        return _moduleManufacturingMode.Checked;
+    }
+
+    private void SetIncomingManufacturingMode(bool isManufacturing, bool clearFields)
+    {
+        if (_incomingManufacturingMode.Checked != isManufacturing)
+        {
+            _incomingManufacturingMode.Checked = isManufacturing;
+        }
+
+        if (_incomingStandardMode.Checked == isManufacturing)
+        {
+            _incomingStandardMode.Checked = !isManufacturing;
+        }
+
+        if (clearFields)
+        {
+            ClearIncomingModeSensitiveFields();
+        }
+
+        if (!_updatingIncoming)
+        {
+            RefreshIncomingFieldRules();
+        }
+    }
+
+    private void SetModuleManufacturingMode(bool isManufacturing, bool clearFields)
+    {
+        if (_moduleManufacturingMode.Checked != isManufacturing)
+        {
+            _moduleManufacturingMode.Checked = isManufacturing;
+        }
+
+        if (_moduleStandardMode.Checked == isManufacturing)
+        {
+            _moduleStandardMode.Checked = !isManufacturing;
+        }
+
+        if (clearFields)
+        {
+            ClearModuleModeSensitiveFields();
+        }
+
+        if (!_updatingModule)
+        {
+            RefreshModuleFieldRules();
+        }
+    }
+
+    private void ClearIncomingModeSensitiveFields()
+    {
+        foreach (var key in new[] { "sourceCode", "compTypeCode", "purchaserCode" })
+        {
+            if (_incomingFields.TryGetValue(key, out var combo))
+            {
+                combo.Text = string.Empty;
+            }
+        }
+    }
+
+    private void ClearModuleModeSensitiveFields()
+    {
+        foreach (var key in new[] { "moduleSourceCode", "moduleCompTypeCode", "purchaserCode", "a100SpecialCode" })
+        {
+            if (_moduleFields.TryGetValue(key, out var combo))
+            {
+                combo.Text = string.Empty;
+            }
+        }
+    }
+
     private void HandleIncomingFieldChanged(string key)
     {
         if (_updatingIncoming)
@@ -658,6 +856,7 @@ public sealed class MainForm : Form
         _updatingIncoming = true;
         try
         {
+            SetIncomingManufacturingMode(false, clearFields: false);
             _incomingCompPartText.Text = string.Empty;
             foreach (var combo in _incomingFields.Values)
             {
@@ -703,6 +902,7 @@ public sealed class MainForm : Form
         _updatingIncoming = true;
         try
         {
+            SetIncomingManufacturingMode(ManufacturingCompSourceCodes.Contains(request.SourceCode, StringComparer.OrdinalIgnoreCase), clearFields: false);
             SetIncomingField("sourceCode", request.SourceCode);
             SetIncomingField("dramTypeCode", request.DramTypeCode);
             SetIncomingField("densityCode", request.DensityCode);
@@ -733,6 +933,25 @@ public sealed class MainForm : Form
         {
             var dramTypeCode = ReadIncomingCode("dramTypeCode");
             var sourceCode = ReadIncomingCode("sourceCode");
+            var isManufacturingMode = IsIncomingManufacturingMode();
+
+            if (ShouldRefreshOptions(changedKey, "sourceCode") &&
+                _incomingFields.TryGetValue("sourceCode", out var sourceCombo))
+            {
+                var sourceOptions = isManufacturingMode
+                    ? IncomingOptionsByCodes("sourceCode", ManufacturingCompSourceCodes)
+                    : OptionsExceptCodes(IncomingOptions("sourceCode"), ManufacturingCompSourceCodes);
+                SetComboOptions(sourceCombo, sourceOptions);
+            }
+
+            if (ShouldRefreshOptions(changedKey, "compTypeCode") &&
+                _incomingFields.TryGetValue("compTypeCode", out var compTypeCombo))
+            {
+                var compTypeOptions = isManufacturingMode
+                    ? IncomingOptionsByCodes("compTypeCode", ManufacturingCompTypeCodes)
+                    : OptionsExceptCodes(IncomingOptions("compTypeCode"), ManufacturingCompTypeCodes);
+                SetComboOptions(compTypeCombo, compTypeOptions);
+            }
 
             if (ShouldRefreshOptions(changedKey, "dramTypeCode") &&
                 _incomingFields.TryGetValue("densityCode", out var densityCombo))
@@ -788,7 +1007,7 @@ public sealed class MainForm : Form
                 }
             }
 
-            var isThirdParty = sourceCode is "T" or "B";
+            var isThirdParty = !isManufacturingMode && (sourceCode is "T" or "B");
             if (_incomingFields.TryGetValue("purchaserCode", out var purchaserCombo))
             {
                 purchaserCombo.Enabled = isThirdParty;
@@ -805,13 +1024,16 @@ public sealed class MainForm : Form
 
         var selectedDram = ReadIncomingCode("dramTypeCode");
         var selectedSource = ReadIncomingCode("sourceCode");
+        var selectedManufacturingMode = IsIncomingManufacturingMode();
         var dramText = selectedDram switch
         {
             "A" => "DDR4 fixed: 16Bank / POD 1.2V",
             "R" => "DDR5 fixed: 32Bank / POD 1.1V",
             _ => "Select DRAM Type to apply Bank / Interface defaults"
         };
-        var sourceText = selectedSource is "T" or "B" ? "Third-party source selected" : "Internal source selected";
+        var sourceText = selectedManufacturingMode
+            ? "TM source selected"
+            : selectedSource is "T" or "B" ? "Third-party source selected" : "Internal source selected";
         SetInfo(_incomingStatusLabel, $"{dramText} | Rev 30: Vendor + Purchaser | {sourceText}");
     }
 
@@ -871,6 +1093,7 @@ public sealed class MainForm : Form
         _updatingModule = true;
         try
         {
+            SetModuleManufacturingMode(false, clearFields: false);
             _moduleCompPartText.Text = string.Empty;
             _moduleFullPartText.Text = string.Empty;
             foreach (var combo in _moduleFields.Values)
@@ -928,6 +1151,7 @@ public sealed class MainForm : Form
         _updatingModule = true;
         try
         {
+            SetModuleManufacturingMode(ManufacturingModuleSourceCodes.Contains(request.ModuleSourceCode, StringComparer.OrdinalIgnoreCase), clearFields: false);
             SetModuleField("moduleSourceCode", request.ModuleSourceCode);
             SetModuleField("dramTypeCode", request.DramTypeCode);
             SetModuleField("dimmTypeCode", request.DimmTypeCode);
@@ -967,8 +1191,37 @@ public sealed class MainForm : Form
         {
             var sourceCode = ReadModuleCode("moduleSourceCode");
             var dramTypeCode = ReadModuleDramCode();
+            var dimmTypeCode = ReadModuleCode("dimmTypeCode");
             var speedCode = ReadModuleCode("speedCode");
-            var isThirdParty = sourceCode is "TM" or "BM";
+            var isManufacturingMode = IsModuleManufacturingMode();
+            var isThirdParty = !isManufacturingMode && (sourceCode is "TM" or "BM");
+
+            if (ShouldRefreshOptions(changedKey, "moduleSourceCode") &&
+                _moduleFields.TryGetValue("moduleSourceCode", out var sourceCombo))
+            {
+                var sourceOptions = isManufacturingMode
+                    ? ModuleOptionsByCodes("moduleSourceCode", ManufacturingModuleSourceCodes)
+                    : OptionsExceptCodes(ModuleOptions("moduleSourceCode"), ManufacturingModuleSourceCodes);
+                SetComboOptions(sourceCombo, sourceOptions);
+            }
+
+            if (ShouldRefreshOptions(changedKey, "moduleCompTypeCode") &&
+                _moduleFields.TryGetValue("moduleCompTypeCode", out var compTypeCombo))
+            {
+                var compTypeOptions = isManufacturingMode
+                    ? ModuleOptionsByCodes("moduleCompTypeCode", ManufacturingCompTypeCodes)
+                    : OptionsExceptCodes(ModuleOptions("moduleCompTypeCode"), ManufacturingCompTypeCodes);
+                SetComboOptions(compTypeCombo, compTypeOptions);
+            }
+
+            if (ShouldRefreshOptions(changedKey, "dimmTypeCode") &&
+                _moduleFields.TryGetValue("moduleDensityCode", out var moduleDensityCombo))
+            {
+                var densityOptions = dimmTypeCode == "C"
+                    ? ModuleOptions("moduleDensityCode")
+                    : ModuleOptionsByCodes("moduleDensityCode", ModuleStandardDensityCodes);
+                SetComboOptions(moduleDensityCombo, densityOptions);
+            }
 
             if (ShouldRefreshOptions(changedKey, "dramTypeCode") &&
                 _moduleFields.TryGetValue("speedCode", out var speedCombo))
@@ -1040,10 +1293,13 @@ public sealed class MainForm : Form
         }
 
         var sourceText = ReadModuleCode("moduleSourceCode");
+        var isSelectedManufacturingMode = IsModuleManufacturingMode();
         var sourceStatus = string.IsNullOrEmpty(sourceText)
             ? "Parse Comp Part or Module Part to derive source"
             : $"Source: {sourceText}";
-        var partyStatus = sourceText is "TM" or "BM"
+        var partyStatus = isSelectedManufacturingMode
+            ? "TM module"
+            : (sourceText is "TM" or "BM")
             ? "Third-party module"
             : string.IsNullOrEmpty(sourceText) ? "Source not determined yet" : "Internal module";
         SetInfo(_moduleStatusLabel, $"{sourceStatus} | Rev 30: I.C Brand / Comp Type / Vendor + Purchaser | {partyStatus}");
@@ -1099,6 +1355,14 @@ public sealed class MainForm : Form
         var allowedCodes = new HashSet<string>(codes, StringComparer.OrdinalIgnoreCase);
         return options
             .Where(option => allowedCodes.Contains(DisplayHelpers.ExtractCode(option)))
+            .ToArray();
+    }
+
+    private static string[] OptionsExceptCodes(IEnumerable<string> options, params string[] codes)
+    {
+        var excludedCodes = new HashSet<string>(codes, StringComparer.OrdinalIgnoreCase);
+        return options
+            .Where(option => !excludedCodes.Contains(DisplayHelpers.ExtractCode(option)))
             .ToArray();
     }
 

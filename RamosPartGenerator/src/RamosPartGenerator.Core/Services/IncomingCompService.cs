@@ -16,7 +16,6 @@ public sealed class IncomingCompService
 
     public IReadOnlyList<GeneratedPartRow> GeneratePreview(IncomingCompRequest request)
     {
-        var revisionSpec = _specProvider.GetRevisionSpec(request.Revision);
         var sourceCode = NormalizeCode(request.SourceCode);
         var dramTypeCode = NormalizeCode(request.DramTypeCode);
         var densityCode = NormalizeCode(request.DensityCode);
@@ -33,6 +32,7 @@ public sealed class IncomingCompService
         var testerCode = NormalizeCode(request.TesterCode);
 
         var isThirdParty = IsThirdPartyIncoming(sourceCode);
+        var isManufacturing = IsManufacturingCompSource(sourceCode);
         ValidateRequiredCodes(
             sourceCode,
             dramTypeCode,
@@ -41,19 +41,23 @@ public sealed class IncomingCompService
             bankCode,
             interfaceCode,
             partRevisionCode,
-            compTypeCode,
             dieBrandCode,
             packageTypeCode,
             testerCode);
+        if (!isManufacturing)
+        {
+            ValidateRequiredCodes(compTypeCode);
+        }
+
         ValidateDensity(dramTypeCode, densityCode);
         ValidateAllowedCodes(
-            ("Source", sourceCode, Codes("incoming_source"), false),
+            ("Source", sourceCode, Codes("incoming_source", "manufacturing_comp_source"), false),
             ("DRAM Type", dramTypeCode, Codes("dram_type"), false),
             ("Bit", bitOrganizationCode, Codes("bit"), false),
             ("Bank", bankCode, Codes("bank_ddr4", "bank_ddr5"), false),
             ("Interface", interfaceCode, Codes("interface_ddr4", "interface_ddr5"), false),
             ("Part Revision", partRevisionCode, PartRevisionCodes, false),
-            ("Comp Type", compTypeCode, Codes("comp_type"), false),
+            ("Comp Type", compTypeCode, Codes(isManufacturing ? "manufacturing_comp_type" : "comp_type"), false),
             ("Die Brand", dieBrandCode, Codes("die_brand"), false),
             ("Vendor", vendorCode, Codes("vendor"), false),
             ("Purchaser", purchaserCode, Codes("purchaser"), true),
@@ -63,19 +67,6 @@ public sealed class IncomingCompService
         ValidateDramDefaults(dramTypeCode, bankCode, interfaceCode);
         ValidateRev30Fields(isThirdParty, vendorCode, purchaserCode);
 
-        var dddPartCode = BuildIncomingPartCode(
-            dramTypeCode,
-            densityCode,
-            bitOrganizationCode,
-            bankCode,
-            interfaceCode,
-            partRevisionCode,
-            compTypeCode,
-            dieBrandCode,
-            sourceCode,
-            vendorCode,
-            purchaserCode,
-            compType2Code);
         var compPartCode = BuildCompPartCode(
             dramTypeCode,
             densityCode,
@@ -96,18 +87,33 @@ public sealed class IncomingCompService
         var densityLabel = GetDensityLabel(densityCode);
         var bitLabel = $"x{bitOrganizationCode.TrimStart('0')}";
         var dieRevisionLabel = $"{partRevisionCode}-die";
-        var compTypeLabel = ProductTextService.GetCompTypeDescription(compTypeCode);
+        var compTypeLabel = ProductTextService.GetCompTypeDescription(compTypeCode, isManufacturing);
 
-        var incomingTexts = _productTextService.BuildIncomingCompTexts(
-            dddPartCode, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
         var compTexts = _productTextService.BuildIncomingCompTexts(
             compPartCode, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
 
-        var rows = new List<GeneratedPartRow>
+        var rows = new List<GeneratedPartRow>();
+        if (!isManufacturing)
         {
-            new("입고", dddPartCode, incomingTexts.Name, incomingTexts.GeneralInfo, incomingTexts.Specification),
-            new("Comp", compPartCode, compTexts.Name, compTexts.GeneralInfo, compTexts.Specification)
-        };
+            var incomingPartCode = BuildIncomingPartCode(
+                dramTypeCode,
+                densityCode,
+                bitOrganizationCode,
+                bankCode,
+                interfaceCode,
+                partRevisionCode,
+                compTypeCode,
+                dieBrandCode,
+                sourceCode,
+                vendorCode,
+                purchaserCode,
+                compType2Code);
+            var incomingTexts = _productTextService.BuildIncomingCompTexts(
+                incomingPartCode, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
+            rows.Add(new("Incoming", incomingPartCode, incomingTexts.Name, incomingTexts.GeneralInfo, incomingTexts.Specification));
+        }
+
+        rows.Add(new("Comp", compPartCode, compTexts.Name, compTexts.GeneralInfo, compTexts.Specification));
 
         if (dramTypeCode == "R")
         {
@@ -131,20 +137,19 @@ public sealed class IncomingCompService
         return rows;
     }
 
-
     public IncomingCompRequest ParseCompPart(string revision, string partCode)
     {
         var revisionSpec = _specProvider.GetRevisionSpec(revision);
         var normalizedPartCode = (partCode ?? string.Empty).Trim().ToUpperInvariant();
         if (string.IsNullOrWhiteSpace(normalizedPartCode))
         {
-            throw new InvalidOperationException("Comp Full Part가 비어 있습니다.");
+            throw new InvalidOperationException("Comp Full Part is empty.");
         }
 
         var separatorIndex = normalizedPartCode.IndexOf('-');
         if (separatorIndex <= 0 || separatorIndex >= normalizedPartCode.Length - 1)
         {
-            throw new InvalidOperationException("Comp Full Part 형식이 잘못되었습니다. '-' 위치를 확인하세요.");
+            throw new InvalidOperationException("Comp Full Part format is invalid. Check '-' position.");
         }
 
         var prefix = normalizedPartCode[..separatorIndex];
@@ -152,12 +157,12 @@ public sealed class IncomingCompService
 
         if (prefix.Length != 10)
         {
-            throw new InvalidOperationException("Comp Full Part prefix 길이가 올바르지 않습니다.");
+            throw new InvalidOperationException("Comp Full Part prefix length is invalid.");
         }
 
         if (tail.Length < 4)
         {
-            throw new InvalidOperationException("Comp Full Part tail 길이가 올바르지 않습니다.");
+            throw new InvalidOperationException("Comp Full Part tail length is invalid.");
         }
 
         var compFamily = prefix[..2];
@@ -181,7 +186,7 @@ public sealed class IncomingCompService
 
         if (remaining.Length < 1)
         {
-            throw new InvalidOperationException("Rev 30 Comp Full Part에는 Vendor가 필요합니다.");
+            throw new InvalidOperationException("Rev 30 Comp Full Part requires Vendor.");
         }
 
         vendorCode = remaining.Substring(0, 1);
@@ -226,9 +231,16 @@ public sealed class IncomingCompService
             TesterCode = testerCode
         };
     }
+
     private bool IsThirdPartyIncoming(string sourceCode)
     {
         return _specProvider.SharedSpec.Families.TryGetValue("incoming_third_party", out var familyCodes)
+            && familyCodes.Contains(sourceCode, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private bool IsManufacturingCompSource(string sourceCode)
+    {
+        return _specProvider.SharedSpec.Families.TryGetValue("comp_manufacturing", out var familyCodes)
             && familyCodes.Contains(sourceCode, StringComparer.OrdinalIgnoreCase);
     }
 
@@ -242,7 +254,7 @@ public sealed class IncomingCompService
         }
 
         value = value.ToUpperInvariant();
-        return value is "" or "0" or "(없음)" or "(NONE)" or "NONE" ? "0" : value;
+        return value is "" or "(NONE)" or "NONE" ? "0" : value;
     }
 
     private static bool IsBlankCode(string code) => code == "0";
@@ -251,7 +263,7 @@ public sealed class IncomingCompService
     {
         if (requiredCodes.Any(IsBlankCode))
         {
-            throw new InvalidOperationException("입고/Comp 생성 필수 코드가 비어 있습니다.");
+            throw new InvalidOperationException("Incoming/Comp required code is empty.");
         }
     }
 
@@ -268,9 +280,9 @@ public sealed class IncomingCompService
         {
             throw new InvalidOperationException(dramTypeCode switch
             {
-                "A" => "DDR4: Density는 4G / 8G / AG만 허용됩니다.",
-                "R" => "DDR5: Density는 AH / HE / BH만 허용됩니다.",
-                _ => "지원하지 않는 DRAM Type입니다."
+                "A" => "DDR4: Density must be 4G / 8G / AG.",
+                "R" => "DDR5: Density must be AH / HE / BH.",
+                _ => "Unsupported DRAM Type."
             });
         }
     }
@@ -279,12 +291,12 @@ public sealed class IncomingCompService
     {
         if (IsBlankCode(vendorCode))
         {
-            throw new InvalidOperationException("Rev 30에서는 Vendor가 반드시 필요합니다.");
+            throw new InvalidOperationException("Rev 30 requires Vendor.");
         }
 
         if (isThirdParty && IsBlankCode(purchaserCode))
         {
-            throw new InvalidOperationException("Third-Party Comp는 Purchaser가 반드시 필요합니다.");
+            throw new InvalidOperationException("Third-Party Comp requires Purchaser.");
         }
     }
 
@@ -299,7 +311,7 @@ public sealed class IncomingCompService
 
             if (!allowedCodes.Contains(code, StringComparer.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException($"{fieldName} 코드가 허용 목록에 없습니다: {code}");
+                throw new InvalidOperationException($"{fieldName} code is not allowed: {code}");
             }
         }
     }
@@ -308,7 +320,7 @@ public sealed class IncomingCompService
     {
         return optionKeys
             .SelectMany(key => _specProvider.SharedSpec.CodeOptions.TryGetValue(key, out var options)
-                ? options.Select(ExtractCode).Where(code => !IsBlankCode(code))
+                ? options.Select(ExtractCode)
                 : throw new KeyNotFoundException($"Code option set '{key}' was not found."))
             .ToArray();
     }
@@ -322,12 +334,12 @@ public sealed class IncomingCompService
     {
         if (dramTypeCode == "A" && (bankCode != "5" || interfaceCode != "W"))
         {
-            throw new InvalidOperationException("DDR4는 Bank 5 / Interface W만 허용됩니다.");
+            throw new InvalidOperationException("DDR4 only allows Bank 5 / Interface W.");
         }
 
         if (dramTypeCode == "R" && (bankCode != "6" || interfaceCode != "V"))
         {
-            throw new InvalidOperationException("DDR5는 Bank 6 / Interface V만 허용됩니다.");
+            throw new InvalidOperationException("DDR5 only allows Bank 6 / Interface V.");
         }
     }
 
@@ -419,10 +431,11 @@ public sealed class IncomingCompService
             "T" => "TC",
             "C" => "CC",
             "B" => "BC",
-            _ => throw new InvalidOperationException($"지원하지 않는 입고 SourceCode입니다: {sourceCode}")
+            "XC" => "XC",
+            "ZC" => "ZC",
+            _ => throw new InvalidOperationException($"Unsupported Incoming SourceCode: {sourceCode}")
         };
     }
-
 
     private static string MapCompToIncomingFamily(string compFamily)
     {
@@ -432,7 +445,9 @@ public sealed class IncomingCompService
             "TC" => "T",
             "CC" => "C",
             "BC" => "B",
-            _ => throw new InvalidOperationException($"지원하지 않는 Comp Family입니다: {compFamily}")
+            "XC" => "XC",
+            "ZC" => "ZC",
+            _ => throw new InvalidOperationException($"Unsupported Comp Family: {compFamily}")
         };
     }
 
@@ -455,5 +470,3 @@ public sealed class IncomingCompService
         };
     }
 }
-
-

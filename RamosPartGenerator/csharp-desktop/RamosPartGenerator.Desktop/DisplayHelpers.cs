@@ -19,7 +19,7 @@ internal static class DisplayHelpers
     public static string ResolveDisplayValue(string? code, IEnumerable<string> options)
     {
         var normalizedCode = ExtractCode(code).ToUpperInvariant();
-        if (string.IsNullOrEmpty(normalizedCode) || normalizedCode == "0")
+        if (string.IsNullOrEmpty(normalizedCode))
         {
             return string.Empty;
         }
@@ -27,7 +27,12 @@ internal static class DisplayHelpers
         var matched = options.FirstOrDefault(option =>
             ExtractCode(option).Equals(normalizedCode, StringComparison.OrdinalIgnoreCase));
 
-        return matched ?? normalizedCode;
+        if (matched is not null)
+        {
+            return matched;
+        }
+
+        return normalizedCode == "0" ? string.Empty : normalizedCode;
     }
 
     public static string ExtractModuleDramCode(string? rawValue)

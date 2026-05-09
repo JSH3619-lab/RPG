@@ -13,7 +13,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{7664477F
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RamosPartGenerator.Tests", "tests\RamosPartGenerator.Tests\RamosPartGenerator.Tests.csproj", "{735B544B-9924-4554-847C-C0A1307DCADC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RamosPartGenerator.Api", "src\RamosPartGenerator.Api\RamosPartGenerator.Api.csproj", "{99607D29-8603-43AD-8486-E75106CCB568}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "csharp-desktop", "csharp-desktop", "{A3A9D6B0-9C07-4F03-AB72-5830057040E4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RamosPartGenerator.Desktop", "csharp-desktop\RamosPartGenerator.Desktop\RamosPartGenerator.Desktop.csproj", "{8B2C50B2-9351-48E1-B731-F3D2633FE5B1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,15 +38,15 @@ Global
 		{735B544B-9924-4554-847C-C0A1307DCADC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{735B544B-9924-4554-847C-C0A1307DCADC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{735B544B-9924-4554-847C-C0A1307DCADC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{99607D29-8603-43AD-8486-E75106CCB568}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{99607D29-8603-43AD-8486-E75106CCB568}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{99607D29-8603-43AD-8486-E75106CCB568}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{99607D29-8603-43AD-8486-E75106CCB568}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B2C50B2-9351-48E1-B731-F3D2633FE5B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B2C50B2-9351-48E1-B731-F3D2633FE5B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B2C50B2-9351-48E1-B731-F3D2633FE5B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B2C50B2-9351-48E1-B731-F3D2633FE5B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{8821042D-30B3-4D16-8AA0-7D228A44E912} = {FD491997-E6BC-461D-999B-98698C48DE6E}
 		{0C4B0C52-0058-4A93-A7BA-0825C488747F} = {FD491997-E6BC-461D-999B-98698C48DE6E}
 		{735B544B-9924-4554-847C-C0A1307DCADC} = {7664477F-B8CA-4D83-8B50-CEDD9EC1BD8F}
-		{99607D29-8603-43AD-8486-E75106CCB568} = {FD491997-E6BC-461D-999B-98698C48DE6E}
+		{8B2C50B2-9351-48E1-B731-F3D2633FE5B1} = {A3A9D6B0-9C07-4F03-AB72-5830057040E4}
 	EndGlobalSection
 EndGlobal

@@ -4,7 +4,7 @@
 
 ## 작업 원칙
 
-- 이 프로젝트에서는 Web/frontend 코드는 수정하지 않는다.
+- 현재 실행/개발 대상은 C# WinForms Desktop, Core, Excel exporter, specs, tests다.
 - C# WinForms Desktop, Core, Excel exporter, specs, tests만 작업한다.
 - exe 생성, 커밋, 푸시는 사용자가 명시적으로 요청한 경우에만 진행한다.
 - C# 전체 리뷰, 최적화, 리팩토링, 영향 범위 확인 작업은 code graph review MCP가 사용 가능하면 먼저 사용한다.
@@ -81,8 +81,13 @@ dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/Ramo
 - Module Density, Die Density, Composition, Rank 조합이 계산상 맞지 않으면 생성하지 않는다.
 - IC count 표기는 `64 / compositionWidth * rankCount` 기준이다.
 - A100 Module 규칙:
-  - 품목규격의 ADATA 계열 표기는 `A100`으로 바꾼다.
+  - Third-party Module에서 `Comp Test Site = A`, `Vendor = A`, `Purchaser = A`가 모두 맞을 때만 `A100`으로 표기한다.
+  - Purchaser만 `A`이거나 Vendor/Purchaser만 `A`인 경우는 A100이 아니며 Source 기준 표기를 사용한다.
   - A100은 `TP` 표현을 쓰지 않는다.
+- Third-party Module Source 기준 표기:
+  - `TM`은 `RAmos TP`
+  - `BM`은 `CT TP`
+  - Purchaser 값은 이 표기를 바꾸지 않는다.
 - PCB 규격 표기:
   - Brain Power 계열은 `BP PCB`
   - HJ/선진 계열은 `HJ PCB`

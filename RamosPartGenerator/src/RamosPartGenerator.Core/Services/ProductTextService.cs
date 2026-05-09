@@ -88,7 +88,8 @@ public sealed class ProductTextService
         string specialCode3Code,
         string? speedText = null,
         bool isCompSale = false,
-        string compTestCode = "")
+        string compTestCode = "",
+        bool isManufacturing = false)
     {
         var shared = _specProvider.SharedSpec;
         var name = partCode;
@@ -110,7 +111,8 @@ public sealed class ProductTextService
                 isThirdParty,
                 specialCode2Code,
                 specialCode3Code,
-                speedText)
+                speedText,
+                isManufacturing)
             : BuildStandardModuleSpecification(
                 moduleSourceCode,
                 dramTypeLabel,
@@ -213,7 +215,8 @@ public sealed class ProductTextService
         bool isThirdParty,
         string specialCode2Code,
         string specialCode3Code,
-        string? speedText)
+        string? speedText,
+        bool isManufacturing)
     {
         var isA100 = IsModuleA100(isThirdParty, compTestCode, vendorCode, purchaserCode);
         var specPieces = new List<string>
@@ -223,7 +226,7 @@ public sealed class ProductTextService
             GetCompositionText(compositionCode),
             GetGenerationDieLabel(generationCode),
             GetIcBrandShortLabel(icBrandCode),
-            GetCompTypeDescription(moduleCompTypeCode),
+            GetCompTypeDescription(moduleCompTypeCode, isManufacturing),
             "Comp"
         };
 
@@ -269,6 +272,8 @@ public sealed class ProductTextService
         {
             "RM" or "TM" => "RAmos",
             "CM" or "BM" => "CT",
+            "XM" => "RAmos",
+            "ZM" => "CT",
             _ => string.Empty
         };
     }
@@ -277,6 +282,7 @@ public sealed class ProductTextService
     {
         return pcbCode switch
         {
+            "0" => string.Empty,
             "1" or "3" => "DN",
             "2" or "4" => "HJ",
             "5" => "X-comp",
@@ -371,14 +377,30 @@ public sealed class ProductTextService
             "C" => "S6",
             "N" => "S9",
             "A" => "A100",
-            "X" => "Ramaxel",
+            "X" => "RAMBO",
             _ => icBrandCode
         };
     }
 
-    public static string GetCompTypeDescription(string compTypeCode)
+    public static string GetCompTypeDescription(string compTypeCode, bool isManufacturing = false)
     {
         var normalizedCode = NormalizeLookupCode(compTypeCode);
+        if (isManufacturing)
+        {
+            return normalizedCode switch
+            {
+                "0" => "Only Test",
+                "1" => "Reball",
+                "2" => "EMC",
+                "3" => "Laser-Marking",
+                "4" => "Reball/EMC",
+                "5" => "Reball/EMC/Laser-Marking",
+                "6" => "Reball/Laser-Marking",
+                "7" => "EMC/Laser-Marking",
+                _ => normalizedCode
+            };
+        }
+
         return normalizedCode switch
         {
             "P" => "Partial",

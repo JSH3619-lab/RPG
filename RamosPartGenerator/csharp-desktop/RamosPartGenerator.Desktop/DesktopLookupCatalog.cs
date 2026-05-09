@@ -30,14 +30,14 @@ internal sealed class DesktopLookupCatalog
         var tail = spec.IncomingComp.TailModel;
         var fields = new List<DesktopLookupField>
         {
-            new("sourceCode", "Source", "common", true, true, Options("incoming_source")),
+            new("sourceCode", "Source", "common", true, true, Options("incoming_source", "manufacturing_comp_source")),
             new("dramTypeCode", "DRAM Type", "common", true, true, Options("dram_type")),
             new("densityCode", "Density", "common", true, true, Options("density_ddr4", "density_ddr5")),
             new("bitOrganizationCode", "Bit", "common", true, true, Options("bit")),
             new("bankCode", "Bank", "common", true, true, Options("bank_ddr4", "bank_ddr5")),
             new("interfaceCode", "Interface", "common", true, true, Options("interface_ddr4", "interface_ddr5")),
             new("revisionCode", "Part Revision", "common", true, true, AlphabetOptions()),
-            new("compTypeCode", "Comp Type", "comp", true, true, Options("comp_type")),
+            new("compTypeCode", "Comp Type", "comp", true, true, Options("comp_type", "manufacturing_comp_type")),
             new("dieBrandCode", "Die Brand", "comp", true, true, Options("die_brand")),
             new("vendorCode", tail.VendorFieldLabel, "comp", true, true, Options("vendor")),
             new("purchaserCode", tail.PurchaserFieldLabel ?? "Purchaser", "comp", tail.PurchaserFieldPresent, true, Options("purchaser")),
@@ -61,7 +61,7 @@ internal sealed class DesktopLookupCatalog
 
         var fields = new List<DesktopLookupField>
         {
-            new("moduleSourceCode", "Source", "base", true, true, Options("module_source")),
+            new("moduleSourceCode", "Source", "base", true, true, Options("module_source", "manufacturing_module_source")),
             new("dramTypeCode", "DRAM Type", "base", true, true, Options("dram_type")),
             new("dimmTypeCode", "DIMM Type", "base", true, true, dimmTypeItems),
             new("moduleDensityCode", "Module Density", "base", true, true, Options("module_density")),
@@ -71,7 +71,7 @@ internal sealed class DesktopLookupCatalog
             new("rankCode", "Rank", "base", true, true, rankItems),
             new("generationCode", "Generation", "base", true, true, AlphabetOptions()),
             new("icBrandCode", "I.C Brand", "structure", true, true, Options("module_ic_brand")),
-            new("moduleCompTypeCode", "Comp Type", "structure", true, true, Options("comp_type")),
+            new("moduleCompTypeCode", "Comp Type", "structure", true, true, Options("comp_type", "manufacturing_comp_type")),
             new("compTestCode", "Comp Test Site", "structure", true, true, Options("tester")),
             new("speedCode", "Speed", "structure", true, true, Options("speed_ddr4", "speed_ddr5")),
             new("moduleSmtCode", "SMT Site", "structure", true, true, new[] { "0 - No Ass'y" }.Concat(Options("tester")).ToArray()),

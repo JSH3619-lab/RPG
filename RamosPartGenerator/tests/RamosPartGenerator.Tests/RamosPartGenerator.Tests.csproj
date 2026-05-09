@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\RamosPartGenerator.Api\RamosPartGenerator.Api.csproj" />
     <ProjectReference Include="..\..\src\RamosPartGenerator.Core\RamosPartGenerator.Core.csproj" />
     <ProjectReference Include="..\..\src\RamosPartGenerator.Excel\RamosPartGenerator.Excel.csproj" />
   </ItemGroup>

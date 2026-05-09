@@ -24,6 +24,7 @@ public sealed class ModuleService
         var revisionSpec = _specProvider.GetRevisionSpec(request.Revision);
         var effectiveRequest = BuildEffectiveRequest(request, revisionSpec);
         var isThirdParty = IsThirdPartyModule(effectiveRequest.ModuleSourceCode);
+        var isManufacturing = IsManufacturingModule(effectiveRequest.ModuleSourceCode);
 
         ValidateRequiredCodes(
             effectiveRequest.ModuleSourceCode,
@@ -32,15 +33,14 @@ public sealed class ModuleService
             effectiveRequest.ModuleDensityCode,
             effectiveRequest.CompositionCode,
             effectiveRequest.DieDensityCode,
-            effectiveRequest.RankCode,
             effectiveRequest.GenerationCode,
-            effectiveRequest.ModuleCompTypeCode,
             effectiveRequest.CompTestCode,
-            effectiveRequest.ModuleSmtCode,
-            effectiveRequest.ModuleTestCode,
             effectiveRequest.SpeedCode,
-            effectiveRequest.PcbCode,
             effectiveRequest.VendorCode);
+        if (!isManufacturing)
+        {
+            ValidateRequiredCodes(effectiveRequest.ModuleCompTypeCode);
+        }
 
         if (IsBlankCode(effectiveRequest.IcBrandCode))
         {
@@ -53,7 +53,7 @@ public sealed class ModuleService
         }
 
         ValidateAllowedCodes(
-            ("Source", effectiveRequest.ModuleSourceCode, Codes("module_source"), false),
+            ("Source", effectiveRequest.ModuleSourceCode, Codes("module_source", "manufacturing_module_source"), false),
             ("DRAM Type", effectiveRequest.DramTypeCode, Codes("dram_type").Select(code => code == "A" ? "4" : code).ToArray(), false),
             ("DIMM Type", effectiveRequest.DimmTypeCode, CodesWithAdditions("dimm_type_common", "C"), false),
             ("Module Density", effectiveRequest.ModuleDensityCode, Codes("module_density"), false),
@@ -63,7 +63,7 @@ public sealed class ModuleService
             ("Rank", effectiveRequest.RankCode, CodesWithAdditions("rank", "0"), false),
             ("Generation", effectiveRequest.GenerationCode, GenerationCodes, false),
             ("I.C Brand", effectiveRequest.IcBrandCode, Codes("module_ic_brand"), false),
-            ("Comp Type", effectiveRequest.ModuleCompTypeCode, Codes("comp_type"), false),
+            ("Comp Type", effectiveRequest.ModuleCompTypeCode, Codes(isManufacturing ? "manufacturing_comp_type" : "comp_type"), false),
             ("Comp Test Site", effectiveRequest.CompTestCode, Codes("tester"), false),
             ("SMT Site", effectiveRequest.ModuleSmtCode, CodesWithAdditions("tester", "0"), false),
             ("Module Test Site", effectiveRequest.ModuleTestCode, CodesWithAdditions("tester", "0"), false),
@@ -77,6 +77,7 @@ public sealed class ModuleService
             ("Grade Code", effectiveRequest.GradeCode, Codes("grade_code"), true),
             ("Product Bin", effectiveRequest.ProductBinCode, Codes("product_bin"), true));
         ValidateModuleSpeedAndBankVdd(effectiveRequest);
+        ValidateModuleDensityForDimmType(effectiveRequest);
         ValidateModuleDieDensity(effectiveRequest);
         ValidateModuleDensityCombination(effectiveRequest);
         ValidateA100Special(effectiveRequest);
@@ -115,7 +116,8 @@ public sealed class ModuleService
             effectiveRequest.SpecialCode3Code,
             null,
             isCompSale,
-            effectiveRequest.CompTestCode);
+            effectiveRequest.CompTestCode,
+            isManufacturing);
         var binText = _productTextService.BuildModuleTexts(
             binPartCode,
             effectiveRequest.ModuleSourceCode,
@@ -136,7 +138,8 @@ public sealed class ModuleService
             effectiveRequest.SpecialCode3Code,
             speedText,
             isCompSale,
-            effectiveRequest.CompTestCode);
+            effectiveRequest.CompTestCode,
+            isManufacturing);
 
         var rows = new List<GeneratedPartRow>
         {
@@ -310,6 +313,7 @@ public sealed class ModuleService
         }
 
         ValidateModuleSpeedAndBankVdd(request);
+        ValidateModuleDensityForDimmType(request);
         ValidateModuleDieDensity(request);
         ValidateModuleDensityCombination(request);
 
@@ -337,6 +341,8 @@ public sealed class ModuleService
             "TC" => "TM",
             "CC" => "CM",
             "BC" => "BM",
+            "XC" => "XM",
+            "ZC" => "ZM",
             _ => string.Empty
         };
     }
@@ -627,6 +633,8 @@ public sealed class ModuleService
     {
         return moduleDensityCode switch
         {
+            "1G" => "1GB",
+            "2G" => "2GB",
             "4G" => "4GB",
             "8G" => "8GB",
             "AG" => "16GB",
@@ -680,6 +688,11 @@ public sealed class ModuleService
         return moduleSourceCode is "TM" or "BM";
     }
 
+    private static bool IsManufacturingModule(string moduleSourceCode)
+    {
+        return moduleSourceCode is "XM" or "ZM";
+    }
+
     private static bool IsBlankCode(string code)
     {
         return string.IsNullOrWhiteSpace(code) || code == "0";
@@ -713,7 +726,7 @@ public sealed class ModuleService
     {
         return optionKeys
             .SelectMany(key => _specProvider.SharedSpec.CodeOptions.TryGetValue(key, out var options)
-                ? options.Select(ExtractCode).Where(code => !IsBlankCode(code))
+                ? options.Select(ExtractCode)
                 : throw new KeyNotFoundException($"Code option set '{key}' was not found."))
             .ToArray();
     }
@@ -813,8 +826,22 @@ public sealed class ModuleService
         }
     }
 
+    private static void ValidateModuleDensityForDimmType(ModuleRequest request)
+    {
+        if (request.ModuleDensityCode is "1G" or "2G" &&
+            !request.DimmTypeCode.Equals("C", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException("Module Density 1GB / 2GB는 DIMM Type Comp에서만 사용할 수 있습니다.");
+        }
+    }
+
     private static void ValidateModuleDensityCombination(ModuleRequest request)
     {
+        if (request.DimmTypeCode.Equals("C", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
         if (!TryGetModuleDensityGb(request.ModuleDensityCode, out var selectedModuleGb) ||
             !TryGetDieDensityGb(request.DieDensityCode, out var dieDensityGb) ||
             !TryGetCompositionWidth(request.CompositionCode, out var compositionWidth) ||
