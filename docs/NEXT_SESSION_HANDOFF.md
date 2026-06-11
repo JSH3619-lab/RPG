@@ -1,6 +1,6 @@
 # Ramos Part Generator 다음 세션 인수인계
 
-최종 정리일: 2026-05-04
+최종 정리일: 2026-05-10
 
 ## 작업 원칙
 
@@ -50,7 +50,22 @@ dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/Ramo
 - 외부 `specs` 폴더가 있으면 우선 사용하고, 없으면 embedded specs로 fallback한다.
 - exe 아이콘은 `RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/Assets/RamosPartGenerator.ico`를 사용한다.
 
+## 운영 로그
+
+- 로그 위치: `%LocalAppData%\RamosPartGenerator\logs\yyyyMMdd.log`
+- 예: `C:\Users\<사용자>\AppData\Local\RamosPartGenerator\logs\20260510.log`
+- 로그 형식: `[yyyy-MM-dd HH:mm:ss.fff] [LEVEL] Event ...`
+- 기록 대상: 프로그램 시작/종료, spec 로딩, 모드 전환, Comp/MDL 파싱, 생성, Export, 예외
+- 보관 정책: 최근 7일 로그만 보관하며, 프로그램 실행 중 첫 로그 기록 시 오래된 `.log` 파일을 자동 삭제한다.
+- 유지보수용으로 PartCode, 모드, 결과 row 수, 에러 메시지 중심으로 남기고 전체 입력값 덤프는 피한다.
+
 ## 최근 반영된 주요 규칙
+
+### UI/운영
+
+- Incoming/Comp 화면의 Part Mode 라디오 버튼은 `Standard`, `TM` 표기를 사용한다.
+- Incoming/Comp의 `Comp Full Part` 입력창과 `Parse` 버튼은 Module 화면과 같은 행 배치로 맞췄다.
+- 로그 시간은 한국 로컬 사용 기준으로 timezone offset 없이 `[2026-05-10 10:25:16.536]` 형식으로 기록한다.
 
 ### 공통 표시/Export
 

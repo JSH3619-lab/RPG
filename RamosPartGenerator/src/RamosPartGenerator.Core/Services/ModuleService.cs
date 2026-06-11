@@ -59,7 +59,7 @@ public sealed class ModuleService
             ("Module Density", effectiveRequest.ModuleDensityCode, Codes("module_density"), false),
             ("Bank / VDD", effectiveRequest.BankVddCode, Codes("module_bank_vdd"), true),
             ("Die Density", effectiveRequest.DieDensityCode, Codes("module_die_density"), false),
-            ("Composition", effectiveRequest.CompositionCode, Codes("bit").Select(code => code == "16" ? "6" : code.TrimStart('0')).ToArray(), false),
+            ("Composition", effectiveRequest.CompositionCode, ModuleCompositionCodes(isManufacturing), false),
             ("Rank", effectiveRequest.RankCode, CodesWithAdditions("rank", "0"), false),
             ("Generation", effectiveRequest.GenerationCode, GenerationCodes, false),
             ("I.C Brand", effectiveRequest.IcBrandCode, Codes("module_ic_brand"), false),
@@ -69,7 +69,7 @@ public sealed class ModuleService
             ("Module Test Site", effectiveRequest.ModuleTestCode, CodesWithAdditions("tester", "0"), false),
             ("Speed", effectiveRequest.SpeedCode, Codes("speed_ddr4", "speed_ddr5"), false),
             ("PCB", effectiveRequest.PcbCode, Codes("pcb"), false),
-            ("Vendor", effectiveRequest.VendorCode, Codes("vendor"), false),
+            ("Vendor", effectiveRequest.VendorCode, Codes(isManufacturing ? "vendor_tm" : "vendor"), false),
             ("Purchaser", effectiveRequest.PurchaserCode, Codes("purchaser"), true),
             ("A100 Special", effectiveRequest.A100SpecialCode, Codes("a100_special"), true),
             ("Special Code 2", effectiveRequest.SpecialCode2Code, Codes("module_special_code2"), true),
@@ -364,6 +364,7 @@ public sealed class ModuleService
             "04" => "4",
             "08" => "8",
             "16" => "6",
+            "48" => "9",
             _ => string.Empty
         };
     }
@@ -736,6 +737,21 @@ public sealed class ModuleService
         return Codes(optionKey).Concat(additions).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     }
 
+    private IReadOnlyCollection<string> ModuleCompositionCodes(bool isManufacturing)
+    {
+        var optionKeys = isManufacturing ? new[] { "bit", "bit_tm" } : new[] { "bit" };
+        return Codes(optionKeys)
+            .Select(code => code switch
+            {
+                "04" => "4",
+                "08" => "8",
+                "16" => "6",
+                "48" => "9",
+                _ => code.TrimStart('0')
+            })
+            .ToArray();
+    }
+
     private static string ExtractCode(string option)
     {
         return NormalizeCode(option);
@@ -786,7 +802,7 @@ public sealed class ModuleService
         width = compositionCode switch
         {
             "4" => 4,
-            "8" => 8,
+            "8" or "9" => 8,
             "6" => 16,
             _ => 0
         };

@@ -1,10 +1,13 @@
 # 현재 확정 규칙
 
-원본 문서는 `RAMOS_DRAM_PART (Rev.30).pdf`만 기준으로 한다.
+원본 문서는 아래 두 파일을 기준으로 한다.
+
+- `RAMOS_DRAM_PART (Rev.30.3).pdf`
+- `RAMOS_DRAM_TM_PART (Rev 2.1).pdf`
 
 ## 지원 Rev
-- 현재 운영: `30`
-- UI에는 `30`만 노출한다.
+- 현재 운영 키: `30`
+- 표시 기준: DRAM PART `Rev.30.3`, TM PART `Rev 2.1`
 
 ## 기본 원칙
 - LPDDR 계열은 범위에서 제외한다.
@@ -14,6 +17,7 @@
 
 ## 입고/Comp 규칙
 - 입고 Part, Comp Part, Comp BIN을 함께 생성한다.
+- TM PART도 입고 Part, Comp Part, Comp BIN을 함께 생성한다.
 - DDR4는 `-CA` BIN 1개만 생성한다.
 - DDR5는 `-CA`부터 `-CF`까지 생성한다.
 - Comp BIN 속도:
@@ -27,14 +31,26 @@
 ## Third-party 규칙
 - Third-party family: `TC`, `BC`, `TM`, `BM`
 - Internal family: `RC`, `CC`, `RM`, `CM`
+- TM manufacturing family: 입고 `X`, `Z`; Comp `XC`, `ZC`; Module `XM`, `ZM`
 - Rev 30에서는 Third-party 계열에 `Purchaser`가 필수다.
 - Internal family에서는 Third-party 전용 필드를 비활성화한다.
+- TM manufacturing 계열은 `Purchaser`를 비워 두고 Vendor는 `X - RAMBO`만 사용한다.
 
 ## Rev 30 주요 차이
 - 입고/Comp에서는 `Vendor`와 `Purchaser`를 분리한다.
 - Module에서는 `I.C Brand`와 `Comp Type`을 분리한다.
 - Rev 30 Module의 `DIMM Type`에는 `Comp`가 포함된다.
 - Rev 30 Module의 `Rank`에는 `0 : Comp`가 포함된다.
+
+## Rev 30.3 / TM Rev 2.1 확인 차이
+- DRAM PART Rev.30.3의 Product Bin에는 `B00 : H/T (Hammer Test)`가 포함된다.
+- DRAM PART Rev.30.3의 Module Density에는 `CG : 64GB`가 포함된다.
+- TM PART Rev 2.1의 입고 Source는 `X : RAmos TM`, `Z : CTST TM`이다.
+- TM PART Rev 2.1의 Comp Source는 `XC : RAmos I.C TM`, `ZC : CTST I.C TM`이다.
+- TM PART Rev 2.1의 Module Source는 `XM : Ramos Module TM`, `ZM : CTST Module TM`이다.
+- TM PART Rev 2.1의 Comp Type은 `0`부터 `7`까지의 제조 공정 코드다.
+- TM PART Rev 2.1에는 Bit `48 : x8 (x4 -> x8)` 및 Module Composition `9 : x8 (x4 -> x8)`가 추가된다.
+- Comp Type 2에는 `1 : Reball / EMC`가 포함된다.
 
 ## Module 규칙
 - Module은 `Comp Full Part`를 해석해 공통 정보를 먼저 채울 수 있다.

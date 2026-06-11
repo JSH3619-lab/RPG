@@ -38,6 +38,19 @@ cd C:\RPG\RamosPartGenerator
 dotnet test RamosPartGenerator.sln
 ```
 
+단일 exe 생성:
+
+```powershell
+cd C:\RPG
+dotnet publish RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop\RamosPartGenerator.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o RamosPartGenerator\publish
+```
+
+배포 산출물:
+
+```text
+C:\RPG\RamosPartGenerator\publish\RamosPartGenerator.Desktop.exe
+```
+
 ## 프로젝트 구조
 
 ```text
@@ -67,6 +80,25 @@ C:\RPG
 - `SpecProvider`: `specs` JSON 로딩
 - `ProductTextService`: 품명, General Info, Specification 텍스트 생성
 - `RegistrationExcelExporter`: 등록용 Excel 파일 생성
+
+## 운영 로그
+
+프로그램 실행 로그는 사용자 PC의 LocalAppData 아래에 일자별로 남습니다.
+
+```text
+%LocalAppData%\RamosPartGenerator\logs\yyyyMMdd.log
+```
+
+예:
+
+```text
+C:\Users\<사용자>\AppData\Local\RamosPartGenerator\logs\20260510.log
+```
+
+- 로그 형식: `[yyyy-MM-dd HH:mm:ss.fff] [LEVEL] Event ...`
+- 기록 대상: 프로그램 시작/종료, spec 로딩, 모드 전환, Comp/MDL 파싱, 생성, Export, 예외
+- 보관 정책: 최근 7일 로그만 보관하며, 프로그램 실행 중 첫 로그 기록 시 오래된 `.log` 파일을 자동 삭제
+- 입력값 전체 덤프는 남기지 않고 PartCode, 모드, 결과 row 수, 에러 메시지 중심으로 기록
 
 ## 요구 환경
 

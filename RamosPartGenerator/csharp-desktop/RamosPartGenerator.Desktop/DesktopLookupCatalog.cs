@@ -30,16 +30,16 @@ internal sealed class DesktopLookupCatalog
         var tail = spec.IncomingComp.TailModel;
         var fields = new List<DesktopLookupField>
         {
-            new("sourceCode", "Source", "common", true, true, Options("incoming_source", "manufacturing_comp_source")),
+            new("sourceCode", "Source", "common", true, true, Options("incoming_source", "manufacturing_incoming_source")),
             new("dramTypeCode", "DRAM Type", "common", true, true, Options("dram_type")),
             new("densityCode", "Density", "common", true, true, Options("density_ddr4", "density_ddr5")),
-            new("bitOrganizationCode", "Bit", "common", true, true, Options("bit")),
+            new("bitOrganizationCode", "Bit", "common", true, true, Options("bit", "bit_tm")),
             new("bankCode", "Bank", "common", true, true, Options("bank_ddr4", "bank_ddr5")),
             new("interfaceCode", "Interface", "common", true, true, Options("interface_ddr4", "interface_ddr5")),
             new("revisionCode", "Part Revision", "common", true, true, AlphabetOptions()),
             new("compTypeCode", "Comp Type", "comp", true, true, Options("comp_type", "manufacturing_comp_type")),
             new("dieBrandCode", "Die Brand", "comp", true, true, Options("die_brand")),
-            new("vendorCode", tail.VendorFieldLabel, "comp", true, true, Options("vendor")),
+            new("vendorCode", tail.VendorFieldLabel, "comp", true, true, Options("vendor", "vendor_tm")),
             new("purchaserCode", tail.PurchaserFieldLabel ?? "Purchaser", "comp", tail.PurchaserFieldPresent, true, Options("purchaser")),
             new("compType2Code", "Comp Type 2", "comp", true, true, Options("comp_type2")),
             new("packageTypeCode", "Package", "extra", true, true, Options("package_type")),
@@ -77,7 +77,7 @@ internal sealed class DesktopLookupCatalog
             new("moduleSmtCode", "SMT Site", "structure", true, true, new[] { "0 - No Ass'y" }.Concat(Options("tester")).ToArray()),
             new("moduleTestCode", "Module Test Site", "structure", true, true, new[] { "0 - No Ass'y" }.Concat(Options("tester")).ToArray()),
             new("pcbCode", "PCB", "structure", true, true, Options("pcb")),
-            new("vendorCode", spec.Module.VendorFieldLabel, "output", true, true, Options("vendor")),
+            new("vendorCode", spec.Module.VendorFieldLabel, "output", true, true, Options("vendor", "vendor_tm")),
             new("purchaserCode", spec.Module.PurchaserFieldLabel ?? "Purchaser", "output", spec.Module.PurchaserFieldPresent, true, Options("purchaser")),
             new("a100SpecialCode", "A100 Special", "output", true, true, Options("a100_special")),
             new("specialCode2Code", "Special Code 2", "output", true, true, Options("module_special_code2")),
@@ -100,12 +100,13 @@ internal sealed class DesktopLookupCatalog
 
     private IReadOnlyList<string> ModuleCompositionOptions()
     {
-        return Options("bit")
+        return Options("bit", "bit_tm")
             .Select(option => DisplayHelpers.ExtractCode(option) switch
             {
                 "04" => "4 - x4",
                 "08" => "8 - x8",
                 "16" => "6 - x16",
+                "48" => "9 - x8 (x4 -> x8)",
                 _ => option
             })
             .ToArray();

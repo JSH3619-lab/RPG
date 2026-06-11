@@ -62,11 +62,11 @@ public class UnitTest1
     public void BuildLookups_IncludesManufacturingSourcesCompTypesAndRamboVendor()
     {
         var provider = LoadProvider();
-        var incomingSourceOptions = SharedOptions(provider, "incoming_source", "manufacturing_comp_source");
+        var incomingSourceOptions = SharedOptions(provider, "incoming_source", "manufacturing_incoming_source");
         var incomingCompTypeOptions = SharedOptions(provider, "comp_type", "manufacturing_comp_type");
-        var incomingVendorOptions = SharedOptions(provider, "vendor");
+        var incomingVendorOptions = SharedOptions(provider, "vendor", "vendor_tm");
 
-        Assert.Contains("XC - RAmos I.C TM", incomingSourceOptions);
+        Assert.Contains("X - RAmos TM", incomingSourceOptions);
         Assert.Contains("0 - Only Test", incomingCompTypeOptions);
         Assert.Contains("X - RAMBO", incomingVendorOptions);
 
@@ -78,7 +78,7 @@ public class UnitTest1
     }
 
     [Fact]
-    public void GeneratePreview_ManufacturingComp_AllowsZeroCompTypeAndUsesXcSource()
+    public void GeneratePreview_ManufacturingComp_GeneratesIncomingCompAndBins()
     {
         var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
         var provider = new SpecProvider(specDirectory);
@@ -88,7 +88,7 @@ public class UnitTest1
         var rows = service.GeneratePreview(new IncomingCompRequest
         {
             Revision = "30",
-            SourceCode = "XC",
+            SourceCode = "X",
             DramTypeCode = "R",
             DensityCode = "AH",
             BitOrganizationCode = "08",
@@ -97,16 +97,18 @@ public class UnitTest1
             RevisionCode = "A",
             CompTypeCode = "0",
             DieBrandCode = "G",
-            VendorCode = "G",
+            VendorCode = "X",
             PackageTypeCode = "B",
             TesterCode = "W"
         });
 
-        Assert.Equal("Comp", rows[0].Kind);
-        Assert.Equal("XCRAH086VA-0BGWG", rows[0].PartCode);
-        Assert.Equal(7, rows.Count);
-        Assert.Contains("Only Test Comp", rows[0].Specification);
-        Assert.DoesNotContain("TP", rows[0].Specification);
+        Assert.Equal("Incoming", rows[0].Kind);
+        Assert.Equal("X4RAH086VA-0GXEL", rows[0].PartCode);
+        Assert.Equal("Comp", rows[1].Kind);
+        Assert.Equal("XCRAH086VA-0BGWX", rows[1].PartCode);
+        Assert.Equal(8, rows.Count);
+        Assert.Contains("Only Test Comp", rows[1].Specification);
+        Assert.DoesNotContain("TP", rows[1].Specification);
     }
 
     [Fact]
@@ -121,7 +123,7 @@ public class UnitTest1
         var parsedComp = incomingService.ParseCompPart("30", "XCRAH086VA-0BGWG");
         var parsedModule = moduleService.ParseCompPart("30", "XCRAH086VA-0BGWG");
 
-        Assert.Equal("XC", parsedComp.SourceCode);
+        Assert.Equal("X", parsedComp.SourceCode);
         Assert.Equal("0", parsedComp.CompTypeCode);
         Assert.Equal("XM", parsedModule.ModuleSourceCode);
         Assert.Equal("0", parsedModule.ModuleCompTypeCode);
@@ -153,13 +155,46 @@ public class UnitTest1
             ModuleTestCode = "R",
             SpeedCode = "WM",
             PcbCode = "7",
-            VendorCode = "G"
+            VendorCode = "X"
         });
 
-        Assert.Equal("XMRDAG58A1A-G0WRRWM7G", rows[0].PartCode);
-        Assert.Equal("XMRDAG58A1A-G0WRRWM7G-TNAGA00", rows[1].PartCode);
+        Assert.Equal("XMRDAG58A1A-G0WRRWM7X", rows[0].PartCode);
+        Assert.Equal("XMRDAG58A1A-G0WRRWM7X-TNAGA00", rows[1].PartCode);
         Assert.Contains("RAmos", rows[0].Specification);
         Assert.DoesNotContain("TP", rows[0].Specification);
+    }
+
+    [Fact]
+    public void ParseCompPart_ManufacturingBit48MapsToModuleComposition9()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var incomingService = new IncomingCompService(provider, new ProductTextService(provider));
+        var moduleService = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = incomingService.GeneratePreview(new IncomingCompRequest
+        {
+            Revision = "30",
+            SourceCode = "X",
+            DramTypeCode = "R",
+            DensityCode = "AH",
+            BitOrganizationCode = "48",
+            BankCode = "6",
+            InterfaceCode = "V",
+            RevisionCode = "A",
+            CompTypeCode = "3",
+            DieBrandCode = "G",
+            VendorCode = "X",
+            PackageTypeCode = "B",
+            TesterCode = "W"
+        });
+
+        Assert.Equal("XCRAH486VA-3BGWX", rows[1].PartCode);
+
+        var parsedModule = moduleService.ParseCompPart("30", rows[1].PartCode);
+
+        Assert.Equal("9", parsedModule.CompositionCode);
     }
 
     [Fact]

@@ -5,7 +5,7 @@ namespace RamosPartGenerator.Desktop;
 
 internal static class AppLog
 {
-    private const int RetentionDays = 30;
+    private const int RetentionDays = 7;
     private static readonly object Sync = new();
     private static bool _retentionChecked;
 
@@ -82,8 +82,9 @@ internal static class AppLog
     private static string BuildLine(string level, string eventName, Exception? exception, IEnumerable<(string Key, string? Value)> details)
     {
         var builder = new StringBuilder();
-        builder.Append(DateTimeOffset.Now.ToString("yyyy-MM-dd HH:mm:ss.fff zzz", CultureInfo.InvariantCulture));
-        builder.Append(" [").Append(level).Append("] ");
+        builder.Append('[');
+        builder.Append(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture));
+        builder.Append("] [").Append(level).Append("] ");
         builder.Append(eventName);
 
         foreach (var (key, value) in details)

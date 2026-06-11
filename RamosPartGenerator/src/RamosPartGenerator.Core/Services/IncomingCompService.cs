@@ -32,7 +32,7 @@ public sealed class IncomingCompService
         var testerCode = NormalizeCode(request.TesterCode);
 
         var isThirdParty = IsThirdPartyIncoming(sourceCode);
-        var isManufacturing = IsManufacturingCompSource(sourceCode);
+        var isManufacturing = IsManufacturingIncomingSource(sourceCode);
         ValidateRequiredCodes(
             sourceCode,
             dramTypeCode,
@@ -51,15 +51,15 @@ public sealed class IncomingCompService
 
         ValidateDensity(dramTypeCode, densityCode);
         ValidateAllowedCodes(
-            ("Source", sourceCode, Codes("incoming_source", "manufacturing_comp_source"), false),
+            ("Source", sourceCode, Codes("incoming_source", "manufacturing_incoming_source"), false),
             ("DRAM Type", dramTypeCode, Codes("dram_type"), false),
-            ("Bit", bitOrganizationCode, Codes("bit"), false),
+            ("Bit", bitOrganizationCode, Codes(isManufacturing ? new[] { "bit", "bit_tm" } : new[] { "bit" }), false),
             ("Bank", bankCode, Codes("bank_ddr4", "bank_ddr5"), false),
             ("Interface", interfaceCode, Codes("interface_ddr4", "interface_ddr5"), false),
             ("Part Revision", partRevisionCode, PartRevisionCodes, false),
             ("Comp Type", compTypeCode, Codes(isManufacturing ? "manufacturing_comp_type" : "comp_type"), false),
             ("Die Brand", dieBrandCode, Codes("die_brand"), false),
-            ("Vendor", vendorCode, Codes("vendor"), false),
+            ("Vendor", vendorCode, Codes(isManufacturing ? "vendor_tm" : "vendor"), false),
             ("Purchaser", purchaserCode, Codes("purchaser"), true),
             ("Comp Type 2", compType2Code, Codes("comp_type2"), true),
             ("Package", packageTypeCode, Codes("package_type"), false),
@@ -85,7 +85,7 @@ public sealed class IncomingCompService
 
         var dramTypeLabel = dramTypeCode == "R" ? "DDR5" : "DDR4";
         var densityLabel = GetDensityLabel(densityCode);
-        var bitLabel = $"x{bitOrganizationCode.TrimStart('0')}";
+        var bitLabel = GetBitLabel(bitOrganizationCode);
         var dieRevisionLabel = $"{partRevisionCode}-die";
         var compTypeLabel = ProductTextService.GetCompTypeDescription(compTypeCode, isManufacturing);
 
@@ -93,25 +93,22 @@ public sealed class IncomingCompService
             compPartCode, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
 
         var rows = new List<GeneratedPartRow>();
-        if (!isManufacturing)
-        {
-            var incomingPartCode = BuildIncomingPartCode(
-                dramTypeCode,
-                densityCode,
-                bitOrganizationCode,
-                bankCode,
-                interfaceCode,
-                partRevisionCode,
-                compTypeCode,
-                dieBrandCode,
-                sourceCode,
-                vendorCode,
-                purchaserCode,
-                compType2Code);
-            var incomingTexts = _productTextService.BuildIncomingCompTexts(
-                incomingPartCode, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
-            rows.Add(new("Incoming", incomingPartCode, incomingTexts.Name, incomingTexts.GeneralInfo, incomingTexts.Specification));
-        }
+        var incomingPartCode = BuildIncomingPartCode(
+            dramTypeCode,
+            densityCode,
+            bitOrganizationCode,
+            bankCode,
+            interfaceCode,
+            partRevisionCode,
+            compTypeCode,
+            dieBrandCode,
+            sourceCode,
+            vendorCode,
+            purchaserCode,
+            compType2Code);
+        var incomingTexts = _productTextService.BuildIncomingCompTexts(
+            incomingPartCode, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
+        rows.Add(new("Incoming", incomingPartCode, incomingTexts.Name, incomingTexts.GeneralInfo, incomingTexts.Specification));
 
         rows.Add(new("Comp", compPartCode, compTexts.Name, compTexts.GeneralInfo, compTexts.Specification));
 
@@ -238,9 +235,9 @@ public sealed class IncomingCompService
             && familyCodes.Contains(sourceCode, StringComparer.OrdinalIgnoreCase);
     }
 
-    private bool IsManufacturingCompSource(string sourceCode)
+    private bool IsManufacturingIncomingSource(string sourceCode)
     {
-        return _specProvider.SharedSpec.Families.TryGetValue("comp_manufacturing", out var familyCodes)
+        return _specProvider.SharedSpec.Families.TryGetValue("incoming_manufacturing", out var familyCodes)
             && familyCodes.Contains(sourceCode, StringComparer.OrdinalIgnoreCase);
     }
 
@@ -431,8 +428,8 @@ public sealed class IncomingCompService
             "T" => "TC",
             "C" => "CC",
             "B" => "BC",
-            "XC" => "XC",
-            "ZC" => "ZC",
+            "X" => "XC",
+            "Z" => "ZC",
             _ => throw new InvalidOperationException($"Unsupported Incoming SourceCode: {sourceCode}")
         };
     }
@@ -445,8 +442,8 @@ public sealed class IncomingCompService
             "TC" => "T",
             "CC" => "C",
             "BC" => "B",
-            "XC" => "XC",
-            "ZC" => "ZC",
+            "XC" => "X",
+            "ZC" => "Z",
             _ => throw new InvalidOperationException($"Unsupported Comp Family: {compFamily}")
         };
     }
@@ -467,6 +464,17 @@ public sealed class IncomingCompService
             "HE" => "24Gb",
             "BH" => "32Gb",
             _ => densityCode
+        };
+    }
+
+    private static string GetBitLabel(string bitOrganizationCode)
+    {
+        return bitOrganizationCode switch
+        {
+            "04" => "x4",
+            "08" or "48" => "x8",
+            "16" => "x16",
+            _ => $"x{bitOrganizationCode.TrimStart('0')}"
         };
     }
 }

@@ -15,12 +15,18 @@ public sealed class MainForm : Form
     private const int FieldLabelWidth = 220;
     private static readonly string[] IncomingDdr4DensityCodes = { "4G", "8G", "AG" };
     private static readonly string[] IncomingDdr5DensityCodes = { "AH", "HE", "BH" };
+    private static readonly string[] IncomingStandardBitCodes = { "04", "08", "16" };
+    private static readonly string[] IncomingManufacturingBitCodes = { "04", "08", "16", "48" };
     private static readonly string[] ModuleDdr5SpeedCodes = { "QK", "WM", "CM", "CQ", "CR", "CS" };
-    private static readonly string[] ModuleStandardDensityCodes = { "4G", "8G", "AG", "BG" };
+    private static readonly string[] ModuleStandardDensityCodes = { "4G", "8G", "AG", "BG", "CG" };
     private static readonly string[] ModuleDdr4DieDensityCodes = { "4", "8", "A" };
     private static readonly string[] ModuleDdr5DieDensityCodes = { "A", "H", "B" };
     private static readonly string[] ModuleDdr5BankVddCodes = { "5", "6", "7" };
-    private static readonly string[] ManufacturingCompSourceCodes = { "XC", "ZC" };
+    private static readonly string[] ModuleStandardCompositionCodes = { "4", "8", "6" };
+    private static readonly string[] ModuleManufacturingCompositionCodes = { "4", "8", "6", "9" };
+    private static readonly string[] StandardVendorCodes = { "S", "G", "B", "A" };
+    private static readonly string[] ManufacturingVendorCodes = { "X" };
+    private static readonly string[] ManufacturingCompSourceCodes = { "X", "Z" };
     private static readonly string[] ManufacturingModuleSourceCodes = { "XM", "ZM" };
     private static readonly string[] ManufacturingCompTypeCodes = { "0", "1", "2", "3", "4", "5", "6", "7" };
 
@@ -803,7 +809,7 @@ public sealed class MainForm : Form
 
     private void ClearIncomingModeSensitiveFields()
     {
-        foreach (var key in new[] { "sourceCode", "compTypeCode", "purchaserCode" })
+        foreach (var key in new[] { "sourceCode", "bitOrganizationCode", "compTypeCode", "vendorCode", "purchaserCode" })
         {
             if (_incomingFields.TryGetValue(key, out var combo))
             {
@@ -814,7 +820,7 @@ public sealed class MainForm : Form
 
     private void ClearModuleModeSensitiveFields()
     {
-        foreach (var key in new[] { "moduleSourceCode", "moduleCompTypeCode", "purchaserCode", "a100SpecialCode" })
+        foreach (var key in new[] { "moduleSourceCode", "compositionCode", "moduleCompTypeCode", "vendorCode", "purchaserCode", "a100SpecialCode" })
         {
             if (_moduleFields.TryGetValue(key, out var combo))
             {
@@ -996,6 +1002,15 @@ public sealed class MainForm : Form
                 SetComboOptions(compTypeCombo, compTypeOptions);
             }
 
+            if (ShouldRefreshOptions(changedKey, "sourceCode") &&
+                _incomingFields.TryGetValue("bitOrganizationCode", out var bitCombo))
+            {
+                var bitOptions = isManufacturingMode
+                    ? IncomingOptionsByCodes("bitOrganizationCode", IncomingManufacturingBitCodes)
+                    : IncomingOptionsByCodes("bitOrganizationCode", IncomingStandardBitCodes);
+                SetComboOptions(bitCombo, bitOptions);
+            }
+
             if (ShouldRefreshOptions(changedKey, "dramTypeCode") &&
                 _incomingFields.TryGetValue("densityCode", out var densityCombo))
             {
@@ -1051,6 +1066,14 @@ public sealed class MainForm : Form
             }
 
             var isThirdParty = !isManufacturingMode && (sourceCode is "T" or "B");
+            if (_incomingFields.TryGetValue("vendorCode", out var vendorCombo))
+            {
+                var vendorOptions = isManufacturingMode
+                    ? IncomingOptionsByCodes("vendorCode", ManufacturingVendorCodes)
+                    : IncomingOptionsByCodes("vendorCode", StandardVendorCodes);
+                SetComboOptions(vendorCombo, vendorOptions);
+            }
+
             if (_incomingFields.TryGetValue("purchaserCode", out var purchaserCombo))
             {
                 purchaserCombo.Enabled = isThirdParty;
@@ -1289,6 +1312,15 @@ public sealed class MainForm : Form
                 SetComboOptions(compTypeCombo, compTypeOptions);
             }
 
+            if (ShouldRefreshOptions(changedKey, "moduleSourceCode") &&
+                _moduleFields.TryGetValue("compositionCode", out var compositionCombo))
+            {
+                var compositionOptions = isManufacturingMode
+                    ? ModuleOptionsByCodes("compositionCode", ModuleManufacturingCompositionCodes)
+                    : ModuleOptionsByCodes("compositionCode", ModuleStandardCompositionCodes);
+                SetComboOptions(compositionCombo, compositionOptions);
+            }
+
             if (ShouldRefreshOptions(changedKey, "dimmTypeCode") &&
                 _moduleFields.TryGetValue("moduleDensityCode", out var moduleDensityCombo))
             {
@@ -1345,6 +1377,14 @@ public sealed class MainForm : Form
 
             if (_moduleFields.TryGetValue("purchaserCode", out var purchaserCombo))
             {
+                if (_moduleFields.TryGetValue("vendorCode", out var vendorCombo))
+                {
+                    var vendorOptions = isManufacturingMode
+                        ? ModuleOptionsByCodes("vendorCode", ManufacturingVendorCodes)
+                        : ModuleOptionsByCodes("vendorCode", StandardVendorCodes);
+                    SetComboOptions(vendorCombo, vendorOptions);
+                }
+
                 purchaserCombo.Enabled = isThirdParty;
                 if (!isThirdParty)
                 {

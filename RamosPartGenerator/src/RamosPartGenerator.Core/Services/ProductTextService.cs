@@ -255,7 +255,7 @@ public sealed class ProductTextService
         return compositionCode switch
         {
             "4" => "x4",
-            "8" => "x8",
+            "8" or "9" => "x8",
             "6" => "x16",
             _ => compositionCode
         };
@@ -431,6 +431,7 @@ public sealed class ProductTextService
         return normalizedCode switch
         {
             "B" => "Reball",
+            "1" => "Reball/EMC",
             _ => string.Empty
         };
     }
