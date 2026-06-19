@@ -74,6 +74,8 @@ dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/Ramo
 - 비고 필드는 코드와 결과창에서 제거했다.
 - Export 파일명 기본값은 `DRAM 품목정보(yyMMdd).xlsx` 형식이다.
 - Export 글꼴은 Arial이다.
+- Export 열 폭은 헤더와 데이터 중 가장 긴 텍스트 기준으로 자동 계산한다.
+- `품목규격` 열은 Excel 최대 열 폭까지 확장 가능하며, 본문 셀은 강제 줄바꿈하지 않는다.
 - MDL 행이 포함된 Export에는 `품목명`과 `품목일반정보` 사이에 `영업코드` 컬럼을 추가한다.
 - 결과/Export 구분 표시는 `Comp`, `Comp BIN`, `MDL`, `MDL BIN`, `MDL Dummy`를 사용한다.
 
@@ -137,7 +139,7 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
 
 ## 테스트 기준
 
-현재 기준 전체 테스트는 33개다.
+현재 기준 전체 테스트는 50개다.
 
 주요 테스트 범위:
 
@@ -146,7 +148,7 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
 - A100 Incoming/Comp 규격
 - Module A100/PCB/IC Brand 규격
 - Module Repair Dummy 생성/미생성
-- Export `영업코드`, Arial, `MDL Dummy`
+- Export `영업코드`, Arial, `MDL Dummy`, 자동 열 폭
 - embedded specs fallback
 
 ## 커밋/배포 주의

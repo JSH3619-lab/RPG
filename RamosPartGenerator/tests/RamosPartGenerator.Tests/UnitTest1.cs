@@ -1005,6 +1005,42 @@ public class UnitTest1
     }
 
     [Fact]
+    public void ExportRegistration_AutoSizesSpecificationColumnFromLongestText()
+    {
+        var exporter = new RegistrationExcelExporter();
+        var content = exporter.Export(new[]
+        {
+            new GeneratedPartRow("Comp", "SHORT", "SHORT", "", "DDR4 short spec"),
+            new GeneratedPartRow(
+                "Comp BIN",
+                "ZCAAG485WA-5BGRX-CA",
+                "ZCAAG485WA-5BGRX-CA",
+                "",
+                "DDR4 16Gb x8 (x4 -> x8) A-die S1 Reball/EMC/Laser-Marking Comp 3200 MT/s")
+        });
+
+        using var stream = new MemoryStream(content);
+        using var archive = new ZipArchive(stream, ZipArchiveMode.Read);
+
+        using var sheetReader = new StreamReader(archive.GetEntry("xl/worksheets/sheet1.xml")!.Open());
+        var sheetXml = sheetReader.ReadToEnd();
+        var sheetDocument = System.Xml.Linq.XDocument.Parse(sheetXml);
+        var sheetNamespace = System.Xml.Linq.XNamespace.Get("http://schemas.openxmlformats.org/spreadsheetml/2006/main");
+        var specificationColumn = sheetDocument
+            .Descendants(sheetNamespace + "col")
+            .Single(column => column.Attribute("min")?.Value == "5" && column.Attribute("max")?.Value == "5");
+        var specificationWidth = double.Parse(
+            specificationColumn.Attribute("width")!.Value,
+            System.Globalization.CultureInfo.InvariantCulture);
+
+        Assert.True(specificationWidth > 56d);
+
+        using var stylesReader = new StreamReader(archive.GetEntry("xl/styles.xml")!.Open());
+        var stylesXml = stylesReader.ReadToEnd();
+        Assert.DoesNotContain("wrapText=\"1\"", stylesXml);
+    }
+
+    [Fact]
     public void ExportRegistration_FormatsModuleDummyKindAsMdlDummy()
     {
         var exporter = new RegistrationExcelExporter();

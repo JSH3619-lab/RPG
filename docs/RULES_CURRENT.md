@@ -76,6 +76,11 @@
 - DRAM / Comp / Comp BIN 품목규격은 `Comp Type` 설명을 포함한다.
 - Module / Module BIN 품목규격은 Module 관점으로 작성하고 `Comp Type` 설명은 넣지 않는다.
 
+## Excel Export 규칙
+- 등록용 Excel의 열 폭은 헤더와 데이터 중 가장 긴 텍스트를 기준으로 Export 시점에 자동 계산한다.
+- `품목규격` 열은 긴 규격을 한 줄로 볼 수 있도록 Excel 최대 열 폭까지 확장 가능하다.
+- 본문 셀에는 강제 줄바꿈을 적용하지 않는다.
+
 ## 빠른 입력 규칙
 - `Comp Full Part`, `Module Full Part` 직접 입력은 필드 자동 채움 보조 기능이다.
 - 직접 입력 후에도 길이, 구분자, 허용 코드, Rev별 필드 구조, Third-party 필수값을 검증한다.

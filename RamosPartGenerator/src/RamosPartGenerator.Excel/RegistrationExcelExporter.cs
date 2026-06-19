@@ -1,4 +1,5 @@
 using System.IO.Compression;
+using System.Globalization;
 using System.Security;
 using System.Text;
 using RamosPartGenerator.Core.Models;
@@ -39,13 +40,13 @@ public sealed class RegistrationExcelExporter
         var headers = includeSalesCode
             ? new[] { "구분", "품목코드", "품목명", "영업코드", "품목일반정보", "품목규격" }
             : new[] { "구분", "품목코드", "품목명", "품목일반정보", "품목규격" };
+        var dataRows = rows.Select(row => BuildRowValues(row, includeSalesCode)).ToArray();
 
         AppendRow(sheetData, 1, headers, 1);
 
-        for (var index = 0; index < rows.Count; index++)
+        for (var index = 0; index < dataRows.Length; index++)
         {
-            var row = rows[index];
-            AppendRow(sheetData, index + 2, BuildRowValues(row, includeSalesCode), 0);
+            AppendRow(sheetData, index + 2, dataRows[index], 0);
         }
 
         return $$"""
@@ -56,7 +57,7 @@ public sealed class RegistrationExcelExporter
           </sheetViews>
           <sheetFormatPr defaultRowHeight="15"/>
           <cols>
-        {{BuildColumnsXml(includeSalesCode)}}
+        {{BuildColumnsXml(headers, dataRows, includeSalesCode)}}
           </cols>
           <sheetData>
         {{sheetData}}
@@ -87,20 +88,42 @@ public sealed class RegistrationExcelExporter
             };
     }
 
-    private static string BuildColumnsXml(bool includeSalesCode)
+    private static string BuildColumnsXml(IReadOnlyList<string> headers, IReadOnlyList<string>[] dataRows, bool includeSalesCode)
     {
-        var widths = includeSalesCode
-            ? new[] { 14, 28, 28, 18, 24, 56 }
-            : new[] { 14, 28, 28, 24, 56 };
+        var minWidths = includeSalesCode
+            ? new[] { 8d, 18d, 18d, 10d, 14d, 24d }
+            : new[] { 8d, 18d, 18d, 14d, 24d };
+        var maxWidths = includeSalesCode
+            ? new[] { 18d, 42d, 42d, 20d, 36d, 255d }
+            : new[] { 18d, 42d, 42d, 36d, 255d };
 
         var builder = new StringBuilder();
-        for (var index = 0; index < widths.Length; index++)
+        for (var index = 0; index < headers.Count; index++)
         {
             var column = index + 1;
-            builder.AppendLine($"            <col min=\"{column}\" max=\"{column}\" width=\"{widths[index]}\" customWidth=\"1\"/>");
+            var longestTextWidth = Math.Max(
+                GetTextWidth(headers[index]),
+                dataRows.Length == 0 ? 0d : dataRows.Max(row => GetTextWidth(row[index])));
+            var width = Math.Clamp(longestTextWidth + 2d, minWidths[index], maxWidths[index]);
+            builder.AppendLine($"            <col min=\"{column}\" max=\"{column}\" width=\"{FormatWidth(width)}\" customWidth=\"1\"/>");
         }
 
         return builder.ToString().TrimEnd();
+    }
+
+    private static double GetTextWidth(string? value)
+    {
+        return (value ?? string.Empty)
+            .Replace('\u00A0', ' ')
+            .Split(new[] { "\r\n", "\n", "\r" }, StringSplitOptions.None)
+            .Select(line => line.Sum(character => character <= '\x007F' ? 1d : 1.7d))
+            .DefaultIfEmpty(0d)
+            .Max();
+    }
+
+    private static string FormatWidth(double width)
+    {
+        return width.ToString("0.##", CultureInfo.InvariantCulture);
     }
 
     private static void AppendRow(StringBuilder builder, int rowIndex, IReadOnlyList<string> values, uint styleIndex)
@@ -234,7 +257,7 @@ public sealed class RegistrationExcelExporter
       </cellStyleXfs>
       <cellXfs count="2">
         <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1" applyAlignment="1">
-          <alignment vertical="center" wrapText="1"/>
+          <alignment vertical="center"/>
         </xf>
         <xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1">
           <alignment horizontal="center" vertical="center"/>
