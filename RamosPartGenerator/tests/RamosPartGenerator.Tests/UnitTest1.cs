@@ -191,10 +191,35 @@ public class UnitTest1
         });
 
         Assert.Equal("XCRAH486VA-3BGWX", rows[1].PartCode);
+        Assert.Contains("DDR5 16Gb x8 (x4 -> x8) A-die S1 Laser-Marking Comp", rows[1].Specification);
 
         var parsedModule = moduleService.ParseCompPart("30", rows[1].PartCode);
 
         Assert.Equal("9", parsedModule.CompositionCode);
+    }
+
+    [Fact]
+    public void GeneratePreview_ManufacturingModule_Composition9KeepsConversionText()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            CompFullPartCode = "XCRAH486VA-3BGWX",
+            DimmTypeCode = "D",
+            ModuleDensityCode = "AG",
+            RankCode = "1",
+            ModuleSmtCode = "R",
+            ModuleTestCode = "R",
+            SpeedCode = "WM",
+            PcbCode = "7"
+        });
+
+        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 (x4 -> x8) *8) S1 RAmos BP PCB", rows[0].Specification);
     }
 
     [Fact]
@@ -326,6 +351,37 @@ public class UnitTest1
         Assert.Contains("TP Reball", rows[1].Specification);
         Assert.Contains("TP Reball 7200 MT/s", rows[2].Specification);
         Assert.Contains("TP Reball 4800 MT/s", rows[^1].Specification);
+    }
+
+    [Fact]
+    public void GeneratePreview_Rev30_BuildsDdr4CompBinWith3200CaSpeed()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new IncomingCompService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new IncomingCompRequest
+        {
+            Revision = "30",
+            SourceCode = "K",
+            DramTypeCode = "A",
+            DensityCode = "8G",
+            BitOrganizationCode = "08",
+            BankCode = "5",
+            InterfaceCode = "W",
+            RevisionCode = "A",
+            CompTypeCode = "P",
+            DieBrandCode = "G",
+            VendorCode = "G",
+            PackageTypeCode = "B",
+            TesterCode = "W"
+        });
+
+        Assert.Equal(3, rows.Count);
+        Assert.Equal("RCA8G085WA-PBGWG-CA", rows[2].PartCode);
+        Assert.Contains("3200 MT/s", rows[2].Specification);
+        Assert.DoesNotContain("7200 MT/s", rows[2].Specification);
     }
 
     [Theory]

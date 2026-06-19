@@ -124,7 +124,7 @@ public sealed class IncomingCompService
         }
         else
         {
-            var speed = _specProvider.SharedSpec.CompBinSpeedMap["CA"];
+            var speed = GetDdr4CompBinSpeedText();
             var code = $"{compPartCode}-CA";
             var text = _productTextService.BuildIncomingCompTexts(
                 code, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, speedText: speed, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
@@ -327,6 +327,14 @@ public sealed class IncomingCompService
         return NormalizeCode(option);
     }
 
+    private string GetDdr4CompBinSpeedText()
+    {
+        var option = _specProvider.SharedSpec.CodeOptions["speed_ddr4"]
+            .First(item => ExtractCode(item).Equals("WE", StringComparison.OrdinalIgnoreCase));
+        var separatorIndex = option.IndexOf(" - ", StringComparison.Ordinal);
+        return separatorIndex > -1 ? option[(separatorIndex + 3)..].Trim() : "3200 MT/s";
+    }
+
     private static void ValidateDramDefaults(string dramTypeCode, string bankCode, string interfaceCode)
     {
         if (dramTypeCode == "A" && (bankCode != "5" || interfaceCode != "W"))
@@ -472,7 +480,8 @@ public sealed class IncomingCompService
         return bitOrganizationCode switch
         {
             "04" => "x4",
-            "08" or "48" => "x8",
+            "08" => "x8",
+            "48" => "x8 (x4 -> x8)",
             "16" => "x16",
             _ => $"x{bitOrganizationCode.TrimStart('0')}"
         };

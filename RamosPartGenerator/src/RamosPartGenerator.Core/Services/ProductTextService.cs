@@ -255,7 +255,8 @@ public sealed class ProductTextService
         return compositionCode switch
         {
             "4" => "x4",
-            "8" or "9" => "x8",
+            "8" => "x8",
+            "9" => "x8 (x4 -> x8)",
             "6" => "x16",
             _ => compositionCode
         };
