@@ -300,7 +300,10 @@ public sealed class ProductTextService
     {
         return icBrandCode switch
         {
-            "S" or "G" => "S1",
+            "S" => "S1",
+            "G" => "GIGA S1",
+            "V" => "GIGA S1(SV)",
+            "P" => "GIGA S1(SP)",
             "H" => "S2",
             "M" => "S3",
             "C" => "S6",
@@ -373,6 +376,8 @@ public sealed class ProductTextService
         {
             "S" => "S1",
             "G" => "GIGA S1",
+            "V" => "GIGA S1(SV)",
+            "P" => "GIGA S1(SP)",
             "H" => "S2",
             "M" => "S3",
             "C" => "S6",

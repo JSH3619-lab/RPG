@@ -1123,8 +1123,23 @@ public sealed class MainForm : Form
             var partCode = _moduleCompPartText.Text.Trim().ToUpperInvariant();
             AppLog.Info("Module.ParseComp.Start", ("mode", ModuleModeName()), ("partCode", partCode));
 
+            var keepCompDimm = ReadModuleCode("dimmTypeCode") == "C";
             var parsed = _services.Module.ParseCompPart(Revision, partCode);
             ApplyModuleRequest(parsed);
+            if (keepCompDimm)
+            {
+                _updatingModule = true;
+                try
+                {
+                    SetModuleField("dimmTypeCode", "C");
+                }
+                finally
+                {
+                    _updatingModule = false;
+                }
+
+                RefreshModuleFieldRules("dimmTypeCode");
+            }
             AppLog.Info(
                 "Module.ParseComp.Success",
                 ("mode", ModuleModeName()),
@@ -1401,6 +1416,12 @@ public sealed class MainForm : Form
                     a100Combo.Text = string.Empty;
                 }
             }
+
+            if (dimmTypeCode == "C" &&
+                ShouldRefreshOptions(changedKey, "dimmTypeCode", "dieDensityCode"))
+            {
+                ApplyModuleCompSaleDefaults();
+            }
         }
         finally
         {
@@ -1418,6 +1439,20 @@ public sealed class MainForm : Form
             ? "Third-party module"
             : string.IsNullOrEmpty(sourceText) ? "Source not determined yet" : "Internal module";
         SetInfo(_moduleStatusLabel, $"{sourceStatus} | Rev 30: I.C Brand / Comp Type / Vendor + Purchaser | {partyStatus}");
+    }
+
+    private void ApplyModuleCompSaleDefaults()
+    {
+        var moduleDensityCode = ModuleService.GetCompSaleModuleDensityCode(ReadModuleCode("dieDensityCode"));
+        if (!string.IsNullOrEmpty(moduleDensityCode))
+        {
+            SetModuleField("moduleDensityCode", moduleDensityCode);
+        }
+
+        SetModuleField("rankCode", "0");
+        SetModuleField("moduleSmtCode", "0");
+        SetModuleField("moduleTestCode", "0");
+        SetModuleField("pcbCode", "0");
     }
 
     private string ReadModuleCode(string key)

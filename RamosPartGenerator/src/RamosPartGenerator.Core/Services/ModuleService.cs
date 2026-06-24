@@ -431,7 +431,54 @@ public sealed class ModuleService
             effective = MergeRequests(effective, parsedModule);
         }
 
+        ApplyCompSaleDefaults(effective);
         return NormalizeRequest(effective);
+    }
+
+    private static void ApplyCompSaleDefaults(ModuleRequest request)
+    {
+        if (!request.DimmTypeCode.Equals("C", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var moduleDensityCode = GetCompSaleModuleDensityCode(request.DieDensityCode);
+        if (IsBlankCode(request.ModuleDensityCode) && !string.IsNullOrEmpty(moduleDensityCode))
+        {
+            request.ModuleDensityCode = moduleDensityCode;
+        }
+
+        if (IsBlankCode(request.RankCode))
+        {
+            request.RankCode = "0";
+        }
+
+        if (IsBlankCode(request.ModuleSmtCode))
+        {
+            request.ModuleSmtCode = "0";
+        }
+
+        if (IsBlankCode(request.ModuleTestCode))
+        {
+            request.ModuleTestCode = "0";
+        }
+
+        if (IsBlankCode(request.PcbCode))
+        {
+            request.PcbCode = "0";
+        }
+    }
+
+    public static string GetCompSaleModuleDensityCode(string dieDensityCode)
+    {
+        return NormalizeCode(dieDensityCode) switch
+        {
+            "8" => "1G",
+            "A" => "2G",
+            "B" => "4G",
+            "C" => "8G",
+            _ => string.Empty
+        };
     }
 
     private static ModuleRequest NormalizeRequest(ModuleRequest request)

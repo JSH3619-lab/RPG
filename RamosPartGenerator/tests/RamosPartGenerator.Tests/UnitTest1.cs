@@ -69,12 +69,16 @@ public class UnitTest1
         Assert.Contains("X - RAmos TM", incomingSourceOptions);
         Assert.Contains("0 - Only Test", incomingCompTypeOptions);
         Assert.Contains("X - RAMBO", incomingVendorOptions);
+        Assert.Contains("V - GIGA S1(SV)", SharedOptions(provider, "die_brand"));
+        Assert.Contains("P - GIGA S1(SP)", SharedOptions(provider, "die_brand"));
 
         var moduleSourceOptions = SharedOptions(provider, "module_source", "manufacturing_module_source");
         var moduleCompTypeOptions = SharedOptions(provider, "comp_type", "manufacturing_comp_type");
 
         Assert.Contains("XM - Ramos Module TM", moduleSourceOptions);
         Assert.Contains("7 - EMC/Laser-Marking", moduleCompTypeOptions);
+        Assert.Contains("V - GIGA S1(SV)", SharedOptions(provider, "module_ic_brand"));
+        Assert.Contains("P - GIGA S1(SP)", SharedOptions(provider, "module_ic_brand"));
     }
 
     [Fact]
@@ -164,6 +168,77 @@ public class UnitTest1
         Assert.DoesNotContain("TP", rows[0].Specification);
     }
 
+    [Theory]
+    [InlineData("V", "GIGA S1(SV)")]
+    [InlineData("P", "GIGA S1(SP)")]
+    public void GeneratePreview_IncomingCompSpecification_UsesNewTmDieBrandLabels(
+        string dieBrandCode,
+        string expectedBrandLabel)
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new IncomingCompService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new IncomingCompRequest
+        {
+            Revision = "30",
+            SourceCode = "X",
+            DramTypeCode = "R",
+            DensityCode = "AH",
+            BitOrganizationCode = "08",
+            BankCode = "6",
+            InterfaceCode = "V",
+            RevisionCode = "A",
+            CompTypeCode = "0",
+            DieBrandCode = dieBrandCode,
+            VendorCode = "X",
+            PackageTypeCode = "B",
+            TesterCode = "W"
+        });
+
+        Assert.Contains(expectedBrandLabel, rows[0].Specification);
+        Assert.Contains(expectedBrandLabel, rows[1].Specification);
+        Assert.Contains(expectedBrandLabel, rows[2].Specification);
+    }
+
+    [Theory]
+    [InlineData("V", "GIGA S1(SV)")]
+    [InlineData("P", "GIGA S1(SP)")]
+    public void GeneratePreview_ModuleSpecification_UsesNewTmIcBrandLabels(
+        string icBrandCode,
+        string expectedBrandLabel)
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleSourceCode = "XM",
+            DramTypeCode = "R",
+            DimmTypeCode = "D",
+            ModuleDensityCode = "AG",
+            DieDensityCode = "A",
+            CompositionCode = "8",
+            RankCode = "1",
+            GenerationCode = "A",
+            IcBrandCode = icBrandCode,
+            ModuleCompTypeCode = "0",
+            CompTestCode = "W",
+            ModuleSmtCode = "R",
+            ModuleTestCode = "R",
+            SpeedCode = "WM",
+            PcbCode = "7",
+            VendorCode = "X"
+        });
+
+        Assert.Contains(expectedBrandLabel, rows[0].Specification);
+        Assert.Contains(expectedBrandLabel, rows[1].Specification);
+    }
+
     [Fact]
     public void ParseCompPart_ManufacturingBit48MapsToModuleComposition9()
     {
@@ -191,7 +266,7 @@ public class UnitTest1
         });
 
         Assert.Equal("XCRAH486VA-3BGWX", rows[1].PartCode);
-        Assert.Contains("DDR5 16Gb x8 (x4 -> x8) A-die S1 Laser-Marking Comp", rows[1].Specification);
+        Assert.Contains("DDR5 16Gb x8 (x4 -> x8) A-die GIGA S1 Laser-Marking Comp", rows[1].Specification);
 
         var parsedModule = moduleService.ParseCompPart("30", rows[1].PartCode);
 
@@ -219,7 +294,7 @@ public class UnitTest1
             PcbCode = "7"
         });
 
-        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 (x4 -> x8) *8) S1 RAmos BP PCB", rows[0].Specification);
+        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 (x4 -> x8) *8) GIGA S1 RAmos BP PCB", rows[0].Specification);
     }
 
     [Fact]
@@ -288,6 +363,36 @@ public class UnitTest1
         Assert.Equal("DDR5 Comp 1GB COO : KR", rows[0].GeneralInfo);
         Assert.Contains("DDR5 16Gb x8 A-die GIGA S1 Partial Comp TP", rows[0].Specification);
         Assert.DoesNotContain("PCB", rows[0].Specification);
+    }
+
+    [Fact]
+    public void GeneratePreview_ModuleCompDimm_AppliesCompPartDefaults()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            CompFullPartCode = "RCRAH086VA-PBGWG",
+            DimmTypeCode = "C",
+            SpeedCode = "WM"
+        });
+
+        Assert.Equal("RMRC2G58A0A-GPW00WM0G", rows[0].PartCode);
+        Assert.Equal("RMRC2G58A0A-GPW00WM0G-TN2GA00", rows[1].PartCode);
+        Assert.Equal("DDR5 Comp 2GB COO : KR", rows[0].GeneralInfo);
+        Assert.Equal("DDR5 16Gb x8 A-die GIGA S1 Partial Comp", rows[0].Specification);
+        Assert.Equal("DDR5 16Gb x8 A-die GIGA S1 Partial Comp 5600 MT/s", rows[1].Specification);
+    }
+
+    [Fact]
+    public void GetCompSaleModuleDensityCode_LeavesUnsupportedDieDensityBlank()
+    {
+        Assert.Equal("2G", ModuleService.GetCompSaleModuleDensityCode("A"));
+        Assert.Equal(string.Empty, ModuleService.GetCompSaleModuleDensityCode("H"));
     }
 
     [Fact]
@@ -412,8 +517,8 @@ public class UnitTest1
             TesterCode = "W"
         });
 
-        Assert.Contains($"A-die S1 {expectedCompTypeText} Comp", rows[0].Specification);
-        Assert.Contains($"A-die S1 {expectedCompTypeText} Comp", rows[1].Specification);
+        Assert.Contains($"A-die GIGA S1 {expectedCompTypeText} Comp", rows[0].Specification);
+        Assert.Contains($"A-die GIGA S1 {expectedCompTypeText} Comp", rows[1].Specification);
         Assert.DoesNotContain($"{compTypeCode} Comp", rows[0].Specification);
         Assert.DoesNotContain($"{compTypeCode} Comp", rows[1].Specification);
     }
@@ -485,8 +590,8 @@ public class UnitTest1
         });
 
         Assert.Equal("UDIMM 16GB COO : KR", rows[0].GeneralInfo);
-        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) S1 RAmos TP BP PCB", rows[0].Specification);
-        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) S1 RAmos TP BP PCB 5600 MT/s", rows[1].Specification);
+        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) GIGA S1 RAmos TP BP PCB", rows[0].Specification);
+        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) GIGA S1 RAmos TP BP PCB 5600 MT/s", rows[1].Specification);
     }
 
     [Theory]
@@ -604,7 +709,7 @@ public class UnitTest1
             specialCode2Code: "",
             specialCode3Code: "");
 
-        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) S1 RAmos BP PCB", texts.Specification);
+        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) GIGA S1 RAmos BP PCB", texts.Specification);
     }
 
     [Fact]

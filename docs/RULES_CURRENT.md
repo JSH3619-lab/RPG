@@ -75,6 +75,15 @@
 - Comp 판매용 Module 품목일반정보: `{DDR타입} Comp {용량} COO : KR`
 - DRAM / Comp / Comp BIN 품목규격은 `Comp Type` 설명을 포함한다.
 - Module / Module BIN 품목규격은 Module 관점으로 작성하고 `Comp Type` 설명은 넣지 않는다.
+- I.C Brand 표기는 `S -> S1`, `G -> GIGA S1`, `V -> GIGA S1(SV)`, `P -> GIGA S1(SP)`, `H -> S2`, `M -> S3`, `C -> S6`, `N -> S9`를 사용한다.
+
+## 출하 Comp Module 규칙
+- Module 생성에서 `DIMM Type = C - Comp`를 선택하면 Comp 판매용 Module로 처리한다.
+- `Comp Full Part`에서 가져온 Die Density가 GB로 환산 가능한 경우 Module Density를 자동 입력한다.
+  - `8Gb -> 1GB`, `16Gb -> 2GB`, `32Gb -> 4GB`
+- 환산 가능한 Module Density 코드가 없으면 자동 입력하지 않는다.
+- `Rank`, `SMT Site`, `Module Test Site`, `PCB`는 `0` 값을 자동 입력한다.
+- `Speed`는 자동 선택하지 않고 사용자가 선택한다.
 
 ## Excel Export 규칙
 - 등록용 Excel의 열 폭은 헤더와 데이터 중 가장 긴 텍스트를 기준으로 Export 시점에 자동 계산한다.

@@ -125,6 +125,8 @@ Desktop 앱은 두 개의 탭으로 구성된다.
 - Package
 - Tester
 
+Die Brand는 `V - GIGA S1(SV)`, `P - GIGA S1(SP)`를 포함한다.
+
 ### 파싱
 
 `Comp Full Part` 입력 후 `Parse` 클릭 시:
@@ -206,6 +208,8 @@ Third-party Source:
 - Grade Code
 - Product Bin
 
+I.C Brand는 `V - GIGA S1(SV)`, `P - GIGA S1(SP)`를 포함한다.
+
 ### 파싱
 
 Comp Full Part 파싱:
@@ -282,6 +286,12 @@ A100 Special은 아래 조건에서만 입력 가능하다.
 - `S - SODIMM 262pin`
 - `G - x64 288pin GamingUDIMM (RGB)`
 - `C - Comp`, Rev30 addition으로 추가 표시
+
+`C - Comp` 선택 시 출하 Comp Module 기본값을 자동 입력한다.
+
+- Module Density는 Comp Full Part의 Die Density를 GB로 환산 가능한 경우 자동 입력
+- `Rank`, `SMT Site`, `Module Test Site`, `PCB`는 `0` 값 자동 선택
+- `Speed`는 사용자가 선택
 
 ## Excel Export
 

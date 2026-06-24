@@ -89,7 +89,7 @@ dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/Ramo
   - Vendor `A` + Purchaser `A` + Third-party 조건이면 `A100`으로 표기한다.
   - A100은 `TP` 표현을 쓰지 않는다.
   - 품목규격 순서는 `Gen`, `A100`, `I.C Brand`, `Comp Type`, `Comp`, `Reball`, `Speed` 기준이다.
-- I.C Brand 표기는 `S/G -> S1`, `H -> S2`, `M -> S3`, `C -> S6`, `N -> S9`만 사용한다.
+- I.C Brand 표기는 `S -> S1`, `G -> GIGA S1`, `V -> GIGA S1(SV)`, `P -> GIGA S1(SP)`, `H -> S2`, `M -> S3`, `C -> S6`, `N -> S9`만 사용한다.
 
 ### Module
 
@@ -110,7 +110,17 @@ dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/Ramo
   - HJ/선진 계열은 `HJ PCB`
   - `AD5U8C0(ADATA/BP)`도 규격에는 `BP PCB`
 - Module 품목규격은 용량/Comp 개수 괄호 뒤에 I.C Brand를 붙인다.
-- I.C Brand 표기는 `S/G -> S1`, `H -> S2`, `M -> S3`, `C -> S6`, `N -> S9`만 사용한다.
+- I.C Brand 표기는 `S -> S1`, `G -> GIGA S1`, `V -> GIGA S1(SV)`, `P -> GIGA S1(SP)`, `H -> S2`, `M -> S3`, `C -> S6`, `N -> S9`만 사용한다.
+
+### 출하 Comp Module
+
+`DIMM Type = C - Comp`는 Comp 판매용 Module로 처리한다.
+
+- `Comp Full Part`에서 가져온 Die Density가 GB로 환산 가능한 경우 Module Density를 자동 입력한다.
+  - `8Gb -> 1GB`, `16Gb -> 2GB`, `32Gb -> 4GB`
+- 환산 가능한 Module Density 코드가 없으면 자동 입력하지 않는다.
+- `Rank`, `SMT Site`, `Module Test Site`, `PCB`는 `0` 값을 자동 입력한다.
+- `Speed`는 자동 선택하지 않고 사용자가 선택한다.
 
 ### Module Repair Dummy
 
@@ -139,7 +149,7 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
 
 ## 테스트 기준
 
-현재 기준 전체 테스트는 50개다.
+현재 기준 전체 테스트는 56개다.
 
 주요 테스트 범위:
 
