@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using RamosPartGenerator.Core.Models;
 using RamosPartGenerator.Core.Services;
 using RamosPartGenerator.Excel;
@@ -1616,13 +1617,34 @@ public sealed class MainForm : Form
             }
 
             File.WriteAllBytes(dialog.FileName, _services.Exporter.Export(rows));
+            var opened = TryOpenExportedFile(dialog.FileName, area);
             AppLog.Info(
                 "Export.Success",
                 ("area", area),
                 ("rowCount", rows.Length.ToString()),
+                ("opened", opened.ToString()),
                 ("filePath", dialog.FileName));
-            SetInfo(statusLabel, $"Excel 내보내기 완료: {dialog.FileName}");
+            SetInfo(statusLabel, opened
+                ? $"Excel 내보내기 완료 및 열기: {dialog.FileName}"
+                : $"Excel 내보내기 완료(파일 열기 실패): {dialog.FileName}");
         });
+    }
+
+    private static bool TryOpenExportedFile(string filePath, string area)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo(filePath)
+            {
+                UseShellExecute = true
+            });
+            return true;
+        }
+        catch (Exception exception)
+        {
+            AppLog.Error("Export.OpenFailed", exception, ("area", area), ("filePath", filePath));
+            return false;
+        }
     }
 
     private GeneratedPartRow[] BuildExportRows()
