@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RAMOS Part Generator Click List Mockup</title>
+  <style>
+    :root {
+      --blue: #12378e;
+      --blue-dark: #082668;
+      --blue-soft: #e7eefc;
+      --surface: #f6f8fc;
+      --panel: #ffffff;
+      --border: #cdd5e2;
+      --line: #edf1f7;
+      --text: #181f2a;
+      --muted: #74767b;
+      --muted-soft: #eef2f8;
+      --disabled: #f2f4f8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      width: 1440px;
+      height: 900px;
+      overflow: hidden;
+      background: var(--surface);
+      color: var(--text);
+      font-family: "Segoe UI", "Malgun Gothic", Arial, sans-serif;
+      font-size: 14px;
+    }
+
+    .window {
+      margin: 20px 24px;
+      width: 1392px;
+      height: 860px;
+      background: var(--surface);
+    }
+
+    .header {
+      height: 88px;
+      display: grid;
+      grid-template-columns: 230px 1fr auto;
+      align-items: center;
+      gap: 18px;
+      padding: 0 34px 0 20px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-bottom: 4px solid var(--blue);
+    }
+
+    .logo {
+      width: 220px;
+      height: auto;
+      display: block;
+    }
+
+    .title {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .title strong {
+      color: var(--blue-dark);
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .title span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    button {
+      height: 34px;
+      min-width: 82px;
+      padding: 0 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--panel);
+      color: var(--blue-dark);
+      font-weight: 650;
+      font-family: inherit;
+    }
+
+    button.primary {
+      background: var(--blue);
+      border-color: var(--blue-dark);
+      color: #fff;
+    }
+
+    .tabs {
+      height: 58px;
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      padding-left: 10px;
+    }
+
+    .tab {
+      height: 38px;
+      min-width: 116px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border);
+      border-radius: 6px 6px 0 0;
+      background: var(--panel);
+      color: var(--blue-dark);
+      font-weight: 700;
+    }
+
+    .tab.active {
+      min-width: 154px;
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+    }
+
+    .top-panel {
+      height: 112px;
+      display: grid;
+      grid-template-columns: 1fr 330px;
+      gap: 28px;
+      padding: 14px 24px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+    }
+
+    .form-stack {
+      display: grid;
+      grid-template-rows: 34px 44px;
+      gap: 8px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 154px 1fr auto;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .label {
+      font-weight: 650;
+    }
+
+    .mode {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .pill {
+      height: 28px;
+      min-width: 54px;
+      display: grid;
+      place-items: center;
+      padding: 0 16px;
+      border-radius: 999px;
+      background: var(--muted-soft);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+
+    .pill.active {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .input {
+      height: 38px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: #fff;
+      color: #a2aab8;
+      font-size: 15px;
+    }
+
+    .status {
+      align-self: center;
+      color: var(--blue);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .selector {
+      height: 342px;
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: 258px 442px 1fr;
+      background: var(--panel);
+      border: 1px solid var(--border);
+    }
+
+    .col {
+      min-width: 0;
+      border-right: 1px solid var(--border);
+    }
+
+    .col:last-child {
+      border-right: 0;
+    }
+
+    .col-head {
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--border);
+      background: #f8fafd;
+      color: var(--blue-dark);
+      font-weight: 800;
+    }
+
+    .col:first-child .col-head {
+      background: #f0f3f8;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 400;
+    }
+
+    .item {
+      height: 50px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 3px;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .groups .item {
+      height: 74px;
+    }
+
+    .item.active {
+      border-left: 4px solid var(--blue);
+      padding-left: 12px;
+      background: var(--blue-soft);
+    }
+
+    .item.disabled {
+      background: var(--disabled);
+      color: var(--muted);
+    }
+
+    .item strong {
+      color: inherit;
+      font-size: 14px;
+      line-height: 1.1;
+    }
+
+    .item.active strong {
+      color: var(--blue-dark);
+    }
+
+    .item span {
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .option-body {
+      padding: 18px;
+    }
+
+    .option-title {
+      margin-bottom: 12px;
+    }
+
+    .option-title strong {
+      display: block;
+      color: var(--blue-dark);
+      font-size: 19px;
+      line-height: 1.2;
+    }
+
+    .option-title span {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .option {
+      height: 48px;
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding: 0 14px;
+    }
+
+    .option.active {
+      margin: 3px 0;
+      border: 0;
+      border-radius: 6px;
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .option code {
+      color: var(--blue-dark);
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 15px;
+      font-weight: 800;
+    }
+
+    .option.active code {
+      color: #fff;
+    }
+
+    .linked {
+      margin-top: 28px;
+      padding: 14px 18px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+    }
+
+    .linked strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--blue-dark);
+    }
+
+    .linked span {
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .summary {
+      height: 72px;
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 24px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+    }
+
+    .summary strong {
+      color: var(--blue-dark);
+      margin-right: 10px;
+    }
+
+    .chip {
+      min-width: 54px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border: 1px solid #c7d7f8;
+      border-radius: 999px;
+      background: var(--blue-soft);
+      color: var(--blue-dark);
+      font-weight: 800;
+    }
+
+    .summary .note {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .grid {
+      height: 116px;
+      margin-top: 18px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--panel);
+    }
+
+    .grid-row {
+      display: grid;
+      grid-template-columns: 96px 204px 216px 242px 1fr;
+      min-height: 40px;
+      align-items: center;
+    }
+
+    .grid-row.head {
+      min-height: 34px;
+      background: var(--blue);
+      color: #fff;
+      font-weight: 800;
+    }
+
+    .grid-row.alt {
+      background: var(--blue-soft);
+    }
+
+    .cell {
+      overflow: hidden;
+      padding: 0 18px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+  <main class="window">
+    <header class="header">
+      <img class="logo" src="../logo.png" alt="RAMOS">
+      <div class="title">
+        <strong>Part Generator</strong>
+        <span>Spec Rev 30 | Click-based code selection mockup</span>
+      </div>
+      <div class="actions">
+        <button class="primary">Generate</button>
+        <button>Export Excel</button>
+        <button>Reset</button>
+      </div>
+    </header>
+
+    <nav class="tabs">
+      <div class="tab active">Incoming &amp; Comp</div>
+      <div class="tab">Module</div>
+    </nav>
+
+    <section class="top-panel">
+      <div class="form-stack">
+        <div class="row">
+          <div class="label">Part Mode</div>
+          <div class="mode">
+            <div class="pill active">Standard</div>
+            <div class="pill">TM</div>
+          </div>
+          <div></div>
+        </div>
+        <div class="row">
+          <div class="label">Comp Full Part</div>
+          <div class="input">KRAH08...</div>
+          <button>Parse</button>
+        </div>
+      </div>
+      <div class="status">
+        DDR5 fixed: 32Bank / POD 1.1V<br>
+        Rev 30: Vendor + Purchaser<br>
+        Internal source selected
+      </div>
+    </section>
+
+    <section class="selector">
+      <div class="col groups">
+        <div class="col-head">그룹</div>
+        <div class="item active">
+          <strong>Common</strong>
+          <span>Source, DRAM Type, Density...</span>
+        </div>
+        <div class="item">
+          <strong>Comp Fields</strong>
+          <span>Comp Type, Die Brand, Vendor...</span>
+        </div>
+        <div class="item">
+          <strong>Extra</strong>
+          <span>Package, Tester</span>
+        </div>
+        <div class="item">
+          <strong>Selection Summary</strong>
+          <span>현재 선택 코드 미리보기</span>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="col-head">필드</div>
+        <div class="item">
+          <strong>Source</strong>
+          <span>K - RAmos Memory</span>
+        </div>
+        <div class="item active">
+          <strong>DRAM Type</strong>
+          <span>R - DDR5</span>
+        </div>
+        <div class="item">
+          <strong>Density</strong>
+          <span>AH - 16Gb</span>
+        </div>
+        <div class="item">
+          <strong>Bit</strong>
+          <span>08 - x8</span>
+        </div>
+        <div class="item disabled">
+          <strong>Bank</strong>
+          <span>6 - 32Bank / 자동 고정</span>
+        </div>
+        <div class="item disabled">
+          <strong>Interface</strong>
+          <span>V - POD 1.1V / 자동 고정</span>
+        </div>
+      </div>
+
+      <div class="col">
+        <div class="col-head">
+          <span>선택 옵션</span>
+          <span class="hint">드롭다운 대신 클릭해서 값을 확정</span>
+        </div>
+        <div class="option-body">
+          <div class="option-title">
+            <strong>DRAM Type</strong>
+            <span>이 필드를 선택하면 관련 필드 옵션이 즉시 제한됩니다.</span>
+          </div>
+          <div class="option">
+            <code>A</code>
+            <span>DDR4</span>
+          </div>
+          <div class="option active">
+            <code>R</code>
+            <span>DDR5</span>
+          </div>
+          <div class="linked">
+            <strong>연동 결과</strong>
+            <span>Density: AH/HE/BH만 표시 &nbsp; Bank: 6 자동 선택 &nbsp; Interface: V 자동 선택</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="summary">
+      <strong>현재 선택 코드</strong>
+      <div class="chip">K</div>
+      <div class="chip">R</div>
+      <div class="chip">AH</div>
+      <div class="chip">08</div>
+      <div class="chip">6</div>
+      <div class="chip">V</div>
+      <div class="chip">A</div>
+      <div class="chip">P</div>
+      <div class="chip">S</div>
+      <div class="chip">G</div>
+      <div class="chip">B</div>
+      <div class="chip">R</div>
+      <span class="note">클릭 선택만으로 코드 조합을 만들고, Parse 입력란은 기존처럼 별도 유지</span>
+    </section>
+
+    <section class="grid">
+      <div class="grid-row head">
+        <div class="cell">구분</div>
+        <div class="cell">품목코드</div>
+        <div class="cell">품목명</div>
+        <div class="cell">품목일반정보</div>
+        <div class="cell">품목규격</div>
+      </div>
+      <div class="grid-row">
+        <div class="cell">입고</div>
+        <div class="cell">KRAH086VA...</div>
+        <div class="cell">KRAH086VA...</div>
+        <div class="cell"></div>
+        <div class="cell">DDR5 16Gb x8, 32Bank, POD 1.1V</div>
+      </div>
+      <div class="grid-row alt">
+        <div class="cell">Comp</div>
+        <div class="cell">RCAH086VA...</div>
+        <div class="cell">RCAH086VA...</div>
+        <div class="cell"></div>
+        <div class="cell">Partial, GIGA S1, Vendor G</div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

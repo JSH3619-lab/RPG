@@ -5,6 +5,14 @@
     <ProjectReference Include="..\..\src\RamosPartGenerator.Excel\RamosPartGenerator.Excel.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Assets\logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </None>
+    <EmbeddedResource Include="Assets\logo.png" LogicalName="RamosPartGenerator.Desktop.Assets.logo.png" />
+  </ItemGroup>
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net7.0-windows</TargetFramework>

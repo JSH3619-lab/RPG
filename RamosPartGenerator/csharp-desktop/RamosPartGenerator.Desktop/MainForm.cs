@@ -13,7 +13,8 @@ public sealed class MainForm : Form
     private const int ActionButtonColumnWidth = 470;
     private const int ActionRowHeight = 44;
     private const int ModeRowHeight = 34;
-    private const int FieldLabelWidth = 220;
+    private const int SelectorGroupColumnWidth = 220;
+    private const int SelectorFieldColumnWidth = 360;
     private static readonly string[] IncomingDdr4DensityCodes = { "4G", "8G", "AG" };
     private static readonly string[] IncomingDdr5DensityCodes = { "AH", "HE", "BH" };
     private static readonly string[] IncomingStandardBitCodes = { "04", "08", "16" };
@@ -34,8 +35,8 @@ public sealed class MainForm : Form
     private readonly DesktopAppServices _services;
     private readonly DesktopLookupPage _incomingLookups;
     private readonly DesktopLookupPage _moduleLookups;
-    private readonly Dictionary<string, ComboBox> _incomingFields = new(StringComparer.OrdinalIgnoreCase);
-    private readonly Dictionary<string, ComboBox> _moduleFields = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, LookupFieldState> _incomingFields = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, LookupFieldState> _moduleFields = new(StringComparer.OrdinalIgnoreCase);
     private readonly BindingList<GeneratedPartRow> _incomingRows = new();
     private readonly BindingList<GeneratedPartRow> _moduleRows = new();
 
@@ -97,7 +98,7 @@ public sealed class MainForm : Form
             Padding = new Padding(12),
             BackColor = RamosTheme.Surface
         };
-        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 74F));
+        root.RowStyles.Add(new RowStyle(SizeType.Absolute, 88F));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
         root.Controls.Add(BuildHeader(), 0, 0);
@@ -165,21 +166,43 @@ public sealed class MainForm : Form
         var panel = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
-            ColumnCount = 1,
-            RowCount = 3,
-            BackColor = RamosTheme.Surface
+            ColumnCount = 3,
+            RowCount = 2,
+            BackColor = RamosTheme.Panel,
+            Padding = new Padding(10, 6, 10, 0)
         };
-        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
-        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
-        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 3F));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 240F));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 420F));
+        panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 4F));
+
+        var logo = new PictureBox
+        {
+            Dock = DockStyle.Fill,
+            Image = LoadLogoImage(),
+            Margin = new Padding(0, 0, 18, 4),
+            SizeMode = PictureBoxSizeMode.Zoom
+        };
+
+        var titlePanel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 2,
+            BackColor = RamosTheme.Panel,
+            Margin = Padding.Empty
+        };
+        titlePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 60F));
+        titlePanel.RowStyles.Add(new RowStyle(SizeType.Percent, 40F));
 
         var title = new Label
         {
             Dock = DockStyle.Fill,
             Font = new Font("Segoe UI Semibold", 16F, FontStyle.Bold, GraphicsUnit.Point),
-            Text = "Ramos Part Generator",
+            Text = "Part Generator",
             TextAlign = ContentAlignment.MiddleLeft,
-            ForeColor = RamosTheme.Blue
+            ForeColor = RamosTheme.BlueDark
         };
         var subtitle = new Label
         {
@@ -189,16 +212,46 @@ public sealed class MainForm : Form
             TextAlign = ContentAlignment.MiddleLeft,
             Padding = new Padding(2, 0, 0, 0)
         };
+        titlePanel.Controls.Add(title, 0, 0);
+        titlePanel.Controls.Add(subtitle, 0, 1);
+
         var line = new Panel
         {
             Dock = DockStyle.Fill,
             BackColor = RamosTheme.Blue
         };
 
-        panel.Controls.Add(title, 0, 0);
-        panel.Controls.Add(subtitle, 0, 1);
-        panel.Controls.Add(line, 0, 2);
+        panel.Controls.Add(logo, 0, 0);
+        panel.Controls.Add(titlePanel, 1, 0);
+        panel.Controls.Add(new Panel { Dock = DockStyle.Fill, BackColor = RamosTheme.Panel }, 2, 0);
+        panel.Controls.Add(line, 0, 1);
+        panel.SetColumnSpan(line, 3);
         return panel;
+    }
+
+    private static Image? LoadLogoImage()
+    {
+        var logoPath = Path.Combine(AppContext.BaseDirectory, "Assets", "logo.png");
+        if (File.Exists(logoPath))
+        {
+            try
+            {
+                using var image = Image.FromFile(logoPath);
+                return new Bitmap(image);
+            }
+            catch
+            {
+            }
+        }
+
+        using var stream = typeof(MainForm).Assembly.GetManifestResourceStream("RamosPartGenerator.Desktop.Assets.logo.png");
+        if (stream is null)
+        {
+            return null;
+        }
+
+        using var embeddedImage = Image.FromStream(stream);
+        return new Bitmap(embeddedImage);
     }
 
     private TabPage BuildIncomingPage()
@@ -214,27 +267,26 @@ public sealed class MainForm : Form
         };
         page.RowStyles.Add(new RowStyle(SizeType.Absolute, ModeRowHeight + ActionRowHeight + 8F));
         page.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
-        page.RowStyles.Add(new RowStyle(SizeType.Percent, 48F));
-        page.RowStyles.Add(new RowStyle(SizeType.Percent, 52F));
+        page.RowStyles.Add(new RowStyle(SizeType.Percent, 62F));
+        page.RowStyles.Add(new RowStyle(SizeType.Percent, 38F));
 
         page.Controls.Add(BuildIncomingActions(), 0, 0);
         _incomingStatusLabel = BuildStatusLabel();
         page.Controls.Add(_incomingStatusLabel, 0, 1);
 
-        var fieldGrid = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 3,
-            RowCount = 1,
-            BackColor = RamosTheme.Surface
-        };
-        fieldGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 34F));
-        fieldGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
-        fieldGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
-        fieldGrid.Controls.Add(BuildFieldGroup("Common", IncomingFields("common"), _incomingFields, HandleIncomingFieldChanged), 0, 0);
-        fieldGrid.Controls.Add(BuildFieldGroup("Comp Fields", IncomingFields("comp"), _incomingFields, HandleIncomingFieldChanged), 1, 0);
-        fieldGrid.Controls.Add(BuildFieldGroup("Extra", IncomingFields("extra"), _incomingFields, HandleIncomingFieldChanged), 2, 0);
-        page.Controls.Add(fieldGrid, 0, 2);
+        page.Controls.Add(
+            BuildFieldSelector(
+                new[]
+                {
+                    new SelectorSection("common", "Common"),
+                    new SelectorSection("comp", "Comp Fields"),
+                    new SelectorSection("extra", "Extra")
+                },
+                _incomingLookups.Fields,
+                _incomingFields,
+                HandleIncomingFieldChanged),
+            0,
+            2);
         page.Controls.Add(BuildResultGrid(_incomingRows), 0, 3);
 
         tab.Controls.Add(page);
@@ -285,27 +337,26 @@ public sealed class MainForm : Form
         };
         page.RowStyles.Add(new RowStyle(SizeType.Absolute, 142F));
         page.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
-        page.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-        page.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+        page.RowStyles.Add(new RowStyle(SizeType.Percent, 62F));
+        page.RowStyles.Add(new RowStyle(SizeType.Percent, 38F));
 
         page.Controls.Add(BuildModuleActions(), 0, 0);
         _moduleStatusLabel = BuildStatusLabel();
         page.Controls.Add(_moduleStatusLabel, 0, 1);
 
-        var fieldGrid = new TableLayoutPanel
-        {
-            Dock = DockStyle.Fill,
-            ColumnCount = 3,
-            RowCount = 1,
-            BackColor = RamosTheme.Surface
-        };
-        fieldGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 34F));
-        fieldGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
-        fieldGrid.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33F));
-        fieldGrid.Controls.Add(BuildFieldGroup("Module Base", ModuleFields("base"), _moduleFields, HandleModuleFieldChanged), 0, 0);
-        fieldGrid.Controls.Add(BuildFieldGroup("Structure", ModuleFields("structure"), _moduleFields, HandleModuleFieldChanged), 1, 0);
-        fieldGrid.Controls.Add(BuildFieldGroup("Output", ModuleFields("output"), _moduleFields, HandleModuleFieldChanged), 2, 0);
-        page.Controls.Add(fieldGrid, 0, 2);
+        page.Controls.Add(
+            BuildFieldSelector(
+                new[]
+                {
+                    new SelectorSection("base", "Module Base"),
+                    new SelectorSection("structure", "Structure"),
+                    new SelectorSection("output", "Output")
+                },
+                _moduleLookups.Fields,
+                _moduleFields,
+                HandleModuleFieldChanged),
+            0,
+            2);
         page.Controls.Add(BuildResultGrid(_moduleRows), 0, 3);
 
         tab.Controls.Add(page);
@@ -395,24 +446,32 @@ public sealed class MainForm : Form
         {
             Text = standardText,
             AutoSize = false,
-            Size = new Size(150, ModeRowHeight),
+            Size = new Size(104, 28),
             Checked = true,
-            CheckAlign = ContentAlignment.MiddleLeft,
-            TextAlign = ContentAlignment.MiddleLeft,
-            Margin = new Padding(0, 0, 12, 0)
+            Appearance = Appearance.Button,
+            FlatStyle = FlatStyle.Flat,
+            TextAlign = ContentAlignment.MiddleCenter,
+            Margin = new Padding(0, 3, 8, 3),
+            UseVisualStyleBackColor = false
         };
         var manufacturing = new RadioButton
         {
             Text = manufacturingText,
             AutoSize = false,
-            Size = new Size(110, ModeRowHeight),
-            CheckAlign = ContentAlignment.MiddleLeft,
-            TextAlign = ContentAlignment.MiddleLeft,
-            Margin = Padding.Empty
+            Size = new Size(58, 28),
+            Appearance = Appearance.Button,
+            FlatStyle = FlatStyle.Flat,
+            TextAlign = ContentAlignment.MiddleCenter,
+            Margin = new Padding(0, 3, 0, 3),
+            UseVisualStyleBackColor = false
         };
+        ApplyModeRadioStyle(standard);
+        ApplyModeRadioStyle(manufacturing);
 
         standard.CheckedChanged += (_, _) =>
         {
+            ApplyModeRadioStyle(standard);
+            ApplyModeRadioStyle(manufacturing);
             if (standard.Checked)
             {
                 onModeChanged(false);
@@ -420,6 +479,8 @@ public sealed class MainForm : Form
         };
         manufacturing.CheckedChanged += (_, _) =>
         {
+            ApplyModeRadioStyle(standard);
+            ApplyModeRadioStyle(manufacturing);
             if (manufacturing.Checked)
             {
                 onModeChanged(true);
@@ -427,6 +488,17 @@ public sealed class MainForm : Form
         };
 
         return (standard, manufacturing);
+    }
+
+    private static void ApplyModeRadioStyle(RadioButton radio)
+    {
+        radio.BackColor = radio.Checked ? RamosTheme.Blue : Color.FromArgb(238, 242, 248);
+        radio.ForeColor = radio.Checked ? Color.White : RamosTheme.Gray;
+        radio.FlatAppearance.BorderSize = 0;
+        radio.FlatAppearance.CheckedBackColor = RamosTheme.Blue;
+        radio.FlatAppearance.MouseOverBackColor = radio.Checked ? RamosTheme.BlueDark : RamosTheme.BlueLight;
+        radio.FlatAppearance.MouseDownBackColor = radio.Checked ? RamosTheme.BlueDark : RamosTheme.BlueLight;
+        radio.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold, GraphicsUnit.Point);
     }
 
     private static Control BuildModeRow(RadioButton standard, RadioButton manufacturing)
@@ -554,81 +626,13 @@ public sealed class MainForm : Form
         };
     }
 
-    private static Label BuildFieldLabel(string text)
-    {
-        return new Label
-        {
-            Dock = DockStyle.Fill,
-            AutoEllipsis = true,
-            Text = text,
-            TextAlign = ContentAlignment.MiddleLeft,
-            Margin = new Padding(6, 0, 8, 0),
-            ForeColor = RamosTheme.Text
-        };
-    }
-
-    private static GroupBox BuildFieldGroup(
-        string title,
-        IEnumerable<DesktopLookupField> fields,
-        Dictionary<string, ComboBox> target,
+    private static Control BuildFieldSelector(
+        IReadOnlyList<SelectorSection> sections,
+        IReadOnlyList<DesktopLookupField> fields,
+        Dictionary<string, LookupFieldState> target,
         Action<string> onChanged)
     {
-        var group = new GroupBox
-        {
-            Dock = DockStyle.Fill,
-            Text = title,
-            Padding = new Padding(10),
-            BackColor = RamosTheme.Panel,
-            ForeColor = RamosTheme.BlueDark
-        };
-        var visibleFields = fields.Where(field => field.Visible).ToArray();
-        var scrollPanel = new Panel
-        {
-            Dock = DockStyle.Fill,
-            AutoScroll = true,
-            BackColor = RamosTheme.Panel
-        };
-        var table = new TableLayoutPanel
-        {
-            Dock = DockStyle.Top,
-            AutoSize = true,
-            AutoSizeMode = AutoSizeMode.GrowAndShrink,
-            ColumnCount = 2,
-            BackColor = RamosTheme.Panel
-        };
-        table.RowCount = visibleFields.Length;
-        table.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, FieldLabelWidth));
-        table.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
-
-        var row = 0;
-        foreach (var field in visibleFields)
-        {
-            table.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
-            var label = BuildFieldLabel(field.Label);
-            var combo = new ComboBox
-            {
-                Dock = DockStyle.Fill,
-                DropDownStyle = ComboBoxStyle.DropDown,
-                IntegralHeight = false,
-                Margin = new Padding(0, 2, 6, 2),
-                Tag = field,
-                AutoCompleteMode = AutoCompleteMode.SuggestAppend,
-                AutoCompleteSource = AutoCompleteSource.ListItems,
-                BackColor = Color.White,
-                ForeColor = RamosTheme.Text
-            };
-            combo.Items.AddRange(field.Options.Cast<object>().ToArray());
-            combo.TextChanged += (_, _) => onChanged(field.Key);
-
-            table.Controls.Add(label, 0, row);
-            table.Controls.Add(combo, 1, row);
-            target[field.Key] = combo;
-            row++;
-        }
-
-        scrollPanel.Controls.Add(table);
-        group.Controls.Add(scrollPanel);
-        return group;
+        return new FieldSelectorPanel(sections, fields, target, onChanged);
     }
 
     private static DataGridView BuildResultGrid(object dataSource)
@@ -700,16 +704,6 @@ public sealed class MainForm : Form
             "Module BIN" => "MDL BIN",
             _ => kind
         };
-    }
-
-    private IEnumerable<DesktopLookupField> IncomingFields(string section)
-    {
-        return _incomingLookups.Fields.Where(field => field.Section == section);
-    }
-
-    private IEnumerable<DesktopLookupField> ModuleFields(string section)
-    {
-        return _moduleLookups.Fields.Where(field => field.Section == section);
     }
 
     private IReadOnlyList<string> IncomingOptions(string key)
@@ -991,7 +985,7 @@ public sealed class MainForm : Form
                 var sourceOptions = isManufacturingMode
                     ? IncomingOptionsByCodes("sourceCode", ManufacturingCompSourceCodes)
                     : OptionsExceptCodes(IncomingOptions("sourceCode"), ManufacturingCompSourceCodes);
-                SetComboOptions(sourceCombo, sourceOptions);
+                SetFieldOptions(sourceCombo, sourceOptions);
             }
 
             if (ShouldRefreshOptions(changedKey, "compTypeCode") &&
@@ -1000,7 +994,7 @@ public sealed class MainForm : Form
                 var compTypeOptions = isManufacturingMode
                     ? IncomingOptionsByCodes("compTypeCode", ManufacturingCompTypeCodes)
                     : OptionsExceptCodes(IncomingOptions("compTypeCode"), ManufacturingCompTypeCodes);
-                SetComboOptions(compTypeCombo, compTypeOptions);
+                SetFieldOptions(compTypeCombo, compTypeOptions);
             }
 
             if (ShouldRefreshOptions(changedKey, "sourceCode") &&
@@ -1009,7 +1003,7 @@ public sealed class MainForm : Form
                 var bitOptions = isManufacturingMode
                     ? IncomingOptionsByCodes("bitOrganizationCode", IncomingManufacturingBitCodes)
                     : IncomingOptionsByCodes("bitOrganizationCode", IncomingStandardBitCodes);
-                SetComboOptions(bitCombo, bitOptions);
+                SetFieldOptions(bitCombo, bitOptions);
             }
 
             if (ShouldRefreshOptions(changedKey, "dramTypeCode") &&
@@ -1021,7 +1015,7 @@ public sealed class MainForm : Form
                     "R" => IncomingOptionsByCodes("densityCode", IncomingDdr5DensityCodes),
                     _ => IncomingOptions("densityCode")
                 };
-                SetComboOptions(densityCombo, densityOptions);
+                SetFieldOptions(densityCombo, densityOptions);
             }
 
             if (ShouldRefreshOptions(changedKey, "dramTypeCode") &&
@@ -1033,7 +1027,7 @@ public sealed class MainForm : Form
                     "R" => IncomingOptionsByCodes("bankCode", "6"),
                     _ => IncomingOptions("bankCode")
                 };
-                SetComboOptions(bankCombo, bankOptions);
+                SetFieldOptions(bankCombo, bankOptions);
                 bankCombo.Enabled = dramTypeCode is not ("A" or "R");
                 if (dramTypeCode == "A")
                 {
@@ -1054,7 +1048,7 @@ public sealed class MainForm : Form
                     "R" => IncomingOptionsByCodes("interfaceCode", "V"),
                     _ => IncomingOptions("interfaceCode")
                 };
-                SetComboOptions(interfaceCombo, interfaceOptions);
+                SetFieldOptions(interfaceCombo, interfaceOptions);
                 interfaceCombo.Enabled = dramTypeCode is not ("A" or "R");
                 if (dramTypeCode == "A")
                 {
@@ -1072,7 +1066,7 @@ public sealed class MainForm : Form
                 var vendorOptions = isManufacturingMode
                     ? IncomingOptionsByCodes("vendorCode", ManufacturingVendorCodes)
                     : IncomingOptionsByCodes("vendorCode", StandardVendorCodes);
-                SetComboOptions(vendorCombo, vendorOptions);
+                SetFieldOptions(vendorCombo, vendorOptions);
             }
 
             if (_incomingFields.TryGetValue("purchaserCode", out var purchaserCombo))
@@ -1316,7 +1310,7 @@ public sealed class MainForm : Form
                 var sourceOptions = isManufacturingMode
                     ? ModuleOptionsByCodes("moduleSourceCode", ManufacturingModuleSourceCodes)
                     : OptionsExceptCodes(ModuleOptions("moduleSourceCode"), ManufacturingModuleSourceCodes);
-                SetComboOptions(sourceCombo, sourceOptions);
+                SetFieldOptions(sourceCombo, sourceOptions);
             }
 
             if (ShouldRefreshOptions(changedKey, "moduleCompTypeCode") &&
@@ -1325,7 +1319,7 @@ public sealed class MainForm : Form
                 var compTypeOptions = isManufacturingMode
                     ? ModuleOptionsByCodes("moduleCompTypeCode", ManufacturingCompTypeCodes)
                     : OptionsExceptCodes(ModuleOptions("moduleCompTypeCode"), ManufacturingCompTypeCodes);
-                SetComboOptions(compTypeCombo, compTypeOptions);
+                SetFieldOptions(compTypeCombo, compTypeOptions);
             }
 
             if (ShouldRefreshOptions(changedKey, "moduleSourceCode") &&
@@ -1334,7 +1328,7 @@ public sealed class MainForm : Form
                 var compositionOptions = isManufacturingMode
                     ? ModuleOptionsByCodes("compositionCode", ModuleManufacturingCompositionCodes)
                     : ModuleOptionsByCodes("compositionCode", ModuleStandardCompositionCodes);
-                SetComboOptions(compositionCombo, compositionOptions);
+                SetFieldOptions(compositionCombo, compositionOptions);
             }
 
             if (ShouldRefreshOptions(changedKey, "dimmTypeCode") &&
@@ -1343,7 +1337,7 @@ public sealed class MainForm : Form
                 var densityOptions = dimmTypeCode == "C"
                     ? ModuleOptions("moduleDensityCode")
                     : ModuleOptionsByCodes("moduleDensityCode", ModuleStandardDensityCodes);
-                SetComboOptions(moduleDensityCombo, densityOptions);
+                SetFieldOptions(moduleDensityCombo, densityOptions);
             }
 
             if (ShouldRefreshOptions(changedKey, "dramTypeCode") &&
@@ -1355,7 +1349,7 @@ public sealed class MainForm : Form
                     "R" => ModuleOptionsByCodes("speedCode", ModuleDdr5SpeedCodes),
                     _ => ModuleOptions("speedCode")
                 };
-                SetComboOptions(speedCombo, speedOptions);
+                SetFieldOptions(speedCombo, speedOptions);
                 speedCode = ReadModuleCode("speedCode");
             }
 
@@ -1368,7 +1362,7 @@ public sealed class MainForm : Form
                     "R" => ModuleOptionsByCodes("dieDensityCode", ModuleDdr5DieDensityCodes),
                     _ => ModuleOptions("dieDensityCode")
                 };
-                SetComboOptions(dieDensityCombo, dieDensityOptions);
+                SetFieldOptions(dieDensityCombo, dieDensityOptions);
             }
 
             if (ShouldRefreshOptions(changedKey, "dramTypeCode", "speedCode") &&
@@ -1383,7 +1377,7 @@ public sealed class MainForm : Form
                         "R" => ModuleOptionsByCodes("bankVddCode", ModuleDdr5BankVddCodes),
                         _ => ModuleOptions("bankVddCode")
                     };
-                SetComboOptions(bankVddCombo, bankVddOptions);
+                SetFieldOptions(bankVddCombo, bankVddOptions);
                 if (!string.IsNullOrEmpty(bankVddCode))
                 {
                     bankVddCombo.Text = bankVddCode;
@@ -1398,7 +1392,7 @@ public sealed class MainForm : Form
                     var vendorOptions = isManufacturingMode
                         ? ModuleOptionsByCodes("vendorCode", ManufacturingVendorCodes)
                         : ModuleOptionsByCodes("vendorCode", StandardVendorCodes);
-                    SetComboOptions(vendorCombo, vendorOptions);
+                    SetFieldOptions(vendorCombo, vendorOptions);
                 }
 
                 purchaserCombo.Enabled = isThirdParty;
@@ -1522,38 +1516,19 @@ public sealed class MainForm : Form
         return changedKey is null || dependencyKeys.Contains(changedKey, StringComparer.OrdinalIgnoreCase);
     }
 
-    private static void SetComboOptions(ComboBox combo, IEnumerable<string> options)
+    private static void SetFieldOptions(LookupFieldState field, IEnumerable<string> options)
     {
         var optionList = options.ToArray();
-        var currentText = combo.Text;
+        var currentText = field.Text;
         var currentCode = DisplayHelpers.ExtractCode(currentText);
 
-        if (!HasSameOptions(combo, optionList))
-        {
-            var autoCompleteMode = combo.AutoCompleteMode;
-            var autoCompleteSource = combo.AutoCompleteSource;
-
-            combo.BeginUpdate();
-            try
-            {
-                combo.AutoCompleteMode = AutoCompleteMode.None;
-                combo.AutoCompleteSource = AutoCompleteSource.None;
-                combo.Items.Clear();
-                combo.Items.AddRange(optionList.Cast<object>().ToArray());
-            }
-            finally
-            {
-                combo.AutoCompleteSource = autoCompleteSource;
-                combo.AutoCompleteMode = autoCompleteMode;
-                combo.EndUpdate();
-            }
-        }
+        field.SetOptions(optionList);
 
         if (string.IsNullOrEmpty(currentCode))
         {
-            if (!string.IsNullOrEmpty(combo.Text))
+            if (!string.IsNullOrEmpty(field.Text))
             {
-                combo.Text = string.Empty;
+                field.Text = string.Empty;
             }
             return;
         }
@@ -1562,28 +1537,10 @@ public sealed class MainForm : Form
         var nextText = string.IsNullOrEmpty(resolved) || resolved == currentCode && !optionList.Any(option => DisplayHelpers.ExtractCode(option) == currentCode)
             ? string.Empty
             : resolved;
-        if (!string.Equals(combo.Text, nextText, StringComparison.Ordinal))
+        if (!string.Equals(field.Text, nextText, StringComparison.Ordinal))
         {
-            combo.Text = nextText;
+            field.Text = nextText;
         }
-    }
-
-    private static bool HasSameOptions(ComboBox combo, IReadOnlyList<string> options)
-    {
-        if (combo.Items.Count != options.Count)
-        {
-            return false;
-        }
-
-        for (var index = 0; index < options.Count; index++)
-        {
-            if (!string.Equals(combo.Items[index]?.ToString(), options[index], StringComparison.Ordinal))
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     private void ExportRows(Label statusLabel, string area)
@@ -1685,6 +1642,653 @@ public sealed class MainForm : Form
     {
         statusLabel.ForeColor = RamosTheme.Blue;
         statusLabel.Text = message;
+    }
+
+    private sealed record SelectorSection(string Key, string Title);
+
+    private sealed class LookupFieldState
+    {
+        private string _text = string.Empty;
+        private bool _enabled = true;
+        private IReadOnlyList<string> _options;
+
+        public LookupFieldState(DesktopLookupField field)
+        {
+            Field = field;
+            _options = field.Options.ToArray();
+        }
+
+        public DesktopLookupField Field { get; }
+        public string Key => Field.Key;
+        public string Label => Field.Label;
+        public string Section => Field.Section;
+        public IReadOnlyList<string> Options => _options;
+
+        public string Text
+        {
+            get => _text;
+            set
+            {
+                var nextText = value ?? string.Empty;
+                if (string.Equals(_text, nextText, StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                _text = nextText;
+                ValueChanged?.Invoke(this, EventArgs.Empty);
+                StateChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public bool Enabled
+        {
+            get => _enabled;
+            set
+            {
+                if (_enabled == value)
+                {
+                    return;
+                }
+
+                _enabled = value;
+                StateChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
+
+        public event EventHandler? ValueChanged;
+        public event EventHandler? StateChanged;
+
+        public void SetOptions(IReadOnlyList<string> options)
+        {
+            if (_options.SequenceEqual(options, StringComparer.Ordinal))
+            {
+                return;
+            }
+
+            _options = options.ToArray();
+            StateChanged?.Invoke(this, EventArgs.Empty);
+        }
+    }
+
+    private sealed class FieldSelectorPanel : UserControl
+    {
+        private const int ColumnHeaderHeight = 34;
+        private const int GroupItemHeight = 62;
+        private const int FieldItemHeight = 50;
+        private const int OptionItemHeight = 44;
+
+        private readonly IReadOnlyList<SelectorSection> _sections;
+        private readonly IReadOnlyList<LookupFieldState> _fields;
+        private readonly ListBox _sectionList;
+        private readonly ListBox _fieldList;
+        private readonly ListBox _optionList;
+        private readonly Label _optionTitle;
+        private readonly Label _optionHint;
+        private readonly Label _summaryCodes;
+        private SelectorSection? _selectedSection;
+        private LookupFieldState? _selectedField;
+        private bool _rendering;
+        private bool _renderPending;
+
+        public FieldSelectorPanel(
+            IReadOnlyList<SelectorSection> sections,
+            IReadOnlyList<DesktopLookupField> fields,
+            Dictionary<string, LookupFieldState> target,
+            Action<string> onChanged)
+        {
+            Dock = DockStyle.Fill;
+            BackColor = RamosTheme.Surface;
+            Margin = new Padding(0, 0, 0, 6);
+            DoubleBuffered = true;
+
+            target.Clear();
+            _fields = fields
+                .Where(field => field.Visible)
+                .Select(field =>
+                {
+                    var state = new LookupFieldState(field);
+                    state.ValueChanged += (_, _) => onChanged(state.Key);
+                    state.StateChanged += (_, _) => RequestRender();
+                    target[state.Key] = state;
+                    return state;
+                })
+                .ToArray();
+            _sections = sections
+                .Where(section => _fields.Any(field => field.Section == section.Key))
+                .ToArray();
+            _selectedSection = _sections.FirstOrDefault();
+            _selectedField = FieldsForSelectedSection().FirstOrDefault();
+
+            _sectionList = CreateListBox(GroupItemHeight);
+            _fieldList = CreateListBox(FieldItemHeight);
+            _optionList = CreateListBox(OptionItemHeight);
+            _optionTitle = new Label
+            {
+                Dock = DockStyle.Fill,
+                AutoEllipsis = true,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point),
+                ForeColor = RamosTheme.BlueDark
+            };
+            _optionHint = new Label
+            {
+                Dock = DockStyle.Fill,
+                AutoEllipsis = true,
+                TextAlign = ContentAlignment.MiddleLeft,
+                ForeColor = RamosTheme.Gray
+            };
+            _summaryCodes = new Label
+            {
+                Dock = DockStyle.Fill,
+                AutoEllipsis = true,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold, GraphicsUnit.Point),
+                ForeColor = RamosTheme.BlueDark
+            };
+
+            _sectionList.DrawItem += DrawSectionItem;
+            _fieldList.DrawItem += DrawFieldItem;
+            _optionList.DrawItem += DrawOptionItem;
+            _sectionList.SelectedIndexChanged += (_, _) => HandleSectionSelected();
+            _fieldList.SelectedIndexChanged += (_, _) => HandleFieldSelected();
+            _optionList.SelectedIndexChanged += (_, _) => HandleOptionSelected();
+            _sectionList.Items.AddRange(_sections.Cast<object>().ToArray());
+
+            var layout = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 5,
+                RowCount = 1,
+                BackColor = RamosTheme.Border,
+                CellBorderStyle = TableLayoutPanelCellBorderStyle.None,
+                Padding = new Padding(1)
+            };
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, SelectorGroupColumnWidth));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 1F));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, SelectorFieldColumnWidth));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 1F));
+            layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            layout.Controls.Add(BuildColumn("그룹", null, _sectionList, mutedHeader: true), 0, 0);
+            layout.Controls.Add(BuildSeparator(), 1, 0);
+            layout.Controls.Add(BuildColumn("필드", null, _fieldList, mutedHeader: false), 2, 0);
+            layout.Controls.Add(BuildSeparator(), 3, 0);
+            layout.Controls.Add(BuildColumn("선택 옵션", "드롭다운 대신 클릭해서 값을 확정", BuildOptionBody(), mutedHeader: false), 4, 0);
+            Controls.Add(layout);
+
+            Render();
+        }
+
+        private void RequestRender()
+        {
+            if (IsDisposed || _renderPending)
+            {
+                return;
+            }
+
+            _renderPending = true;
+            if (!IsHandleCreated)
+            {
+                _renderPending = false;
+                Render();
+                return;
+            }
+
+            BeginInvoke(new Action(() =>
+            {
+                if (IsDisposed)
+                {
+                    return;
+                }
+
+                _renderPending = false;
+                Render();
+            }));
+        }
+
+        private IEnumerable<LookupFieldState> FieldsForSelectedSection()
+        {
+            return _selectedSection is null
+                ? Enumerable.Empty<LookupFieldState>()
+                : _fields.Where(field => field.Section == _selectedSection.Key);
+        }
+
+        private void Render()
+        {
+            if (_rendering)
+            {
+                return;
+            }
+
+            _rendering = true;
+            SuspendLayout();
+            try
+            {
+                if (_selectedSection is null || !_sections.Contains(_selectedSection))
+                {
+                    _selectedSection = _sections.FirstOrDefault();
+                }
+
+                var visibleFields = FieldsForSelectedSection().ToArray();
+                if (_selectedField is null || !visibleFields.Contains(_selectedField))
+                {
+                    _selectedField = visibleFields.FirstOrDefault();
+                }
+
+                _sectionList.SelectedItem = _selectedSection;
+                RenderFields(visibleFields);
+                RenderOptions();
+                _sectionList.Invalidate();
+            }
+            finally
+            {
+                ResumeLayout(false);
+                _rendering = false;
+            }
+        }
+
+        private void HandleSectionSelected()
+        {
+            if (_rendering || _sectionList.SelectedItem is not SelectorSection section)
+            {
+                return;
+            }
+
+            _selectedSection = section;
+            _selectedField = _fields.FirstOrDefault(field => field.Section == section.Key);
+            Render();
+        }
+
+        private void HandleFieldSelected()
+        {
+            if (_rendering || _fieldList.SelectedItem is not LookupFieldState field)
+            {
+                return;
+            }
+
+            _selectedField = field;
+            Render();
+        }
+
+        private void HandleOptionSelected()
+        {
+            if (_rendering || _selectedField is null || !_selectedField.Enabled)
+            {
+                return;
+            }
+
+            if (_optionList.SelectedItem is OptionListItem { Value: not null } option)
+            {
+                _selectedField.Text = option.Value;
+            }
+        }
+
+        private void RenderFields(IReadOnlyList<LookupFieldState> visibleFields)
+        {
+            var itemsMatch = _fieldList.Items.Count == visibleFields.Count;
+            for (var index = 0; itemsMatch && index < visibleFields.Count; index++)
+            {
+                itemsMatch = ReferenceEquals(_fieldList.Items[index], visibleFields[index]);
+            }
+
+            if (itemsMatch)
+            {
+                if (!ReferenceEquals(_fieldList.SelectedItem, _selectedField))
+                {
+                    _fieldList.SelectedItem = _selectedField;
+                }
+
+                _fieldList.Invalidate();
+                return;
+            }
+
+            _fieldList.BeginUpdate();
+            try
+            {
+                _fieldList.Items.Clear();
+                _fieldList.Items.AddRange(visibleFields.Cast<object>().ToArray());
+                _fieldList.SelectedItem = _selectedField;
+            }
+            finally
+            {
+                _fieldList.EndUpdate();
+            }
+        }
+
+        private void RenderOptions()
+        {
+            _optionList.BeginUpdate();
+            try
+            {
+                _optionList.Items.Clear();
+                if (_selectedField is null)
+                {
+                    _optionTitle.Text = "선택할 필드가 없습니다.";
+                    _optionHint.Text = string.Empty;
+                    _optionList.Items.Add(new OptionListItem(null, string.Empty, "선택할 필드가 없습니다."));
+                }
+                else
+                {
+                    _optionTitle.Text = _selectedField.Label;
+                    _optionHint.Text = _selectedField.Enabled
+                        ? "옵션을 클릭하면 값이 확정됩니다."
+                        : "이 필드는 현재 조건에서 자동 고정됩니다.";
+
+                    if (_selectedField.Options.Count == 0)
+                    {
+                        _optionList.Items.Add(new OptionListItem(null, string.Empty, "선택 가능한 옵션이 없습니다."));
+                    }
+                    else
+                    {
+                        foreach (var option in _selectedField.Options)
+                        {
+                            var optionParts = SplitOption(option);
+                            _optionList.Items.Add(new OptionListItem(option, optionParts.Code, optionParts.Description));
+                        }
+
+                        var selectedIndex = _selectedField.Options
+                            .Select((option, index) => new { option, index })
+                            .FirstOrDefault(item => IsSelectedOption(_selectedField, item.option))?.index ?? -1;
+                        _optionList.SelectedIndex = selectedIndex;
+                    }
+                }
+            }
+            finally
+            {
+                _optionList.EndUpdate();
+            }
+
+            var selectedCodes = _fields
+                .Select(field => DisplayHelpers.ExtractCode(field.Text))
+                .Where(code => !string.IsNullOrEmpty(code));
+            _summaryCodes.Text = string.Join("   ", selectedCodes.DefaultIfEmpty("선택된 코드 없음"));
+        }
+
+        private Control BuildOptionBody()
+        {
+            var body = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 3,
+                Margin = Padding.Empty,
+                Padding = Padding.Empty,
+                BackColor = RamosTheme.Panel
+            };
+            body.RowStyles.Add(new RowStyle(SizeType.Absolute, 58F));
+            body.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            body.RowStyles.Add(new RowStyle(SizeType.Absolute, 64F));
+
+            var titlePanel = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                Margin = Padding.Empty,
+                Padding = new Padding(16, 6, 16, 2),
+                BackColor = RamosTheme.Panel
+            };
+            titlePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
+            titlePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            titlePanel.Controls.Add(_optionTitle, 0, 0);
+            titlePanel.Controls.Add(_optionHint, 0, 1);
+
+            var summaryPanel = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                Margin = Padding.Empty,
+                Padding = new Padding(16, 6, 16, 6),
+                BackColor = RamosTheme.Surface
+            };
+            summaryPanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 22F));
+            summaryPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+            summaryPanel.Controls.Add(new Label
+            {
+                Dock = DockStyle.Fill,
+                Text = "현재 선택 코드",
+                TextAlign = ContentAlignment.MiddleLeft,
+                ForeColor = RamosTheme.Gray
+            }, 0, 0);
+            summaryPanel.Controls.Add(_summaryCodes, 0, 1);
+
+            body.Controls.Add(titlePanel, 0, 0);
+            body.Controls.Add(_optionList, 0, 1);
+            body.Controls.Add(summaryPanel, 0, 2);
+            return body;
+        }
+
+        private static Control BuildColumn(string title, string? hint, Control body, bool mutedHeader)
+        {
+            var panel = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = 1,
+                RowCount = 2,
+                Margin = Padding.Empty,
+                Padding = Padding.Empty,
+                BackColor = RamosTheme.Panel
+            };
+            panel.RowStyles.Add(new RowStyle(SizeType.Absolute, ColumnHeaderHeight));
+            panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+
+            var header = new TableLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                ColumnCount = hint is null ? 1 : 2,
+                RowCount = 1,
+                Margin = Padding.Empty,
+                Padding = new Padding(16, 0, 16, 0),
+                BackColor = mutedHeader ? Color.FromArgb(240, 243, 248) : Color.FromArgb(248, 250, 253)
+            };
+            header.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            if (hint is not null)
+            {
+                header.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 220F));
+            }
+
+            header.Controls.Add(new Label
+            {
+                Dock = DockStyle.Fill,
+                AutoEllipsis = true,
+                Text = title,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Font = new Font("Segoe UI Semibold", 9F, FontStyle.Bold, GraphicsUnit.Point),
+                ForeColor = RamosTheme.BlueDark
+            }, 0, 0);
+            if (hint is not null)
+            {
+                header.Controls.Add(new Label
+                {
+                    Dock = DockStyle.Fill,
+                    AutoEllipsis = true,
+                    Text = hint,
+                    TextAlign = ContentAlignment.MiddleRight,
+                    ForeColor = RamosTheme.Gray
+                }, 1, 0);
+            }
+
+            panel.Controls.Add(header, 0, 0);
+            panel.Controls.Add(body, 0, 1);
+            return panel;
+        }
+
+        private static Control BuildSeparator()
+        {
+            return new Panel
+            {
+                Dock = DockStyle.Fill,
+                Margin = Padding.Empty,
+                BackColor = RamosTheme.Border
+            };
+        }
+
+        private static ListBox CreateListBox(int itemHeight)
+        {
+            return new ListBox
+            {
+                Dock = DockStyle.Fill,
+                BorderStyle = BorderStyle.None,
+                DrawMode = DrawMode.OwnerDrawFixed,
+                IntegralHeight = false,
+                ItemHeight = itemHeight,
+                Margin = Padding.Empty,
+                BackColor = RamosTheme.Panel,
+                ForeColor = RamosTheme.Text
+            };
+        }
+
+        private void DrawSectionItem(object? sender, DrawItemEventArgs args)
+        {
+            if (args.Index < 0 || _sectionList.Items[args.Index] is not SelectorSection section)
+            {
+                return;
+            }
+
+            var sectionFields = _fields.Where(field => field.Section == section.Key).ToArray();
+            var subtitle = string.Join(", ", sectionFields.Take(3).Select(field => field.Label));
+            if (sectionFields.Length > 3)
+            {
+                subtitle += "...";
+            }
+
+            DrawTwoLineItem(args, section.Title, subtitle, enabled: true);
+        }
+
+        private void DrawFieldItem(object? sender, DrawItemEventArgs args)
+        {
+            if (args.Index < 0 || _fieldList.Items[args.Index] is not LookupFieldState field)
+            {
+                return;
+            }
+
+            DrawTwoLineItem(args, field.Label, BuildFieldSubtitle(field), field.Enabled);
+        }
+
+        private void DrawOptionItem(object? sender, DrawItemEventArgs args)
+        {
+            if (args.Index < 0 || _optionList.Items[args.Index] is not OptionListItem option)
+            {
+                return;
+            }
+
+            var enabled = _selectedField?.Enabled == true && option.Value is not null;
+            var selected = enabled && args.State.HasFlag(DrawItemState.Selected);
+            using (var backgroundBrush = new SolidBrush(selected ? RamosTheme.Blue : RamosTheme.Panel))
+            {
+                args.Graphics.FillRectangle(backgroundBrush, args.Bounds);
+            }
+
+            if (option.Value is null)
+            {
+                TextRenderer.DrawText(
+                    args.Graphics,
+                    option.Description,
+                    Font,
+                    new Rectangle(args.Bounds.X + 16, args.Bounds.Y, args.Bounds.Width - 32, args.Bounds.Height),
+                    RamosTheme.Gray,
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+                return;
+            }
+
+            using var codeFont = new Font("Segoe UI Semibold", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            var codeColor = selected ? Color.White : enabled ? RamosTheme.BlueDark : RamosTheme.Gray;
+            var textColor = selected ? Color.White : enabled ? RamosTheme.Text : RamosTheme.Gray;
+            TextRenderer.DrawText(
+                args.Graphics,
+                option.Code,
+                codeFont,
+                new Rectangle(args.Bounds.X + 24, args.Bounds.Y, 60, args.Bounds.Height),
+                codeColor,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+            TextRenderer.DrawText(
+                args.Graphics,
+                option.Description,
+                Font,
+                new Rectangle(args.Bounds.X + 86, args.Bounds.Y, args.Bounds.Width - 100, args.Bounds.Height),
+                textColor,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+
+            if (!selected)
+            {
+                using var linePen = new Pen(Color.FromArgb(237, 241, 247));
+                args.Graphics.DrawLine(linePen, args.Bounds.X + 10, args.Bounds.Bottom - 1, args.Bounds.Right - 10, args.Bounds.Bottom - 1);
+            }
+        }
+
+        private static void DrawTwoLineItem(DrawItemEventArgs args, string title, string subtitle, bool enabled)
+        {
+            var selected = args.State.HasFlag(DrawItemState.Selected);
+            var background = selected
+                ? RamosTheme.BlueLight
+                : enabled ? RamosTheme.Panel : Color.FromArgb(242, 244, 248);
+            using (var backgroundBrush = new SolidBrush(background))
+            {
+                args.Graphics.FillRectangle(backgroundBrush, args.Bounds);
+            }
+
+            if (selected)
+            {
+                using var selectedBrush = new SolidBrush(RamosTheme.Blue);
+                args.Graphics.FillRectangle(selectedBrush, args.Bounds.X, args.Bounds.Y, 4, args.Bounds.Height);
+            }
+
+            var left = args.Bounds.X + (selected ? 14 : 18);
+            var titleColor = enabled
+                ? selected ? RamosTheme.BlueDark : RamosTheme.Text
+                : RamosTheme.Gray;
+            using var titleFont = new Font("Segoe UI Semibold", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            TextRenderer.DrawText(
+                args.Graphics,
+                title,
+                titleFont,
+                new Rectangle(left, args.Bounds.Y + 7, args.Bounds.Width - 28, 18),
+                titleColor,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+            TextRenderer.DrawText(
+                args.Graphics,
+                subtitle,
+                SystemFonts.MessageBoxFont,
+                new Rectangle(left, args.Bounds.Y + 28, args.Bounds.Width - 28, 18),
+                RamosTheme.Gray,
+                TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+
+            using var linePen = new Pen(Color.FromArgb(237, 241, 247));
+            args.Graphics.DrawLine(linePen, args.Bounds.X, args.Bounds.Bottom - 1, args.Bounds.Right, args.Bounds.Bottom - 1);
+        }
+
+        private static string BuildFieldSubtitle(LookupFieldState field)
+        {
+            var text = string.IsNullOrWhiteSpace(field.Text) ? "선택 안 됨" : field.Text;
+            return field.Enabled ? text : $"{text} / 자동 고정";
+        }
+
+        private static bool IsSelectedOption(LookupFieldState field, string option)
+        {
+            var selectedCode = DisplayHelpers.ExtractCode(field.Text);
+            var optionCode = DisplayHelpers.ExtractCode(option);
+            if (!string.IsNullOrEmpty(selectedCode) || !string.IsNullOrEmpty(optionCode))
+            {
+                return selectedCode.Equals(optionCode, StringComparison.OrdinalIgnoreCase);
+            }
+
+            return string.Equals(field.Text, option, StringComparison.Ordinal);
+        }
+
+        private static (string Code, string Description) SplitOption(string option)
+        {
+            var separatorIndex = option.IndexOf(" - ", StringComparison.Ordinal);
+            if (separatorIndex < 0)
+            {
+                return (string.IsNullOrEmpty(DisplayHelpers.ExtractCode(option)) ? option : DisplayHelpers.ExtractCode(option), option);
+            }
+
+            return (option[..separatorIndex], option[(separatorIndex + 3)..]);
+        }
+
+        private sealed record OptionListItem(string? Value, string Code, string Description);
     }
 
     private sealed class DesktopAppServices

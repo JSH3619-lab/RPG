@@ -8,7 +8,7 @@ RAMOS DRAM/Module Part Code를 규칙 기반으로 생성, 파싱, 검증하고 
 - Module / Module BIN Part Code 생성
 - Comp Full Part 파싱
 - Module Full Part 파싱
-- 스펙 코드 드롭다운 제공
+- 그룹 → 필드 → 옵션의 3열 클릭 선택 UI 제공
 - DRAM Type, Density, Bank, Interface, Speed 등 조합 검증
 - Rev 30 기준 Vendor / Purchaser / A100 Special 조건 반영
 - Existing PART / TM PART 모드 전환
@@ -20,36 +20,42 @@ RAMOS DRAM/Module Part Code를 규칙 기반으로 생성, 파싱, 검증하고 
 개발 실행:
 
 ```powershell
-cd C:\RPG\RamosPartGenerator
-dotnet run --project csharp-desktop\RamosPartGenerator.Desktop\RamosPartGenerator.Desktop.csproj
+cd C:\RPG
+dotnet run --project RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop\RamosPartGenerator.Desktop.csproj
 ```
 
 빌드 확인:
 
 ```powershell
-cd C:\RPG\RamosPartGenerator
-dotnet build csharp-desktop\RamosPartGenerator.Desktop\RamosPartGenerator.Desktop.csproj
+cd C:\RPG
+dotnet build RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop\RamosPartGenerator.Desktop.csproj
 ```
 
 테스트:
 
 ```powershell
-cd C:\RPG\RamosPartGenerator
-dotnet test RamosPartGenerator.sln
+cd C:\RPG
+dotnet test RamosPartGenerator\RamosPartGenerator.sln
 ```
 
 단일 exe 생성:
 
 ```powershell
 cd C:\RPG
-dotnet publish RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop\RamosPartGenerator.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o RamosPartGenerator\publish
+dotnet publish RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop\RamosPartGenerator.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o Publish
 ```
 
 배포 산출물:
 
 ```text
-C:\RPG\RamosPartGenerator\publish\RamosPartGenerator.Desktop.exe
+C:\RPG\Publish\RamosPartGenerator.Desktop.exe
 ```
+
+## 선택 UI
+
+- 값은 직접 타이핑하지 않고 `그룹 → 필드 → 선택 옵션` 순서로 클릭해서 선택합니다.
+- 필드 선택과 옵션 변경 시 현재 필드 목록의 스크롤 위치를 유지합니다.
+- Parse 결과는 각 필드의 현재 값과 오른쪽 선택 옵션에 즉시 반영됩니다.
 
 ## 프로젝트 구조
 

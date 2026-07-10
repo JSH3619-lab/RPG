@@ -1,6 +1,6 @@
 # Ramos Part Generator 다음 세션 인수인계
 
-최종 정리일: 2026-05-10
+최종 정리일: 2026-07-10
 
 ## 작업 원칙
 
@@ -39,13 +39,13 @@ dotnet build RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/RamosP
 단일 exe publish:
 
 ```powershell
-dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/RamosPartGenerator.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o RamosPartGenerator/publish
+dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/RamosPartGenerator.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o Publish
 ```
 
 ## 현재 배포 구조
 
 - WinForms 프로젝트: `RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop`
-- 배포 산출물: `RamosPartGenerator/publish/RamosPartGenerator.Desktop.exe`
+- 배포 산출물: `Publish/RamosPartGenerator.Desktop.exe`
 - exe 하나만 배포 가능하도록 Core의 `specs/*.json`은 embedded resource로 포함한다.
 - 외부 `specs` 폴더가 있으면 우선 사용하고, 없으면 embedded specs로 fallback한다.
 - exe 아이콘은 `RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/Assets/RamosPartGenerator.ico`를 사용한다.
@@ -93,7 +93,7 @@ dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/Ramo
 
 ### Module
 
-- MDL Composition 드롭다운은 규격서 기준으로 `4 - x4`, `8 - x8`, `6 - x16`을 표시한다.
+- MDL Composition 선택 옵션은 규격서 기준으로 `4 - x4`, `8 - x8`, `6 - x16`을 표시한다.
 - DDR4/DDR5에 맞지 않는 Speed, Bank/VDD, Die Density 조합은 막는다.
 - Module Density, Die Density, Composition, Rank 조합이 계산상 맞지 않으면 생성하지 않는다.
 - IC count 표기는 `64 / compositionWidth * rankCount` 기준이다.
@@ -143,9 +143,9 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
 
 ## UI 안정화 메모
 
-- WinForms ComboBox에서 선택 중 자기 자신의 `Items`를 다시 지우고 채우면 네이티브 오류가 날 수 있다.
-- 현재는 변경된 필드 기준으로 필요한 종속 옵션만 갱신한다.
-- 옵션 목록을 실제로 바꿀 때는 AutoComplete를 잠깐 끄고 `Items`를 재구성한다.
+- 입력 UI는 그룹, 필드, 선택 옵션의 3열 `ListBox` 클릭 방식이다.
+- 필드와 옵션 상태만 바뀐 경우 필드 목록을 다시 만들지 않고 다시 그려 스크롤 위치를 유지한다.
+- 그룹이 바뀌어 표시할 필드 구성이 달라질 때만 필드 목록 항목을 재구성한다.
 
 ## 테스트 기준
 
@@ -163,7 +163,7 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
 
 ## 커밋/배포 주의
 
-- `RamosPartGenerator/publish/`는 배포 산출물이라 커밋하지 않는다.
+- `Publish/`는 배포 산출물이라 커밋하지 않는다.
 - `DRAM 품목정보*.xlsx`는 Export 결과 파일이라 커밋하지 않는다.
 - `.code-review-graph/`는 MCP 로컬 산출물이라 커밋하지 않는다.
-- exe 생성 후 산출물 확인은 `Get-ChildItem RamosPartGenerator/publish`로 한다.
+- exe 생성 후 산출물 확인은 `Get-ChildItem Publish`로 한다.

@@ -19,7 +19,7 @@ C:\RPG\RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop
 - `RamosPartGenerator.Desktop.csproj`: WinForms 프로젝트 파일
 - `Program.cs`: WinForms 앱 진입점
 - `MainForm.cs`: 전체 화면, 버튼 이벤트, 필드 상태 관리
-- `DesktopLookupCatalog.cs`: Desktop UI용 드롭다운 필드 구성
+- `DesktopLookupCatalog.cs`: Desktop UI용 필드와 선택 옵션 구성
 - `DisplayHelpers.cs`: 표시값과 실제 코드값 변환 helper
 
 ## 실행 형태
@@ -99,7 +99,8 @@ Desktop 앱은 두 개의 탭으로 구성된다.
 
 공통 동작:
 
-- 드롭다운 입력과 직접 입력 혼합 가능
+- 그룹, 필드, 선택 옵션으로 구성된 3열 클릭 선택 방식
+- 필드 선택과 옵션 변경 시 현재 필드 목록의 스크롤 위치 유지
 - 표시값은 `코드 - 설명` 형태로 보여주고, Core 서비스 호출 시 실제 코드만 추출
 - `Generate` 결과를 하단 테이블에 누적
 - `Export Excel` 클릭 시 현재 결과 row를 Excel로 저장
@@ -329,7 +330,7 @@ Export 표시 기준:
 | 필드 겹침/잘림 대응 | 1차 완료 | 상단 입력부와 필드 영역 layout 조정 |
 | Web/API 없이 exe 실행 | 가능 | Desktop 앱은 API 호출 없음 |
 | `.sln` 편입 | 미완료 | 현재 project path로 직접 빌드/실행 |
-| Publish 패키징 | 미완료 | 단일 exe 또는 배포 폴더 구성 필요 |
+| Publish 패키징 | 완료 | 최상위 `Publish` 폴더에 self-contained 단일 exe 생성 |
 | 설치 프로그램 | 미완료 | MSI/Setup 등은 아직 없음 |
 | 전체 UI 수동 QA | 진행 필요 | 긴 option text, 작은 창 크기, DPI 확대 확인 필요 |
 | Desktop UI 자동 테스트 | 미구현 | 현재 Core 단위 테스트 중심 |
@@ -360,14 +361,9 @@ Export 표시 기준:
 
 우선순위 높은 작업:
 
-- Desktop 프로젝트를 `RamosPartGenerator.sln`에 추가
-- Release publish 명령과 산출물 폴더 표준화
 - 작은 화면 / 고 DPI / 긴 텍스트 기준 UI 재점검
 - Core 오류 메시지 한글 인코딩 및 문구 정리
 
 배포 단계 작업:
 
-- `dotnet publish` 기반 배포 폴더 생성
-- 실행 파일 아이콘 적용
-- 회사 로고 이미지 반영 여부 결정
 - 설치 프로그램 또는 압축 배포 패키지 구성

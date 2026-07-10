@@ -1,7 +1,9 @@
 .claude/
+.vs/
 *.tmp
 ~$*.xlsx
 ~$*.xlsm
 .code-review-graph/
 RamosPartGenerator/publish/
+Publish/
 DRAM 품목정보*.xlsx
