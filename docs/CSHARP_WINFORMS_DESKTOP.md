@@ -208,6 +208,7 @@ Third-party Source:
 - Special Code 3
 - Grade Code
 - Product Bin
+- 완제품 Retest (00/0Y)
 
 I.C Brand는 `V - GIGA S1(SV)`, `P - GIGA S1(SP)`를 포함한다.
 
@@ -225,7 +226,7 @@ Module Full Part 파싱:
 ModuleService.ParseModuleFullPart(revision, partCode)
 ```
 
-Comp Full Part는 Module 기본값을 유도하는 용도로 사용한다. Module Full Part는 실제 Module 코드에서 필드값을 복원하는 용도로 사용한다.
+Comp Full Part는 Module 기본값을 유도하는 용도로 사용한다. Module Full Part는 실제 Module 코드에서 필드값을 복원하는 용도로 사용한다. 두 번째 `-` 앞 구간이 `00` 또는 `0Y`로 끝나면 해당 2자리를 제외하고 필드를 파싱하며 `완제품 Retest (00/0Y)` 옵션을 자동으로 켠다.
 
 ### 생성
 
@@ -239,6 +240,14 @@ ModuleService.GeneratePreview(request)
 
 - Module row
 - Module BIN row
+
+`완제품 Retest (00/0Y)` 옵션을 켠 경우 생성 결과:
+
+- `00` Module Dummy row (`Specification` 끝에 `Dummy` 추가)
+- `0Y` Module row (기본 Module과 동일한 `Specification`)
+- `0Y` Module BIN row
+
+완제품 Retest는 기존 Module Repair Dummy 자동 생성보다 우선한다.
 
 ### 화면 룰
 

@@ -49,6 +49,7 @@ public sealed class MainForm : Form
     private RadioButton _incomingManufacturingMode = null!;
     private RadioButton _moduleStandardMode = null!;
     private RadioButton _moduleManufacturingMode = null!;
+    private CheckBox _moduleFinishedProductRetest = null!;
     private bool _updatingIncoming;
     private bool _updatingModule;
 
@@ -434,7 +435,13 @@ public sealed class MainForm : Form
             },
             "Standard",
             "TM");
-        return BuildModeRow(_moduleStandardMode, _moduleManufacturingMode);
+        _moduleFinishedProductRetest = new CheckBox
+        {
+            Text = "완제품 Retest (00/0Y)",
+            AutoSize = true,
+            Margin = new Padding(16, 7, 0, 0)
+        };
+        return BuildModeRow(_moduleStandardMode, _moduleManufacturingMode, _moduleFinishedProductRetest);
     }
 
     private static (RadioButton Standard, RadioButton Manufacturing) CreateModeSelector(
@@ -501,7 +508,7 @@ public sealed class MainForm : Form
         radio.Font = new Font("Segoe UI Semibold", 8.5F, FontStyle.Bold, GraphicsUnit.Point);
     }
 
-    private static Control BuildModeRow(RadioButton standard, RadioButton manufacturing)
+    private static Control BuildModeRow(RadioButton standard, RadioButton manufacturing, Control? additionalOption = null)
     {
         var row = new TableLayoutPanel
         {
@@ -529,6 +536,10 @@ public sealed class MainForm : Form
         };
         options.Controls.Add(standard);
         options.Controls.Add(manufacturing);
+        if (additionalOption is not null)
+        {
+            options.Controls.Add(additionalOption);
+        }
         row.Controls.Add(options, 1, 0);
         return row;
     }
@@ -1204,6 +1215,7 @@ public sealed class MainForm : Form
             SetModuleManufacturingMode(false, clearFields: false);
             _moduleCompPartText.Text = string.Empty;
             _moduleFullPartText.Text = string.Empty;
+            _moduleFinishedProductRetest.Checked = false;
             foreach (var combo in _moduleFields.Values)
             {
                 combo.Text = string.Empty;
@@ -1250,7 +1262,8 @@ public sealed class MainForm : Form
             SpecialCode2Code = ReadModuleCode("specialCode2Code"),
             SpecialCode3Code = ReadModuleCode("specialCode3Code"),
             GradeCode = ReadModuleCode("gradeCode"),
-            ProductBinCode = ReadModuleCode("productBinCode")
+            ProductBinCode = ReadModuleCode("productBinCode"),
+            IsFinishedProductRetest = _moduleFinishedProductRetest.Checked
         };
     }
 
@@ -1260,6 +1273,7 @@ public sealed class MainForm : Form
         try
         {
             SetModuleManufacturingMode(ManufacturingModuleSourceCodes.Contains(request.ModuleSourceCode, StringComparer.OrdinalIgnoreCase), clearFields: false);
+            _moduleFinishedProductRetest.Checked = request.IsFinishedProductRetest;
             SetModuleField("moduleSourceCode", request.ModuleSourceCode);
             SetModuleField("dramTypeCode", request.DramTypeCode);
             SetModuleField("dimmTypeCode", request.DimmTypeCode);

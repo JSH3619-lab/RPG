@@ -141,6 +141,17 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
 - `B` (`Reball`)은 Dummy를 만들지 않는다.
 - 이 규칙은 A100 한정이 아니라 전체 Module에 적용한다.
 
+### Module 완제품 Retest
+
+- Module 화면에 `완제품 Retest (00/0Y)` 체크박스를 추가했다.
+- 옵션을 켜면 기본 MDL/MDL BIN 대신 다음 순서로 3개 행을 생성한다.
+  - `{기본 MDL}00`: `MDL Dummy`, 규격 끝에 `Dummy`
+  - `{기본 MDL}0Y`: `MDL`, 기본 MDL과 동일한 규격
+  - `{기본 MDL}0Y-{BIN suffix}`: `MDL BIN`
+- 예: `RMRDAG58A1P-GPWRRWM7G`는 `00`, `0Y`, `0Y-TNAGA00` 형태로 생성한다.
+- Parse는 두 번째 `-` 앞 구간의 마지막 2자리로 `00/0Y`를 판별하고 옵션을 자동으로 켠다.
+- 기존 Repair Dummy 조건과 겹치면 완제품 Retest를 우선하며 별도 Repair Dummy 행은 생성하지 않는다.
+
 ## UI 안정화 메모
 
 - 입력 UI는 그룹, 필드, 선택 옵션의 3열 `ListBox` 클릭 방식이다.
@@ -149,7 +160,7 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
 
 ## 테스트 기준
 
-현재 기준 전체 테스트는 56개다.
+현재 기준 전체 테스트는 61개다.
 
 주요 테스트 범위:
 
@@ -158,6 +169,7 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
 - A100 Incoming/Comp 규격
 - Module A100/PCB/IC Brand 규격
 - Module Repair Dummy 생성/미생성
+- Module 완제품 Retest 생성/파싱 및 Repair Dummy 우선순위
 - Export `영업코드`, Arial, `MDL Dummy`, 자동 열 폭
 - embedded specs fallback
 

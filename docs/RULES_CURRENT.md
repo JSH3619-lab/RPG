@@ -63,6 +63,16 @@
   - DDR5 `CM`, `CQ` -> `32Bank / 1.35V`
   - DDR5 `CR`, `CS` -> `32Bank / 1.4V`
 
+## Module 완제품 Retest 규칙
+- Module 화면의 `완제품 Retest (00/0Y)` 옵션은 기본적으로 꺼져 있다.
+- 옵션을 켜면 기본 MDL/MDL BIN 대신 다음 3개 행을 순서대로 생성한다.
+  - 기본 MDL 코드 끝에 `00`을 붙인 `MDL Dummy`; 품목규격 끝에 `Dummy`를 붙인다.
+  - 기본 MDL 코드 끝에 `0Y`를 붙인 `MDL`; 품목규격은 접미사가 없는 기본 MDL과 같다.
+  - `0Y` MDL 뒤에 BIN suffix를 붙인 `MDL BIN`.
+- `00`과 `0Y`는 두 번째 `-` 앞 구간의 마지막 2자리로 판별한다.
+- `00` 또는 `0Y` Part를 파싱하면 완제품 Retest 옵션을 자동으로 켠다.
+- 기존 Module Repair Dummy 조건과 동시에 적용되면 완제품 Retest를 우선하고 별도의 Repair Dummy 행은 추가하지 않는다.
+
 ## A100 규칙
 - `Only A100` 계열 필드는 아래 조건에서만 사용할 수 있다.
   - Third-party family

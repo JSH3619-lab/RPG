@@ -28,6 +28,7 @@ public sealed class ModuleRequest
     public string SpecialCode3Code { get; set; } = string.Empty;
     public string GradeCode { get; set; } = string.Empty;
     public string ProductBinCode { get; set; } = string.Empty;
+    public bool IsFinishedProductRetest { get; set; }
     public string BasePartCode { get; set; } = string.Empty;
     public string BinPartCode { get; set; } = string.Empty;
 }

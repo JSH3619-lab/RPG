@@ -82,7 +82,10 @@ public sealed class ModuleService
         ValidateModuleDensityCombination(effectiveRequest);
         ValidateA100Special(effectiveRequest);
 
-        var basePartCode = BuildModuleBasePartCode(effectiveRequest);
+        var sourceBasePartCode = BuildModuleBasePartCode(effectiveRequest);
+        var basePartCode = effectiveRequest.IsFinishedProductRetest
+            ? sourceBasePartCode + "0Y"
+            : sourceBasePartCode;
         var binPartCode = BuildModuleBinPartCode(basePartCode, effectiveRequest);
         var dramTypeLabel = GetModuleDramTypeLabel(effectiveRequest.DramTypeCode);
         var formFactorLabel = GetModuleFormFactorLabel(effectiveRequest.DimmTypeCode);
@@ -140,6 +143,20 @@ public sealed class ModuleService
             isCompSale,
             effectiveRequest.CompTestCode,
             isManufacturing);
+
+        if (effectiveRequest.IsFinishedProductRetest)
+        {
+            var retestDummyPartCode = sourceBasePartCode + "00";
+            var retestDummySpecification = string.Join(
+                " ",
+                new[] { baseText.Specification, "Dummy" }.Where(x => !string.IsNullOrWhiteSpace(x)));
+            return new List<GeneratedPartRow>
+            {
+                new("Module Dummy", retestDummyPartCode, retestDummyPartCode, baseText.GeneralInfo, retestDummySpecification),
+                new("Module", basePartCode, baseText.Name, baseText.GeneralInfo, baseText.Specification),
+                new("Module BIN", binPartCode, binText.Name, binText.GeneralInfo, binText.Specification)
+            };
+        }
 
         var rows = new List<GeneratedPartRow>
         {
@@ -246,12 +263,20 @@ public sealed class ModuleService
             throw new InvalidOperationException("Module BIN suffix 길이가 올바르지 않습니다. 예: TNAGA00");
         }
 
+        var isFinishedProductRetest = tailPart.EndsWith("00", StringComparison.OrdinalIgnoreCase) ||
+                                      tailPart.EndsWith("0Y", StringComparison.OrdinalIgnoreCase);
+        if (isFinishedProductRetest)
+        {
+            tailPart = tailPart[..^2];
+        }
+
         var request = new ModuleRequest
         {
             Revision = revisionSpec.Revision,
             ModuleFullPartCode = normalizedPartCode,
-            BasePartCode = string.IsNullOrEmpty(binTail) ? normalizedPartCode : $"{headPart}-{tailPart}",
+            BasePartCode = $"{headPart}-{tailPart}",
             BinPartCode = string.IsNullOrEmpty(binTail) ? string.Empty : normalizedPartCode,
+            IsFinishedProductRetest = isFinishedProductRetest,
             ModuleSourceCode = headPart[..2],
             DramTypeCode = headPart.Substring(2, 1),
             DimmTypeCode = headPart.Substring(3, 1),
@@ -511,6 +536,7 @@ public sealed class ModuleService
             SpecialCode3Code = NormalizeCode(request.SpecialCode3Code),
             GradeCode = NormalizeCode(request.GradeCode),
             ProductBinCode = NormalizeCode(request.ProductBinCode),
+            IsFinishedProductRetest = request.IsFinishedProductRetest,
             BasePartCode = NormalizeCode(request.BasePartCode),
             BinPartCode = NormalizeCode(request.BinPartCode)
         };
@@ -546,6 +572,7 @@ public sealed class ModuleService
             SpecialCode3Code = PreferValue(parsedRequest.SpecialCode3Code, overrideRequest.SpecialCode3Code),
             GradeCode = PreferValue(parsedRequest.GradeCode, overrideRequest.GradeCode),
             ProductBinCode = PreferValue(parsedRequest.ProductBinCode, overrideRequest.ProductBinCode),
+            IsFinishedProductRetest = parsedRequest.IsFinishedProductRetest || overrideRequest.IsFinishedProductRetest,
             BasePartCode = PreferValue(parsedRequest.BasePartCode, overrideRequest.BasePartCode),
             BinPartCode = PreferValue(parsedRequest.BinPartCode, overrideRequest.BinPartCode)
         };

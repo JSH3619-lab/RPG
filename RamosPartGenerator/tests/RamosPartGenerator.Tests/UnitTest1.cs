@@ -576,6 +576,70 @@ public class UnitTest1
     }
 
     [Fact]
+    public void GeneratePreview_ModuleFullPart_FinishedProductRetestGeneratesDummyAndZeroYParts()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleFullPartCode = "RMRDAG58A1P-GPWRRWM7G",
+            IsFinishedProductRetest = true
+        });
+
+        Assert.Equal(3, rows.Count);
+        Assert.Equal("Module Dummy", rows[0].Kind);
+        Assert.Equal("RMRDAG58A1P-GPWRRWM7G00", rows[0].PartCode);
+        Assert.EndsWith("Dummy", rows[0].Specification);
+        Assert.Equal("Module", rows[1].Kind);
+        Assert.Equal("RMRDAG58A1P-GPWRRWM7G0Y", rows[1].PartCode);
+        Assert.Equal("Module BIN", rows[2].Kind);
+        Assert.Equal("RMRDAG58A1P-GPWRRWM7G0Y-TNAGA00", rows[2].PartCode);
+    }
+
+    [Theory]
+    [InlineData("RMRDAG58A1P-GPWRRWM7G00")]
+    [InlineData("RMRDAG58A1P-GPWRRWM7G0Y")]
+    [InlineData("RMRDAG58A1P-GPWRRWM7G0Y-TNAGA00")]
+    public void ParseModuleFullPart_FinishedProductRetestUsesLastTwoCharacters(string partCode)
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var parsed = service.ParseModuleFullPart("30", partCode);
+
+        Assert.True(parsed.IsFinishedProductRetest);
+        Assert.Equal("G", parsed.VendorCode);
+        Assert.Equal("RMRDAG58A1P-GPWRRWM7G", parsed.BasePartCode);
+    }
+
+    [Fact]
+    public void GeneratePreview_FinishedProductRetestTakesPriorityOverRepairDummy()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleFullPartCode = "BMRDAG58A1A-CPARRWMAAAR",
+            IsFinishedProductRetest = true
+        });
+
+        Assert.Equal(3, rows.Count);
+        Assert.Equal("BMRDAG58A1A-CPARRWMAAAR00", rows[0].PartCode);
+        Assert.Equal("BMRDAG58A1A-CPARRWMAAAR0Y", rows[1].PartCode);
+        Assert.DoesNotContain(rows, row => row.PartCode == "BMRDAG58A1A-CPARRWMAAA00");
+    }
+
+    [Fact]
     public void GeneratePreview_ModuleFullPart_BuildsReadableModuleTexts()
     {
         var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
