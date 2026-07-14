@@ -14,6 +14,7 @@ RAMOS DRAM/Module Part Code를 규칙 기반으로 생성, 파싱, 검증하고 
 - Rev 30 기준 Vendor / Purchaser / A100 Special 조건 반영
 - Existing PART / TM PART 모드 전환
 - 생성 결과 미리보기
+- 결과 테이블 셀 단위 다중 선택, 복사, 선택 행 삭제
 - 등록용 Excel Export
 
 ## 실행
@@ -57,6 +58,9 @@ C:\RPG\Publish\RamosPartGenerator.Desktop.exe
 - 값은 직접 타이핑하지 않고 `그룹 → 필드 → 선택 옵션` 순서로 클릭해서 선택합니다.
 - 필드 선택과 옵션 변경 시 현재 필드 목록의 스크롤 위치를 유지합니다.
 - Parse 결과는 각 필드의 현재 값과 오른쪽 선택 옵션에 즉시 반영됩니다.
+- Incoming/Comp의 Source는 Comp 중심으로 `RC/TC/CC/BC`를 표시하고, 함께 생성되는 입고 코드는 `K/T/C/B`로 안내합니다.
+- 결과 테이블은 셀 하나 또는 드래그한 여러 셀을 선택할 수 있으며, `Ctrl+C`로 헤더 없이 복사합니다.
+- `Delete Selected`는 선택한 셀이 포함된 결과 행만 삭제하고, `Reset`은 입력과 전체 결과를 초기화합니다.
 - Module의 `완제품 Retest (00/0Y)`를 선택하면 기본 Part 대신 `00` Dummy, `0Y` MDL, `0Y` MDL BIN을 생성합니다.
 
 ## 프로젝트 구조

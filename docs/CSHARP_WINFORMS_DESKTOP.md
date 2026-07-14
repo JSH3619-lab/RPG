@@ -103,6 +103,8 @@ Desktop 앱은 두 개의 탭으로 구성된다.
 - 필드 선택과 옵션 변경 시 현재 필드 목록의 스크롤 위치 유지
 - 표시값은 `코드 - 설명` 형태로 보여주고, Core 서비스 호출 시 실제 코드만 추출
 - `Generate` 결과를 하단 테이블에 누적
+- 결과 테이블의 셀 단위 다중/드래그 선택과 헤더 없는 `Ctrl+C` 복사
+- `Delete Selected`로 선택 셀이 포함된 결과 행만 삭제
 - `Export Excel` 클릭 시 현재 결과 row를 Excel로 저장
 - Ramos 회사 컬러 기반 테마 적용
 
@@ -111,7 +113,7 @@ Desktop 앱은 두 개의 탭으로 구성된다.
 ### 주요 입력
 
 - Comp Full Part
-- Source
+- Comp Source
 - DRAM Type
 - Density
 - Bit
@@ -174,10 +176,17 @@ DDR5:
 
 Source가 Third-party 계열일 때만 Purchaser를 입력할 수 있다.
 
-Third-party Source:
+Comp Source는 Comp 생성을 중심으로 표시하고, 함께 생성되는 Incoming Source를 보조 정보로 안내한다. Core 서비스에는 기존 Incoming Source 코드로 변환해서 전달한다.
 
-- `T`
-- `B`
+- `RC - RAmos Memory (입고: K)`
+- `TC - Ramos TP (입고: T)`
+- `CC - CTST Memory (입고: C)`
+- `BC - CTST TP (입고: B)`
+
+Third-party Comp Source:
+
+- `TC` (내부 Incoming Source `T`)
+- `BC` (내부 Incoming Source `B`)
 
 ## Module 룰
 
@@ -332,8 +341,8 @@ Export 표시 기준:
 | WinForms 프로젝트 생성 | 완료 | `csharp-desktop` 하위로 기존 프로젝트와 분리 |
 | Core 로직 연결 | 완료 | `IncomingCompService`, `ModuleService` 직접 사용 |
 | Spec JSON 로딩 | 완료 | 실행 폴더 `specs` 기준 |
-| Incoming & Comp 화면 | 1차 완료 | Parse, Generate, Export, Reset 구현 |
-| Module 화면 | 1차 완료 | Comp parse, Module parse, Generate, Export, Reset 구현 |
+| Incoming & Comp 화면 | 1차 완료 | Parse, Generate, Export, 선택 행 삭제, Reset 구현 |
+| Module 화면 | 1차 완료 | Comp parse, Module parse, Generate, Export, 선택 행 삭제, Reset 구현 |
 | Excel Export | 완료 | 기존 exporter 재사용 |
 | Ramos 색상 테마 | 1차 완료 | Header, Tab, Button, Table 색상 반영 |
 | 필드 겹침/잘림 대응 | 1차 완료 | 상단 입력부와 필드 영역 layout 조정 |

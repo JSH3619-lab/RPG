@@ -30,7 +30,7 @@ internal sealed class DesktopLookupCatalog
         var tail = spec.IncomingComp.TailModel;
         var fields = new List<DesktopLookupField>
         {
-            new("sourceCode", "Source", "common", true, true, Options("incoming_source", "manufacturing_incoming_source")),
+            new("sourceCode", "Comp Source", "common", true, true, CompSourceOptions()),
             new("dramTypeCode", "DRAM Type", "common", true, true, Options("dram_type")),
             new("densityCode", "Density", "common", true, true, Options("density_ddr4", "density_ddr5")),
             new("bitOrganizationCode", "Bit", "common", true, true, Options("bit", "bit_tm")),
@@ -110,6 +110,21 @@ internal sealed class DesktopLookupCatalog
                 _ => option
             })
             .ToArray();
+    }
+
+    private IReadOnlyList<string> CompSourceOptions()
+    {
+        var standardOptions = Options("incoming_source")
+            .Select(option =>
+            {
+                var incomingCode = DisplayHelpers.ExtractCode(option);
+                var description = option[(option.IndexOf(" - ", StringComparison.Ordinal) + 3)..];
+                return $"{DisplayHelpers.ToCompSourceCode(incomingCode)} - {description} (입고: {incomingCode})";
+            });
+        var manufacturingOptions = Options("manufacturing_comp_source")
+            .Select(option => $"{option} (입고: {DisplayHelpers.ToIncomingSourceCode(DisplayHelpers.ExtractCode(option))})");
+
+        return standardOptions.Concat(manufacturingOptions).ToArray();
     }
 
     private static IReadOnlyList<string> AlphabetOptions()

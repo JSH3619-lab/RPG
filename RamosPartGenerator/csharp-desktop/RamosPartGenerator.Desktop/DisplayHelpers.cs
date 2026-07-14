@@ -40,4 +40,32 @@ internal static class DisplayHelpers
         var code = ExtractCode(rawValue);
         return code.Equals("A", StringComparison.OrdinalIgnoreCase) ? "4" : code;
     }
+
+    public static string ToCompSourceCode(string incomingSourceCode)
+    {
+        return incomingSourceCode.ToUpperInvariant() switch
+        {
+            "K" => "RC",
+            "T" => "TC",
+            "C" => "CC",
+            "B" => "BC",
+            "X" => "XC",
+            "Z" => "ZC",
+            _ => incomingSourceCode
+        };
+    }
+
+    public static string ToIncomingSourceCode(string compSourceCode)
+    {
+        return compSourceCode.ToUpperInvariant() switch
+        {
+            "RC" => "K",
+            "TC" => "T",
+            "CC" => "C",
+            "BC" => "B",
+            "XC" => "X",
+            "ZC" => "Z",
+            _ => compSourceCode
+        };
+    }
 }

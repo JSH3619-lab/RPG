@@ -1,6 +1,6 @@
 # Ramos Part Generator 다음 세션 인수인계
 
-최종 정리일: 2026-07-10
+최종 정리일: 2026-07-14
 
 ## 작업 원칙
 
@@ -65,6 +65,10 @@ dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/Ramo
 
 - Incoming/Comp 화면의 Part Mode 라디오 버튼은 `Standard`, `TM` 표기를 사용한다.
 - Incoming/Comp의 `Comp Full Part` 입력창과 `Parse` 버튼은 Module 화면과 같은 행 배치로 맞췄다.
+- Incoming/Comp의 `Source`는 `Comp Source`로 표시하고, Comp 기준 `RC/TC/CC/BC`와 보조 입고 코드 `K/T/C/B`를 함께 안내한다.
+- TM Source도 Comp 기준 `XC/ZC`를 표시하고 내부 생성에는 입고 코드 `X/Z`를 전달한다.
+- 결과 테이블은 셀 단위 다중 선택과 드래그 선택을 지원하며, `Ctrl+C` 복사 시 헤더를 포함하지 않는다.
+- `Delete Selected`는 선택 셀이 포함된 결과 행만 삭제하고, 기존 `Reset`은 입력과 전체 결과를 초기화한다.
 - 로그 시간은 한국 로컬 사용 기준으로 timezone offset 없이 `[2026-05-10 10:25:16.536]` 형식으로 기록한다.
 
 ### 공통 표시/Export

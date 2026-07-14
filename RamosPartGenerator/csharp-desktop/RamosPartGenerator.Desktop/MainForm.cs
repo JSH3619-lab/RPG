@@ -28,7 +28,8 @@ public sealed class MainForm : Form
     private static readonly string[] ModuleManufacturingCompositionCodes = { "4", "8", "6", "9" };
     private static readonly string[] StandardVendorCodes = { "S", "G", "B", "A" };
     private static readonly string[] ManufacturingVendorCodes = { "X" };
-    private static readonly string[] ManufacturingCompSourceCodes = { "X", "Z" };
+    private static readonly string[] ManufacturingCompSourceCodes = { "XC", "ZC" };
+    private static readonly string[] ManufacturingIncomingSourceCodes = { "X", "Z" };
     private static readonly string[] ManufacturingModuleSourceCodes = { "XM", "ZM" };
     private static readonly string[] ManufacturingCompTypeCodes = { "0", "1", "2", "3", "4", "5", "6", "7" };
 
@@ -43,6 +44,8 @@ public sealed class MainForm : Form
     private TextBox _incomingCompPartText = null!;
     private TextBox _moduleCompPartText = null!;
     private TextBox _moduleFullPartText = null!;
+    private DataGridView _incomingResultGrid = null!;
+    private DataGridView _moduleResultGrid = null!;
     private Label _incomingStatusLabel = null!;
     private Label _moduleStatusLabel = null!;
     private RadioButton _incomingStandardMode = null!;
@@ -288,7 +291,8 @@ public sealed class MainForm : Form
                 HandleIncomingFieldChanged),
             0,
             2);
-        page.Controls.Add(BuildResultGrid(_incomingRows), 0, 3);
+        _incomingResultGrid = BuildResultGrid(_incomingRows);
+        page.Controls.Add(_incomingResultGrid, 0, 3);
 
         tab.Controls.Add(page);
         return tab;
@@ -316,6 +320,7 @@ public sealed class MainForm : Form
         var buttons = BuildButtonFlow();
         buttons.Controls.Add(BuildButton("Generate", GenerateIncoming));
         buttons.Controls.Add(BuildButton("Export Excel", ExportIncoming));
+        buttons.Controls.Add(BuildButton("Delete Selected", DeleteSelectedIncoming));
         buttons.Controls.Add(BuildButton("Reset", ResetIncoming));
 
         panel.Controls.Add(BuildIncomingModeSelector(), 0, 0);
@@ -358,7 +363,8 @@ public sealed class MainForm : Form
                 HandleModuleFieldChanged),
             0,
             2);
-        page.Controls.Add(BuildResultGrid(_moduleRows), 0, 3);
+        _moduleResultGrid = BuildResultGrid(_moduleRows);
+        page.Controls.Add(_moduleResultGrid, 0, 3);
 
         tab.Controls.Add(page);
         return tab;
@@ -398,6 +404,7 @@ public sealed class MainForm : Form
         var buttons = BuildButtonFlow();
         buttons.Controls.Add(BuildButton("Generate", GenerateModule));
         buttons.Controls.Add(BuildButton("Export Excel", ExportModule));
+        buttons.Controls.Add(BuildButton("Delete Selected", DeleteSelectedModule));
         buttons.Controls.Add(BuildButton("Reset", ResetModule));
 
         panel.Controls.Add(BuildModuleModeSelector(), 0, 0);
@@ -658,8 +665,9 @@ public sealed class MainForm : Form
             AllowUserToAddRows = false,
             AllowUserToDeleteRows = false,
             RowHeadersVisible = false,
-            SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-            MultiSelect = false,
+            SelectionMode = DataGridViewSelectionMode.CellSelect,
+            MultiSelect = true,
+            ClipboardCopyMode = DataGridViewClipboardCopyMode.EnableWithoutHeaderText,
             BorderStyle = BorderStyle.FixedSingle,
             BackgroundColor = RamosTheme.Panel,
             GridColor = RamosTheme.Border,
@@ -906,6 +914,15 @@ public sealed class MainForm : Form
         ExportRows(_incomingStatusLabel, "IncomingComp");
     }
 
+    private void DeleteSelectedIncoming()
+    {
+        var deletedRows = DeleteSelectedRows(_incomingResultGrid, _incomingRows);
+        AppLog.Info("Incoming.DeleteSelected", ("deletedRows", deletedRows.ToString()), ("totalRows", _incomingRows.Count.ToString()));
+        SetInfo(_incomingStatusLabel, deletedRows == 0
+            ? "삭제할 결과 셀을 선택해 주세요."
+            : $"Deleted {deletedRows} selected incoming/comp rows.");
+    }
+
     private void ResetIncoming()
     {
         _updatingIncoming = true;
@@ -957,7 +974,7 @@ public sealed class MainForm : Form
         _updatingIncoming = true;
         try
         {
-            SetIncomingManufacturingMode(ManufacturingCompSourceCodes.Contains(request.SourceCode, StringComparer.OrdinalIgnoreCase), clearFields: false);
+            SetIncomingManufacturingMode(ManufacturingIncomingSourceCodes.Contains(request.SourceCode, StringComparer.OrdinalIgnoreCase), clearFields: false);
             SetIncomingField("sourceCode", request.SourceCode);
             SetIncomingField("dramTypeCode", request.DramTypeCode);
             SetIncomingField("densityCode", request.DensityCode);
@@ -1111,14 +1128,21 @@ public sealed class MainForm : Form
 
     private string ReadIncomingCode(string key)
     {
-        return _incomingFields.TryGetValue(key, out var combo) ? DisplayHelpers.ExtractCode(combo.Text) : string.Empty;
+        if (!_incomingFields.TryGetValue(key, out var combo))
+        {
+            return string.Empty;
+        }
+
+        var code = DisplayHelpers.ExtractCode(combo.Text);
+        return key == "sourceCode" ? DisplayHelpers.ToIncomingSourceCode(code) : code;
     }
 
     private void SetIncomingField(string key, string code)
     {
         if (_incomingFields.TryGetValue(key, out var combo))
         {
-            combo.Text = DisplayHelpers.ResolveDisplayValue(code, IncomingOptions(key));
+            var displayCode = key == "sourceCode" ? DisplayHelpers.ToCompSourceCode(code) : code;
+            combo.Text = DisplayHelpers.ResolveDisplayValue(displayCode, IncomingOptions(key));
         }
     }
 
@@ -1205,6 +1229,15 @@ public sealed class MainForm : Form
     private void ExportModule()
     {
         ExportRows(_moduleStatusLabel, "Module");
+    }
+
+    private void DeleteSelectedModule()
+    {
+        var deletedRows = DeleteSelectedRows(_moduleResultGrid, _moduleRows);
+        AppLog.Info("Module.DeleteSelected", ("deletedRows", deletedRows.ToString()), ("totalRows", _moduleRows.Count.ToString()));
+        SetInfo(_moduleStatusLabel, deletedRows == 0
+            ? "삭제할 결과 셀을 선택해 주세요."
+            : $"Deleted {deletedRows} selected module rows.");
     }
 
     private void ResetModule()
@@ -1555,6 +1588,24 @@ public sealed class MainForm : Form
         {
             field.Text = nextText;
         }
+    }
+
+    private static int DeleteSelectedRows(DataGridView grid, BindingList<GeneratedPartRow> rows)
+    {
+        var selectedRowIndices = grid.SelectedCells
+            .Cast<DataGridViewCell>()
+            .Select(cell => cell.RowIndex)
+            .Where(index => index >= 0 && index < rows.Count)
+            .Distinct()
+            .OrderByDescending(index => index)
+            .ToArray();
+
+        foreach (var rowIndex in selectedRowIndices)
+        {
+            rows.RemoveAt(rowIndex);
+        }
+
+        return selectedRowIndices.Length;
     }
 
     private void ExportRows(Label statusLabel, string area)
