@@ -138,11 +138,30 @@ public sealed class BatchGenerationService
 
                 if (options.IncludeCompMdl)
                 {
-                    TryGenerate(
-                        "Comp_MDL",
-                        () => _moduleService.GeneratePreview(CreateCompMdlRequest(parsed, options.SpeedCode)),
-                        generatedRows => AddRows(generatedRows, itemRows),
-                        messages);
+                    var speedCodes = options.SpeedCodes
+                        .Select(speedCode => (speedCode ?? string.Empty).Trim().ToUpperInvariant())
+                        .Where(speedCode => !string.IsNullOrEmpty(speedCode))
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToArray();
+                    if (speedCodes.Length == 0)
+                    {
+                        TryGenerate(
+                            "Comp_MDL",
+                            () => _moduleService.GeneratePreview(CreateCompMdlRequest(parsed, string.Empty)),
+                            generatedRows => AddRows(generatedRows, itemRows),
+                            messages);
+                    }
+                    else
+                    {
+                        foreach (var speedCode in speedCodes)
+                        {
+                            TryGenerate(
+                                $"Comp_MDL ({speedCode})",
+                                () => _moduleService.GeneratePreview(CreateCompMdlRequest(parsed, speedCode)),
+                                generatedRows => AddRows(generatedRows, itemRows),
+                                messages);
+                        }
+                    }
                 }
             }
             catch (Exception exception) when (exception is InvalidOperationException or ArgumentException)

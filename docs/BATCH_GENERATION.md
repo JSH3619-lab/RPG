@@ -107,7 +107,8 @@ Comp 일괄 동작:
 - Comp Full Part를 한 줄에 하나씩 다량 입력
 - 각 입력에서 Incoming, Comp, Comp BIN 전체를 항상 생성
 - `Comp_MDL 생성`은 기본 미선택이며 선택 시 MDL과 MDL BIN 추가
-- Comp_MDL Speed는 사용자가 직접 선택
+- Comp_MDL Speed는 사용자가 복수 선택
+- 선택한 각 Speed마다 MDL과 MDL BIN 한 쌍 생성
 - 입력별 일반/Reball 감지, 성공/일부 성공/실패, 생성 수, 오류 메시지 표시
 - 입력 중복과 최종 Part Code 중복 제거
 - 입력 하나가 실패해도 다른 입력의 결과 유지
@@ -120,8 +121,8 @@ Comp_MDL 고정/변환 규칙:
 - Module Density: Base Die Density 기준 `8Gb→1GB`, `16Gb→2GB`, `32Gb→4GB`
 - Rank, SMT Site, Module Test Site, PCB: `0`
 - Comp Type 2가 `B - Reball`이면 Reball MDL로 생성
-- Speed: 화면에서 선택한 값 사용
+- Speed: 화면에서 선택한 모든 값 사용
 
-24Gb처럼 Module Density를 확정할 수 없거나 Speed가 비어 있거나 DRAM Type과 맞지 않으면 값을 추정하지 않는다. 이 경우 Incoming/Comp/Comp BIN 결과는 유지하고 Comp_MDL만 실패 처리한다.
+24Gb처럼 Module Density를 확정할 수 없거나 Speed가 비어 있거나 DRAM Type과 맞지 않으면 값을 추정하지 않는다. 이 경우 Incoming/Comp/Comp BIN 결과는 유지하고 해당 Comp_MDL만 실패 처리한다.
 
-Phase 3 완료 기준 전체 테스트는 82개다.
+Phase 3 보완 완료 기준 전체 테스트는 83개다.

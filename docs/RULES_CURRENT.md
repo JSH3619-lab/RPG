@@ -91,7 +91,8 @@
 - Module Density는 Base Die Density 기준으로 `8Gb -> 1GB`, `16Gb -> 2GB`, `32Gb -> 4GB`를 적용한다.
 - `Rank`, `SMT Site`, `Module Test Site`, `PCB`는 `0`을 사용한다.
 - Comp Type 2가 `B - Reball`이면 Reball Comp_MDL로 생성한다.
-- Comp_MDL Speed는 자동 선택하지 않고 사용자가 선택한다.
+- Comp_MDL Speed는 자동 선택하지 않고 사용자가 복수 선택한다.
+- 선택한 각 Speed마다 Comp_MDL과 MDL BIN 한 쌍을 생성한다.
 - Speed가 없거나 입력과 맞지 않거나 Module Density를 결정할 수 없으면 임의 값을 사용하지 않고 Comp_MDL만 실패 처리한다.
 - Comp_MDL 실패 시에도 정상 생성된 Incoming/Comp/Comp BIN 결과는 유지한다.
 

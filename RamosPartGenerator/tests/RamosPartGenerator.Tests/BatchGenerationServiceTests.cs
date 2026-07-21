@@ -185,7 +185,7 @@ public sealed class BatchGenerationServiceTests
 
         var result = service.GenerateFromCompParts(
             new[] { "RCRAH086VA-PBGWG" },
-            new CompBatchOptions { IncludeCompMdl = true, SpeedCode = "WM" });
+            new CompBatchOptions { IncludeCompMdl = true, SpeedCodes = new[] { "WM" } });
 
         Assert.Equal(BatchItemStatus.Success, result.Items[0].Status);
         Assert.Equal(10, result.Rows.Count);
@@ -200,7 +200,7 @@ public sealed class BatchGenerationServiceTests
 
         var result = service.GenerateFromCompParts(
             new[] { "RCRAH086VA-PBGWGB" },
-            new CompBatchOptions { IncludeCompMdl = true, SpeedCode = "WM" });
+            new CompBatchOptions { IncludeCompMdl = true, SpeedCodes = new[] { "WM" } });
 
         Assert.Equal(ModuleBatchInputKind.Reball, result.Items[0].DetectedInputKind);
         Assert.Equal(BatchItemStatus.Success, result.Items[0].Status);
@@ -229,11 +229,32 @@ public sealed class BatchGenerationServiceTests
 
         var result = service.GenerateFromCompParts(
             new[] { "RCRHE086VA-PBGWG" },
-            new CompBatchOptions { IncludeCompMdl = true, SpeedCode = "WM" });
+            new CompBatchOptions { IncludeCompMdl = true, SpeedCodes = new[] { "WM" } });
 
         Assert.Equal(BatchItemStatus.PartialSuccess, result.Items[0].Status);
         Assert.Equal(8, result.Rows.Count);
         Assert.Contains(result.Items[0].Messages, message => message.Contains("Module Density"));
+    }
+
+    [Fact]
+    public void GenerateFromCompParts_WithMultipleSpeeds_CreatesEachCompMdlOnce()
+    {
+        var service = CreateService();
+
+        var result = service.GenerateFromCompParts(
+            new[] { "RCRAH086VA-PBGWG" },
+            new CompBatchOptions
+            {
+                IncludeCompMdl = true,
+                SpeedCodes = new[] { "WM", "CQ", "wm" }
+            });
+
+        Assert.Equal(BatchItemStatus.Success, result.Items[0].Status);
+        Assert.Equal(12, result.Rows.Count);
+        var moduleRows = result.Rows.Where(row => row.Kind.StartsWith("Module")).ToArray();
+        Assert.Equal(4, moduleRows.Length);
+        Assert.Equal(2, moduleRows.Count(row => row.PartCode.Contains("WM")));
+        Assert.Equal(2, moduleRows.Count(row => row.PartCode.Contains("CQ")));
     }
 
     [Fact]

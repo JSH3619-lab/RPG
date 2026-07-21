@@ -324,7 +324,8 @@ Comp 일괄 동작:
 - Comp Full Part를 한 줄에 하나씩 입력한다.
 - Incoming, Comp, Comp BIN 전체는 항상 생성한다.
 - `Comp_MDL 생성`을 선택하면 Comp 판매용 MDL/MDL BIN을 추가한다.
-- Comp_MDL Speed는 사용자가 선택하며 기본값을 자동 지정하지 않는다.
+- Comp_MDL Speed는 체크박스로 복수 선택하며 기본값을 자동 지정하지 않는다.
+- 선택한 각 Speed마다 Comp_MDL과 MDL BIN을 생성한다.
 - Reball Comp는 Reball Comp_MDL로 변환한다.
 - Speed 누락/불일치 또는 Module Density 결정 불가 시 Comp 관련 결과는 유지하고 Comp_MDL 오류를 입력 분석에 표시한다.
 - 중복 입력과 최종 Part Code는 한 번만 표시한다.
@@ -377,7 +378,7 @@ Export 표시 기준:
 | Incoming & Comp 화면 | 1차 완료 | Parse, Generate, Export, 선택 행 삭제, Reset 구현 |
 | Module 화면 | 1차 완료 | Comp parse, Module parse, Generate, Export, 선택 행 삭제, Reset 구현 |
 | Batch Generate MDL 화면 | 완료 | 다중 입력, 옵션 선택, Generate, Export, 선택 행 삭제, Reset 구현 |
-| Batch Generate Comp 화면 | 완료 | Comp 다중 입력, Comp_MDL/Speed 선택, Generate, Export, 선택 행 삭제, Reset 구현 |
+| Batch Generate Comp 화면 | 완료 | Comp 다중 입력, Comp_MDL/Speed 복수 선택, Generate, Export, 선택 행 삭제, Reset 구현 |
 | Excel Export | 완료 | 기존 exporter 재사용 |
 | Ramos 색상 테마 | 1차 완료 | Header, Tab, Button, Table 색상 반영 |
 | 필드 겹침/잘림 대응 | 1차 완료 | 상단 입력부와 필드 영역 layout 조정 |

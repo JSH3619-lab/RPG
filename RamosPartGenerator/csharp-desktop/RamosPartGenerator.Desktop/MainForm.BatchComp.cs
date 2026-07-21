@@ -10,7 +10,7 @@ public sealed partial class MainForm
 
     private TextBox _batchCompInputText = null!;
     private CheckBox _batchIncludeCompMdl = null!;
-    private ComboBox _batchCompSpeed = null!;
+    private readonly List<CheckBox> _batchCompSpeedChecks = new();
     private DataGridView _batchCompAnalysisGrid = null!;
     private DataGridView _batchCompResultGrid = null!;
     private Label _batchCompStatusLabel = null!;
@@ -27,7 +27,7 @@ public sealed partial class MainForm
             Padding = new Padding(8),
             BackColor = RamosTheme.Surface
         };
-        page.RowStyles.Add(new RowStyle(SizeType.Absolute, 250F));
+        page.RowStyles.Add(new RowStyle(SizeType.Absolute, 285F));
         page.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
         page.RowStyles.Add(new RowStyle(SizeType.Absolute, 150F));
         page.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
@@ -117,7 +117,7 @@ public sealed partial class MainForm
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
         layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40F));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 92F));
         layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
         layout.Controls.Add(new Label
@@ -137,7 +137,11 @@ public sealed partial class MainForm
         };
         _batchIncludeCompMdl.CheckedChanged += (_, _) =>
         {
-            _batchCompSpeed.Enabled = _batchIncludeCompMdl.Checked;
+            foreach (var speedCheck in _batchCompSpeedChecks)
+            {
+                speedCheck.Enabled = _batchIncludeCompMdl.Checked;
+            }
+
             InvalidateBatchCompAnalysis();
         };
         layout.Controls.Add(_batchIncludeCompMdl, 0, 1);
@@ -145,20 +149,35 @@ public sealed partial class MainForm
         layout.Controls.Add(new Label
         {
             Dock = DockStyle.Fill,
-            Text = "Comp_MDL Speed",
+            Text = "Comp_MDL Speed (복수 선택)",
             TextAlign = ContentAlignment.BottomLeft,
             ForeColor = RamosTheme.Text
         }, 0, 2);
 
-        _batchCompSpeed = new ComboBox
+        var speedFlow = new FlowLayoutPanel
         {
-            Dock = DockStyle.Top,
-            DropDownStyle = ComboBoxStyle.DropDownList,
-            Enabled = false
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.LeftToRight,
+            WrapContents = true,
+            AutoScroll = true,
+            BackColor = RamosTheme.Panel,
+            Padding = new Padding(0, 4, 0, 0)
         };
-        _batchCompSpeed.Items.AddRange(ModuleOptions("speedCode").Cast<object>().ToArray());
-        _batchCompSpeed.SelectedIndexChanged += (_, _) => InvalidateBatchCompAnalysis();
-        layout.Controls.Add(_batchCompSpeed, 0, 3);
+        foreach (var option in ModuleOptions("speedCode"))
+        {
+            var speedCheck = new CheckBox
+            {
+                AutoSize = true,
+                Text = option,
+                Enabled = false,
+                ForeColor = RamosTheme.Text,
+                Margin = new Padding(4, 3, 12, 3)
+            };
+            speedCheck.CheckedChanged += (_, _) => InvalidateBatchCompAnalysis();
+            _batchCompSpeedChecks.Add(speedCheck);
+            speedFlow.Controls.Add(speedCheck);
+        }
+        layout.Controls.Add(speedFlow, 0, 3);
 
         layout.Controls.Add(new Label
         {
@@ -195,7 +214,7 @@ public sealed partial class MainForm
                 ("rowCount", _batchCompRows.Count.ToString()),
                 ("duplicateCount", result.DuplicateCount.ToString()),
                 ("includeCompMdl", _batchIncludeCompMdl.Checked.ToString()),
-                ("speedCode", DisplayHelpers.ExtractCode(_batchCompSpeed.Text)),
+                ("speedCodes", string.Join(",", ReadBatchCompSpeedCodes())),
                 ("firstPartCode", FirstPartCode(_batchCompRows)));
             SetBatchCompStatus(result, $"Generated {_batchCompRows.Count} batch rows.");
         });
@@ -215,8 +234,16 @@ public sealed partial class MainForm
         return _services.Batch.GenerateFromCompParts(partCodes, new CompBatchOptions
         {
             IncludeCompMdl = _batchIncludeCompMdl.Checked,
-            SpeedCode = DisplayHelpers.ExtractCode(_batchCompSpeed.Text)
+            SpeedCodes = ReadBatchCompSpeedCodes()
         });
+    }
+
+    private string[] ReadBatchCompSpeedCodes()
+    {
+        return _batchCompSpeedChecks
+            .Where(checkBox => checkBox.Checked)
+            .Select(checkBox => DisplayHelpers.ExtractCode(checkBox.Text))
+            .ToArray();
     }
 
     private void ShowBatchCompAnalysis(BatchGenerationResult result)
@@ -270,8 +297,11 @@ public sealed partial class MainForm
         {
             _batchCompInputText.Text = string.Empty;
             _batchIncludeCompMdl.Checked = false;
-            _batchCompSpeed.SelectedIndex = -1;
-            _batchCompSpeed.Enabled = false;
+            foreach (var speedCheck in _batchCompSpeedChecks)
+            {
+                speedCheck.Checked = false;
+                speedCheck.Enabled = false;
+            }
             _batchCompAnalysisRows.Clear();
             _batchCompRows.Clear();
         }

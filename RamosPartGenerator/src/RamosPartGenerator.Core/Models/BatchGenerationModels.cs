@@ -36,7 +36,7 @@ public sealed class MdlBatchOptions
 public sealed class CompBatchOptions
 {
     public bool IncludeCompMdl { get; set; }
-    public string SpeedCode { get; set; } = string.Empty;
+    public IReadOnlyCollection<string> SpeedCodes { get; set; } = Array.Empty<string>();
 }
 
 public sealed record BatchItemResult(

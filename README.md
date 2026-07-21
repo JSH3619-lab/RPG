@@ -10,7 +10,7 @@ RAMOS DRAM/Module Part Code를 규칙 기반으로 생성, 파싱, 검증하고 
 - MDL Full Part 다중 입력과 선택 작업 Part 일괄 생성
 - MDL 기준 원본/Reball Incoming, Comp, Comp BIN 일괄 생성
 - Comp Full Part 다중 입력과 Incoming/Comp/Comp BIN 일괄 생성
-- 선택 Speed 기준 Comp_MDL/MDL BIN 일괄 생성
+- 복수 선택 Speed 기준 Comp_MDL/MDL BIN 일괄 생성
 - Comp Full Part 파싱
 - Module Full Part 파싱
 - 그룹 → 필드 → 옵션의 3열 클릭 선택 UI 제공
@@ -68,7 +68,7 @@ C:\RPG\Publish\RamosPartGenerator.Desktop.exe
 - Module의 `완제품 Retest (00/0Y)`를 선택하면 기본 Part 대신 `00` Dummy, `0Y` MDL, `0Y` MDL BIN을 생성합니다.
 - `Batch Generate` 탭은 MDL Full Part를 한 줄에 하나씩 입력하고 필요한 기본/작업/Comp 관련 항목만 체크해 일괄 생성합니다.
 - Repair/Dummy 선택만으로 Comp 관련 Part를 만들지 않으며, 원본 Comp 또는 Reball Comp 옵션을 별도로 선택해야 합니다.
-- `Comp 일괄`은 Comp Full Part마다 Incoming/Comp/Comp BIN을 만들고, 선택 시 지정 Speed의 Comp_MDL/MDL BIN을 추가합니다.
+- `Comp 일괄`은 Comp Full Part마다 Incoming/Comp/Comp BIN을 만들고, 선택한 각 Speed의 Comp_MDL/MDL BIN을 추가합니다.
 - Comp_MDL 값을 확정할 수 없으면 임의 값을 넣지 않고 해당 입력의 오류로 표시합니다.
 
 ## 프로젝트 구조

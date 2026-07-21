@@ -165,7 +165,7 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
 
 ## 테스트 기준
 
-현재 기준 전체 테스트는 82개다.
+현재 기준 전체 테스트는 83개다.
 
 주요 테스트 범위:
 
@@ -180,7 +180,7 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
 - MDL→원본/Reball Incoming, Comp, Comp BIN 변환
 - 일괄 입력 중복 제거와 입력별 오류 격리
 - Comp Full Part 일괄 Incoming/Comp/Comp BIN 생성
-- Comp_MDL 선택 생성, Speed 적용, Reball 변환
+- Comp_MDL 선택 생성, Speed 복수 적용, Reball 변환
 - Comp_MDL Speed 누락과 Module Density 결정 불가 시 부분 성공 처리
 - Export `영업코드`, Arial, `MDL Dummy`, 자동 열 폭
 - embedded specs fallback
@@ -204,12 +204,12 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
   - `Batch Generate` 내부 `MDL 일괄 / Comp 일괄` 전환
   - Comp Full Part 줄 단위 다중 입력
   - Incoming/Comp/Comp BIN 항상 생성
-  - Comp_MDL 선택 생성과 Speed 선택
+  - Comp_MDL 선택 생성과 Speed 복수 체크
   - Reball Comp의 Reball Comp_MDL 변환
   - 확정할 수 없는 값은 추정하지 않고 입력별 오류 처리
 - 상세 범위는 `docs/BATCH_GENERATION.md`를 기준으로 한다.
 
-Phase 3 코드 빌드와 전체 82개 테스트는 통과했다. 자동 UI 실행 도구는 시간 초과되었으므로 배포 EXE에서 Batch 탭의 실제 화면 배치와 DPI별 표시는 수동 확인한다.
+Phase 3 보완 코드 빌드와 전체 83개 테스트는 통과했다. 자동 UI 실행 도구는 시간 초과되었으므로 배포 EXE에서 Batch 탭의 실제 화면 배치와 DPI별 표시는 수동 확인한다.
 
 ## 커밋/배포 주의
 
