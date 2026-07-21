@@ -194,9 +194,9 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
   - 메인 화면의 `Batch Generate` 탭
   - MDL Full Part 줄 단위 다중 입력
   - 기본 PID/MFGID, 작업 Part, 원본/Reball Comp 관련 체크 옵션
-  - 입력별 감지/처리 상태 Preview와 생성 결과 테이블
+  - `Generate` 한 번으로 입력별 감지/처리 상태와 실제 생성 Part 목록 표시
   - Batch 결과 전용 선택 행 삭제와 Excel Export
-  - 모든 옵션 기본 미선택, 입력/옵션 변경 시 Preview 무효화
+  - 모든 옵션 기본 미선택, 별도 Preview 버튼 없음
 - Phase 3 Comp 일괄/Comp_MDL UI는 아직 미구현이다.
 - 상세 범위는 `docs/BATCH_GENERATION.md`를 기준으로 한다.
 

@@ -21,7 +21,6 @@ public sealed partial class MainForm
     private DataGridView _batchPreviewGrid = null!;
     private DataGridView _batchResultGrid = null!;
     private Label _batchStatusLabel = null!;
-    private BatchGenerationResult? _batchPreviewResult;
     private bool _updatingBatch;
 
     private TabPage BuildBatchPage()
@@ -101,7 +100,6 @@ public sealed partial class MainForm
         _batchMdlInputText.TextChanged += (_, _) => InvalidateBatchPreview();
 
         var buttons = BuildButtonFlow();
-        buttons.Controls.Add(BuildButton("Preview", AnalyzeBatchMdl));
         buttons.Controls.Add(BuildButton("Generate", GenerateBatchMdl));
         buttons.Controls.Add(BuildButton("Export Excel", ExportBatchMdl));
         buttons.Controls.Add(BuildButton("Delete Selected", DeleteSelectedBatchMdl));
@@ -252,44 +250,30 @@ public sealed partial class MainForm
         return grid;
     }
 
-    private void AnalyzeBatchMdl()
-    {
-        RunGuarded(_batchStatusLabel, "BatchMdl.Preview", () =>
-        {
-            _batchPreviewResult = CreateBatchPreview();
-            ShowBatchPreview(_batchPreviewResult);
-            AppLog.Info(
-                "BatchMdl.Preview.Success",
-                ("inputCount", _batchPreviewResult.Items.Count.ToString()),
-                ("rowCount", _batchPreviewResult.Rows.Count.ToString()),
-                ("duplicateCount", _batchPreviewResult.DuplicateCount.ToString()));
-        });
-    }
-
     private void GenerateBatchMdl()
     {
         RunGuarded(_batchStatusLabel, "BatchMdl.Generate", () =>
         {
-            _batchPreviewResult ??= CreateBatchPreview();
-            ShowBatchPreview(_batchPreviewResult);
-            if (_batchPreviewResult.Rows.Count == 0)
+            var result = CreateBatchPreview();
+            ShowBatchPreview(result);
+            if (result.Rows.Count == 0)
             {
                 throw new InvalidOperationException("생성 가능한 결과가 없습니다. 입력 분석 메시지를 확인해 주세요.");
             }
 
             _batchRows.Clear();
-            foreach (var row in _batchPreviewResult.Rows)
+            foreach (var row in result.Rows)
             {
                 _batchRows.Add(row);
             }
 
             AppLog.Info(
                 "BatchMdl.Generate.Success",
-                ("inputCount", _batchPreviewResult.Items.Count.ToString()),
+                ("inputCount", result.Items.Count.ToString()),
                 ("rowCount", _batchRows.Count.ToString()),
-                ("duplicateCount", _batchPreviewResult.DuplicateCount.ToString()),
+                ("duplicateCount", result.DuplicateCount.ToString()),
                 ("firstPartCode", FirstPartCode(_batchRows)));
-            SetBatchStatus(_batchPreviewResult, $"Generated {_batchRows.Count} batch rows.");
+            SetBatchStatus(result, $"Generated {_batchRows.Count} batch rows.");
         });
     }
 
@@ -337,7 +321,7 @@ public sealed partial class MainForm
                 item.Status));
         }
 
-        SetBatchStatus(result, "Preview ready.");
+        SetBatchStatus(result, "입력 분석이 완료되었습니다.");
     }
 
     private void SetBatchStatus(BatchGenerationResult result, string prefix)
@@ -380,7 +364,6 @@ public sealed partial class MainForm
 
             _batchPreviewRows.Clear();
             _batchRows.Clear();
-            _batchPreviewResult = null;
         }
         finally
         {
@@ -410,10 +393,9 @@ public sealed partial class MainForm
             return;
         }
 
-        _batchPreviewResult = null;
         _batchPreviewRows.Clear();
         SetInfo(_batchStatusLabel, _batchRows.Count == 0
-            ? "입력 또는 선택이 변경되었습니다. Preview를 실행해 주세요."
+            ? "입력 또는 선택이 변경되었습니다. Generate를 실행해 주세요."
             : "입력 또는 선택이 변경되었습니다. 기존 생성 결과는 유지됩니다.");
     }
 

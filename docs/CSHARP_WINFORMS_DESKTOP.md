@@ -308,8 +308,9 @@ A100 Special은 아래 조건에서만 입력 가능하다.
 - 기본 PID, 기본 MFGID, Reball, 1차/2차 Repair, Reball Repair, 완제품 Retest를 선택할 수 있다.
 - 원본 Comp 관련과 Reball Comp 관련은 작업 Part와 별도로 선택한다.
 - 모든 옵션은 기본 미선택이다.
-- `Preview`는 입력 Part의 기존 상태와 입력별 성공/실패, 생성 수, 메시지를 보여준다.
-- `Generate`는 Preview와 같은 Core 결과를 하단 결과 테이블에 표시한다.
+- `Generate`는 입력 Part의 기존 상태와 입력별 성공/실패, 생성 수, 메시지를 보여준다.
+- 같은 동작에서 실제 생성 Part Code와 품목 정보를 하단 결과 테이블에 표시한다.
+- 생성은 외부 시스템을 변경하지 않으므로 별도 `Preview` 버튼은 두지 않는다.
 - 입력 하나가 실패해도 다른 입력의 정상 결과는 유지한다.
 - 중복되는 최종 Part Code는 한 번만 표시한다.
 - 1차 Repair와 완제품 Retest가 함께 선택된 경우 공용 `00` Dummy도 한 번만 생성한다.
@@ -363,7 +364,7 @@ Export 표시 기준:
 | Spec JSON 로딩 | 완료 | 실행 폴더 `specs` 기준 |
 | Incoming & Comp 화면 | 1차 완료 | Parse, Generate, Export, 선택 행 삭제, Reset 구현 |
 | Module 화면 | 1차 완료 | Comp parse, Module parse, Generate, Export, 선택 행 삭제, Reset 구현 |
-| Batch Generate MDL 화면 | 완료 | 다중 입력, 옵션 선택, Preview, Generate, Export, 선택 행 삭제, Reset 구현 |
+| Batch Generate MDL 화면 | 완료 | 다중 입력, 옵션 선택, Generate, Export, 선택 행 삭제, Reset 구현 |
 | Excel Export | 완료 | 기존 exporter 재사용 |
 | Ramos 색상 테마 | 1차 완료 | Header, Tab, Button, Table 색상 반영 |
 | 필드 겹침/잘림 대응 | 1차 완료 | 상단 입력부와 필드 영역 layout 조정 |

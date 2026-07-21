@@ -64,7 +64,7 @@ C:\RPG\Publish\RamosPartGenerator.Desktop.exe
 - 결과 테이블은 셀 하나 또는 드래그한 여러 셀을 선택할 수 있으며, `Ctrl+C`로 헤더 없이 복사합니다.
 - `Delete Selected`는 선택한 셀이 포함된 결과 행만 삭제하고, `Reset`은 입력과 전체 결과를 초기화합니다.
 - Module의 `완제품 Retest (00/0Y)`를 선택하면 기본 Part 대신 `00` Dummy, `0Y` MDL, `0Y` MDL BIN을 생성합니다.
-- `Batch Generate` 탭은 MDL Full Part를 한 줄에 하나씩 입력하고 필요한 기본/작업/Comp 관련 항목만 체크해 Preview 후 일괄 생성합니다.
+- `Batch Generate` 탭은 MDL Full Part를 한 줄에 하나씩 입력하고 필요한 기본/작업/Comp 관련 항목만 체크해 일괄 생성합니다.
 - Repair/Dummy 선택만으로 Comp 관련 Part를 만들지 않으며, 원본 Comp 또는 Reball Comp 옵션을 별도로 선택해야 합니다.
 
 ## 프로젝트 구조
