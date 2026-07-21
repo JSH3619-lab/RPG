@@ -60,7 +60,7 @@ MDL에서 Comp로 변환할 때 다음 값을 자동 적용한다.
 | --- | --- | --- |
 | 1 | Core 일괄 생성, MDL→Comp 변환, 중복/행별 오류 처리, 단위 테스트 | 완료 |
 | 2 | `Batch Generate` 탭과 MDL 일괄 화면 | 완료 |
-| 3 | Comp 일괄, Comp_MDL, Speed 선택 | 대기 |
+| 3 | Comp 일괄, Comp_MDL, Speed 선택 | 완료 |
 | 4 | Export, 로그, 문서, 버전, 전체 검증 | 대기 |
 
 ## Phase 1 구현
@@ -97,3 +97,31 @@ Repair/Dummy 옵션은 Comp 관련 옵션을 자동 선택하지 않는다. 원�
 별도의 `Preview` 단계는 두지 않는다. 이 프로그램의 생성은 외부 시스템 등록이 아니라 결과 표시이므로 `Generate` 자체가 생성 결과 확인 단계다.
 
 Phase 2 완료 기준 전체 테스트는 76개이며 Desktop 프로젝트 빌드에 성공했다. 실제 창 자동 실행 도구가 시간 초과되어 최종 화면 배치와 DPI별 표시는 배포 EXE에서 수동 확인이 필요하다.
+
+## Phase 3 구현
+
+`Batch Generate` 탭 안에서 `MDL 일괄`과 `Comp 일괄`을 전환하도록 구성했다.
+
+Comp 일괄 동작:
+
+- Comp Full Part를 한 줄에 하나씩 다량 입력
+- 각 입력에서 Incoming, Comp, Comp BIN 전체를 항상 생성
+- `Comp_MDL 생성`은 기본 미선택이며 선택 시 MDL과 MDL BIN 추가
+- Comp_MDL Speed는 사용자가 직접 선택
+- 입력별 일반/Reball 감지, 성공/일부 성공/실패, 생성 수, 오류 메시지 표시
+- 입력 중복과 최종 Part Code 중복 제거
+- 입력 하나가 실패해도 다른 입력의 결과 유지
+- Comp 일괄 결과만 선택 행 삭제 및 Excel Export
+
+Comp_MDL 고정/변환 규칙:
+
+- DIMM Type: `C - Comp`
+- Source: `RC/K→RM`, `TC/T→TM`, `CC/C→CM`, `BC/B→BM`, `XC/X→XM`, `ZC/Z→ZM`
+- Module Density: Base Die Density 기준 `8Gb→1GB`, `16Gb→2GB`, `32Gb→4GB`
+- Rank, SMT Site, Module Test Site, PCB: `0`
+- Comp Type 2가 `B - Reball`이면 Reball MDL로 생성
+- Speed: 화면에서 선택한 값 사용
+
+24Gb처럼 Module Density를 확정할 수 없거나 Speed가 비어 있거나 DRAM Type과 맞지 않으면 값을 추정하지 않는다. 이 경우 Incoming/Comp/Comp BIN 결과는 유지하고 Comp_MDL만 실패 처리한다.
+
+Phase 3 완료 기준 전체 테스트는 82개다.

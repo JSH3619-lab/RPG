@@ -162,6 +162,96 @@ public sealed class BatchGenerationServiceTests
         Assert.Equal(1, result.DuplicateCount);
     }
 
+    [Fact]
+    public void GenerateFromCompParts_ProducesIncomingCompAndAllBins()
+    {
+        var service = CreateService();
+
+        var result = service.GenerateFromCompParts(
+            new[] { "RCRAH086VA-PBGWG" },
+            new CompBatchOptions());
+
+        Assert.Equal(BatchItemStatus.Success, result.Items[0].Status);
+        Assert.Equal(8, result.Rows.Count);
+        Assert.Equal("K4RAH086VA-PGGEL", result.Rows[0].PartCode);
+        Assert.Equal("RCRAH086VA-PBGWG", result.Rows[1].PartCode);
+        Assert.Equal(6, result.Rows.Count(row => row.Kind == "Comp BIN"));
+    }
+
+    [Fact]
+    public void GenerateFromCompParts_WithCompMdl_UsesSelectedSpeed()
+    {
+        var service = CreateService();
+
+        var result = service.GenerateFromCompParts(
+            new[] { "RCRAH086VA-PBGWG" },
+            new CompBatchOptions { IncludeCompMdl = true, SpeedCode = "WM" });
+
+        Assert.Equal(BatchItemStatus.Success, result.Items[0].Status);
+        Assert.Equal(10, result.Rows.Count);
+        Assert.Equal("RMRC2G58A0A-GPW00WM0G", result.Rows[8].PartCode);
+        Assert.Equal("RMRC2G58A0A-GPW00WM0G-TN2GA00", result.Rows[9].PartCode);
+    }
+
+    [Fact]
+    public void GenerateFromCompParts_ReballComp_CreatesReballCompMdl()
+    {
+        var service = CreateService();
+
+        var result = service.GenerateFromCompParts(
+            new[] { "RCRAH086VA-PBGWGB" },
+            new CompBatchOptions { IncludeCompMdl = true, SpeedCode = "WM" });
+
+        Assert.Equal(ModuleBatchInputKind.Reball, result.Items[0].DetectedInputKind);
+        Assert.Equal(BatchItemStatus.Success, result.Items[0].Status);
+        Assert.Contains(result.Rows, row => row.PartCode == "RMRC2G58A0A-GPW00WM0GB");
+        Assert.Contains(result.Rows, row => row.Kind == "Module BIN" && row.PartCode.Contains("WM0GB-"));
+    }
+
+    [Fact]
+    public void GenerateFromCompParts_MissingCompMdlSpeed_KeepsCompRowsAndReportsError()
+    {
+        var service = CreateService();
+
+        var result = service.GenerateFromCompParts(
+            new[] { "RCRAH086VA-PBGWG" },
+            new CompBatchOptions { IncludeCompMdl = true });
+
+        Assert.Equal(BatchItemStatus.PartialSuccess, result.Items[0].Status);
+        Assert.Equal(8, result.Rows.Count);
+        Assert.Contains(result.Items[0].Messages, message => message.Contains("Speed"));
+    }
+
+    [Fact]
+    public void GenerateFromCompParts_UnknownCompMdlDensity_DoesNotGuessValue()
+    {
+        var service = CreateService();
+
+        var result = service.GenerateFromCompParts(
+            new[] { "RCRHE086VA-PBGWG" },
+            new CompBatchOptions { IncludeCompMdl = true, SpeedCode = "WM" });
+
+        Assert.Equal(BatchItemStatus.PartialSuccess, result.Items[0].Status);
+        Assert.Equal(8, result.Rows.Count);
+        Assert.Contains(result.Items[0].Messages, message => message.Contains("Module Density"));
+    }
+
+    [Fact]
+    public void GenerateFromCompParts_DuplicateAndInvalidInputs_DoNotStopBatch()
+    {
+        var service = CreateService();
+
+        var result = service.GenerateFromCompParts(
+            new[] { "RCRAH086VA-PBGWG", "rcrah086va-pbgwg", "INVALID" },
+            new CompBatchOptions());
+
+        Assert.Equal(2, result.Items.Count);
+        Assert.Equal(BatchItemStatus.Success, result.Items[0].Status);
+        Assert.Equal(BatchItemStatus.Failed, result.Items[1].Status);
+        Assert.Equal(8, result.Rows.Count);
+        Assert.Equal(1, result.DuplicateCount);
+    }
+
     private static BatchGenerationService CreateService()
     {
         var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));

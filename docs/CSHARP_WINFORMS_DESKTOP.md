@@ -20,6 +20,7 @@ C:\RPG\RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop
 - `Program.cs`: WinForms 앱 진입점
 - `MainForm.cs`: Incoming/Comp, Module 화면과 공통 버튼/Export 처리
 - `MainForm.Batch.cs`: Batch Generate MDL 일괄 화면과 상태 관리
+- `MainForm.BatchComp.cs`: Batch Generate Comp/Comp_MDL 일괄 화면과 상태 관리
 - `DesktopLookupCatalog.cs`: Desktop UI용 필드와 선택 옵션 구성
 - `DisplayHelpers.cs`: 표시값과 실제 코드값 변환 helper
 
@@ -302,7 +303,9 @@ A100 Special은 아래 조건에서만 입력 가능하다.
 
 ## Batch Generate 룰
 
-`Batch Generate` 탭의 Phase 2 범위는 MDL Full Part 일괄 생성이다.
+`Batch Generate` 탭 안에서 `MDL 일괄`과 `Comp 일괄`을 전환한다.
+
+MDL 일괄 동작:
 
 - MDL Full Part를 한 줄에 하나씩 입력한다.
 - 기본 PID, 기본 MFGID, Reball, 1차/2차 Repair, Reball Repair, 완제품 Retest를 선택할 수 있다.
@@ -316,7 +319,16 @@ A100 Special은 아래 조건에서만 입력 가능하다.
 - 1차 Repair와 완제품 Retest가 함께 선택된 경우 공용 `00` Dummy도 한 번만 생성한다.
 - 일괄 결과의 선택 행 삭제와 Excel Export를 지원한다.
 
-Comp 일괄과 Comp_MDL 일괄 화면은 Phase 3 범위다.
+Comp 일괄 동작:
+
+- Comp Full Part를 한 줄에 하나씩 입력한다.
+- Incoming, Comp, Comp BIN 전체는 항상 생성한다.
+- `Comp_MDL 생성`을 선택하면 Comp 판매용 MDL/MDL BIN을 추가한다.
+- Comp_MDL Speed는 사용자가 선택하며 기본값을 자동 지정하지 않는다.
+- Reball Comp는 Reball Comp_MDL로 변환한다.
+- Speed 누락/불일치 또는 Module Density 결정 불가 시 Comp 관련 결과는 유지하고 Comp_MDL 오류를 입력 분석에 표시한다.
+- 중복 입력과 최종 Part Code는 한 번만 표시한다.
+- Comp 일괄 결과의 선택 행 삭제와 Excel Export를 지원한다.
 
 ### DIMM Type
 
@@ -365,6 +377,7 @@ Export 표시 기준:
 | Incoming & Comp 화면 | 1차 완료 | Parse, Generate, Export, 선택 행 삭제, Reset 구현 |
 | Module 화면 | 1차 완료 | Comp parse, Module parse, Generate, Export, 선택 행 삭제, Reset 구현 |
 | Batch Generate MDL 화면 | 완료 | 다중 입력, 옵션 선택, Generate, Export, 선택 행 삭제, Reset 구현 |
+| Batch Generate Comp 화면 | 완료 | Comp 다중 입력, Comp_MDL/Speed 선택, Generate, Export, 선택 행 삭제, Reset 구현 |
 | Excel Export | 완료 | 기존 exporter 재사용 |
 | Ramos 색상 테마 | 1차 완료 | Header, Tab, Button, Table 색상 반영 |
 | 필드 겹침/잘림 대응 | 1차 완료 | 상단 입력부와 필드 영역 layout 조정 |

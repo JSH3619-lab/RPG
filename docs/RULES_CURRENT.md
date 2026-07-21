@@ -84,6 +84,17 @@
 - 2차 Repair Dummy `R0`와 Reball Repair Dummy `B0`는 기존 개별 규칙을 유지한다.
 - 지원하지 않는 MDL→Comp 변환 조합은 임의로 대체하지 않고 해당 생성 실패로 처리한다.
 
+## Comp 일괄 생성 규칙
+- Comp Full Part마다 Incoming, Comp, Comp BIN 전체를 생성한다.
+- `Comp_MDL 생성`을 선택한 경우에만 Comp 판매용 MDL과 MDL BIN을 추가한다.
+- Comp_MDL은 `DIMM Type = C - Comp`를 사용한다.
+- Module Density는 Base Die Density 기준으로 `8Gb -> 1GB`, `16Gb -> 2GB`, `32Gb -> 4GB`를 적용한다.
+- `Rank`, `SMT Site`, `Module Test Site`, `PCB`는 `0`을 사용한다.
+- Comp Type 2가 `B - Reball`이면 Reball Comp_MDL로 생성한다.
+- Comp_MDL Speed는 자동 선택하지 않고 사용자가 선택한다.
+- Speed가 없거나 입력과 맞지 않거나 Module Density를 결정할 수 없으면 임의 값을 사용하지 않고 Comp_MDL만 실패 처리한다.
+- Comp_MDL 실패 시에도 정상 생성된 Incoming/Comp/Comp BIN 결과는 유지한다.
+
 ## A100 규칙
 - `Only A100` 계열 필드는 아래 조건에서만 사용할 수 있다.
   - Third-party family

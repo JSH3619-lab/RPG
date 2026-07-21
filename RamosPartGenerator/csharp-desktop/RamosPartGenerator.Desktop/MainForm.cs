@@ -79,6 +79,7 @@ public sealed partial class MainForm : Form
         ResetIncoming();
         ResetModule();
         ResetBatchMdl();
+        ResetBatchComp();
         AppLog.Info("MainForm.Initialized", ("revision", Revision));
     }
 

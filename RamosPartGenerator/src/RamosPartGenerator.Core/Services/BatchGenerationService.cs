@@ -97,6 +97,91 @@ public sealed class BatchGenerationService
         return new BatchGenerationResult(items, allRows, duplicateCount);
     }
 
+    public BatchGenerationResult GenerateFromCompParts(
+        IEnumerable<string?> partCodes,
+        CompBatchOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(partCodes);
+        ArgumentNullException.ThrowIfNull(options);
+
+        var items = new List<BatchItemResult>();
+        var allRows = new List<GeneratedPartRow>();
+        var inputCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var outputCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var duplicateCount = 0;
+
+        foreach (var rawPartCode in partCodes)
+        {
+            var inputPartCode = NormalizeInput(rawPartCode);
+            if (string.IsNullOrEmpty(inputPartCode))
+            {
+                continue;
+            }
+
+            if (!inputCodes.Add(inputPartCode))
+            {
+                duplicateCount++;
+                continue;
+            }
+
+            var itemRows = new List<GeneratedPartRow>();
+            var messages = new List<string>();
+            var detectedInputKind = ModuleBatchInputKind.Normal;
+
+            try
+            {
+                var parsed = _incomingCompService.ParseCompPart("30", inputPartCode);
+                detectedInputKind = parsed.CompType2Code.Equals("B", StringComparison.OrdinalIgnoreCase)
+                    ? ModuleBatchInputKind.Reball
+                    : ModuleBatchInputKind.Normal;
+                AddRows(_incomingCompService.GeneratePreview(parsed), itemRows);
+
+                if (options.IncludeCompMdl)
+                {
+                    TryGenerate(
+                        "Comp_MDL",
+                        () => _moduleService.GeneratePreview(CreateCompMdlRequest(parsed, options.SpeedCode)),
+                        generatedRows => AddRows(generatedRows, itemRows),
+                        messages);
+                }
+            }
+            catch (Exception exception) when (exception is InvalidOperationException or ArgumentException)
+            {
+                messages.Add(exception.Message);
+            }
+
+            var uniqueItemRows = new List<GeneratedPartRow>();
+            foreach (var row in itemRows)
+            {
+                if (outputCodes.Add(row.PartCode))
+                {
+                    uniqueItemRows.Add(row);
+                    allRows.Add(row);
+                }
+                else
+                {
+                    duplicateCount++;
+                }
+            }
+
+            var status = uniqueItemRows.Count switch
+            {
+                0 => BatchItemStatus.Failed,
+                _ when messages.Count > 0 => BatchItemStatus.PartialSuccess,
+                _ => BatchItemStatus.Success
+            };
+
+            items.Add(new BatchItemResult(
+                inputPartCode,
+                detectedInputKind,
+                status,
+                uniqueItemRows,
+                messages));
+        }
+
+        return new BatchGenerationResult(items, allRows, duplicateCount);
+    }
+
     private ModuleRequest ParseModuleInput(
         string inputPartCode,
         out ModuleBatchInputKind detectedInputKind)
@@ -280,6 +365,95 @@ public sealed class BatchGenerationService
             CompType2Code = isReball ? "B" : string.Empty,
             PackageTypeCode = "B",
             TesterCode = request.CompTestCode
+        };
+    }
+
+    private static ModuleRequest CreateCompMdlRequest(IncomingCompRequest request, string speedCode)
+    {
+        if (string.IsNullOrWhiteSpace(speedCode))
+        {
+            throw new InvalidOperationException("Comp_MDL Speed를 선택해 주세요.");
+        }
+
+        if (request.CompType2Code is not ("0" or "B"))
+        {
+            throw new InvalidOperationException(
+                $"Comp_MDL로 변환할 수 없는 Comp Type 2입니다: {request.CompType2Code}");
+        }
+
+        var dieDensityCode = MapCompDensityToModuleDieDensity(request.DensityCode);
+        var moduleDensityCode = ModuleService.GetCompSaleModuleDensityCode(dieDensityCode);
+        if (string.IsNullOrEmpty(moduleDensityCode))
+        {
+            throw new InvalidOperationException(
+                $"Comp_MDL Module Density를 Base Die Density {dieDensityCode}에서 결정할 수 없습니다.");
+        }
+
+        return new ModuleRequest
+        {
+            Revision = request.Revision,
+            ModuleSourceCode = MapIncomingToModuleSource(request.SourceCode),
+            DramTypeCode = request.DramTypeCode switch
+            {
+                "A" => "4",
+                "R" => "R",
+                _ => throw new InvalidOperationException(
+                    $"Comp_MDL로 변환할 수 없는 DRAM Type입니다: {request.DramTypeCode}")
+            },
+            DimmTypeCode = "C",
+            ModuleDensityCode = moduleDensityCode,
+            DieDensityCode = dieDensityCode,
+            CompositionCode = MapCompBitToModuleComposition(request.BitOrganizationCode),
+            GenerationCode = request.RevisionCode,
+            IcBrandCode = request.DieBrandCode,
+            ModuleCompTypeCode = request.CompTypeCode,
+            CompTestCode = request.TesterCode,
+            SpeedCode = speedCode,
+            VendorCode = request.VendorCode,
+            PurchaserCode = request.PurchaserCode,
+            SpecialCode2Code = request.CompType2Code == "B" ? "B" : string.Empty
+        };
+    }
+
+    private static string MapIncomingToModuleSource(string incomingSourceCode)
+    {
+        return incomingSourceCode switch
+        {
+            "K" => "RM",
+            "T" => "TM",
+            "C" => "CM",
+            "B" => "BM",
+            "X" => "XM",
+            "Z" => "ZM",
+            _ => throw new InvalidOperationException(
+                $"Comp_MDL Source로 변환할 수 없는 Incoming Source입니다: {incomingSourceCode}")
+        };
+    }
+
+    private static string MapCompDensityToModuleDieDensity(string densityCode)
+    {
+        return densityCode switch
+        {
+            "4G" => "4",
+            "8G" => "8",
+            "AG" or "AH" => "A",
+            "HE" => "H",
+            "BH" => "B",
+            _ => throw new InvalidOperationException(
+                $"Comp_MDL Base Die Density로 변환할 수 없는 Comp Density입니다: {densityCode}")
+        };
+    }
+
+    private static string MapCompBitToModuleComposition(string bitOrganizationCode)
+    {
+        return bitOrganizationCode switch
+        {
+            "04" => "4",
+            "08" => "8",
+            "16" => "6",
+            "48" => "9",
+            _ => throw new InvalidOperationException(
+                $"Comp_MDL Composition으로 변환할 수 없는 Comp Bit입니다: {bitOrganizationCode}")
         };
     }
 

@@ -26,6 +26,17 @@ public sealed partial class MainForm
     private TabPage BuildBatchPage()
     {
         var tab = new TabPage("Batch Generate") { BackColor = RamosTheme.Surface };
+        var tabs = BuildTabControl();
+        tabs.ItemSize = new Size(130, 30);
+        tabs.TabPages.Add(BuildBatchMdlPage());
+        tabs.TabPages.Add(BuildBatchCompPage());
+        tab.Controls.Add(tabs);
+        return tab;
+    }
+
+    private TabPage BuildBatchMdlPage()
+    {
+        var tab = new TabPage("MDL 일괄") { BackColor = RamosTheme.Surface };
         var page = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
@@ -43,7 +54,7 @@ public sealed partial class MainForm
         _batchStatusLabel = BuildStatusLabel();
         page.Controls.Add(_batchStatusLabel, 0, 1);
 
-        _batchPreviewGrid = BuildBatchPreviewGrid();
+        _batchPreviewGrid = BuildBatchPreviewGrid(_batchPreviewRows);
         page.Controls.Add(BuildBatchGridGroup("입력 분석", _batchPreviewGrid), 0, 2);
 
         _batchResultGrid = BuildResultGrid(_batchRows);
@@ -202,14 +213,14 @@ public sealed partial class MainForm
         return group;
     }
 
-    private DataGridView BuildBatchPreviewGrid()
+    private DataGridView BuildBatchPreviewGrid(object dataSource)
     {
         var grid = new DataGridView
         {
             Dock = DockStyle.Fill,
             AutoGenerateColumns = false,
             AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-            DataSource = _batchPreviewRows,
+            DataSource = dataSource,
             ReadOnly = true,
             AllowUserToAddRows = false,
             AllowUserToDeleteRows = false,

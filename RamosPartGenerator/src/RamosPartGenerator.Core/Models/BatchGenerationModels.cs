@@ -33,6 +33,12 @@ public sealed class MdlBatchOptions
     public bool IncludeReballCompRelated { get; set; }
 }
 
+public sealed class CompBatchOptions
+{
+    public bool IncludeCompMdl { get; set; }
+    public string SpeedCode { get; set; } = string.Empty;
+}
+
 public sealed record BatchItemResult(
     string InputPartCode,
     ModuleBatchInputKind DetectedInputKind,
