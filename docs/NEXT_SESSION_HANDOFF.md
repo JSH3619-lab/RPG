@@ -190,9 +190,17 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
   - `BatchGenerationResult`, `BatchItemResult`
   - MDL 작업 Part 조합 및 원본/Reball Comp 관련 생성
   - Part Code 중복 제거와 입력별 오류 처리
-- Phase 2 Desktop MDL 일괄 UI는 아직 미구현이다.
+- Phase 2 Desktop MDL 일괄 UI 구현 완료
+  - 메인 화면의 `Batch Generate` 탭
+  - MDL Full Part 줄 단위 다중 입력
+  - 기본 PID/MFGID, 작업 Part, 원본/Reball Comp 관련 체크 옵션
+  - 입력별 감지/처리 상태 Preview와 생성 결과 테이블
+  - Batch 결과 전용 선택 행 삭제와 Excel Export
+  - 모든 옵션 기본 미선택, 입력/옵션 변경 시 Preview 무효화
 - Phase 3 Comp 일괄/Comp_MDL UI는 아직 미구현이다.
 - 상세 범위는 `docs/BATCH_GENERATION.md`를 기준으로 한다.
+
+Phase 2 코드 빌드와 전체 76개 테스트는 통과했다. 자동 UI 실행 도구는 시간 초과되었으므로 배포 EXE에서 Batch 탭의 실제 화면 배치와 DPI별 표시는 수동 확인한다.
 
 ## 커밋/배포 주의
 

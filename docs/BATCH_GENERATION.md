@@ -59,7 +59,7 @@ MDL에서 Comp로 변환할 때 다음 값을 자동 적용한다.
 | Phase | 범위 | 상태 |
 | --- | --- | --- |
 | 1 | Core 일괄 생성, MDL→Comp 변환, 중복/행별 오류 처리, 단위 테스트 | 완료 |
-| 2 | `Batch Generate` 탭과 MDL 일괄 화면 | 대기 |
+| 2 | `Batch Generate` 탭과 MDL 일괄 화면 | 완료 |
 | 3 | Comp 일괄, Comp_MDL, Speed 선택 | 대기 |
 | 4 | Export, 로그, 문서, 버전, 전체 검증 | 대기 |
 
@@ -77,3 +77,21 @@ Core에 다음 항목을 추가했다.
 - 원본/Reball Comp 관련 선택 생성
 
 Phase 1 완료 기준 전체 테스트는 76개다.
+
+## Phase 2 구현
+
+Desktop 메인 화면에 `Batch Generate` 탭과 MDL 일괄 화면을 추가했다.
+
+- MDL Full Part를 한 줄에 하나씩 다량 입력
+- 기본 PID/MFGID, 작업 Part, 원본/Reball Comp 관련 옵션 선택
+- 모든 생성 옵션은 기본 미선택
+- `Preview`에서 입력별 감지 상태, 처리 상태, 생성 수, 메시지 확인
+- 일부 입력이 실패해도 정상 입력의 예상 결과 유지
+- `Generate`에서 Preview 결과를 생성 결과 테이블에 반영
+- 일괄 생성 결과만 선택 행 삭제 및 Excel Export
+- 입력 또는 옵션 변경 시 이전 Preview를 무효화하고 다시 분석하도록 안내
+- `Reset`에서 입력, 선택 옵션, 분석 결과, 생성 결과 초기화
+
+Repair/Dummy 옵션은 Comp 관련 옵션을 자동 선택하지 않는다. 원본 Comp와 Reball Comp는 각각 명시적으로 선택한 경우에만 생성한다.
+
+Phase 2 완료 기준 전체 테스트는 76개이며 Desktop 프로젝트 빌드에 성공했다. 실제 창 자동 실행 도구가 시간 초과되어 최종 화면 배치와 DPI별 표시는 배포 EXE에서 수동 확인이 필요하다.

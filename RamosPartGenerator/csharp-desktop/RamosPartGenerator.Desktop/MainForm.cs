@@ -6,7 +6,7 @@ using RamosPartGenerator.Excel;
 
 namespace RamosPartGenerator.Desktop;
 
-public sealed class MainForm : Form
+public sealed partial class MainForm : Form
 {
     private const string Revision = "30";
     private const int ActionLabelWidth = 190;
@@ -78,6 +78,7 @@ public sealed class MainForm : Form
         InitializeComponent();
         ResetIncoming();
         ResetModule();
+        ResetBatchMdl();
         AppLog.Info("MainForm.Initialized", ("revision", Revision));
     }
 
@@ -110,6 +111,7 @@ public sealed class MainForm : Form
         var tabs = BuildTabControl();
         tabs.TabPages.Add(BuildIncomingPage());
         tabs.TabPages.Add(BuildModulePage());
+        tabs.TabPages.Add(BuildBatchPage());
         root.Controls.Add(tabs, 0, 1);
 
         Controls.Add(root);
@@ -1610,9 +1612,14 @@ public sealed class MainForm : Form
 
     private void ExportRows(Label statusLabel, string area)
     {
+        ExportRows(statusLabel, area, BuildExportRows());
+    }
+
+    private void ExportRows(Label statusLabel, string area, IReadOnlyList<GeneratedPartRow> exportRows)
+    {
         RunGuarded(statusLabel, $"{area}.Export", () =>
         {
-            var rows = BuildExportRows();
+            var rows = exportRows.ToArray();
             AppLog.Info(
                 "Export.Start",
                 ("area", area),
@@ -2362,17 +2369,20 @@ public sealed class MainForm : Form
             DesktopLookupCatalog lookups,
             IncomingCompService incoming,
             ModuleService module,
+            BatchGenerationService batch,
             RegistrationExcelExporter exporter)
         {
             Lookups = lookups;
             Incoming = incoming;
             Module = module;
+            Batch = batch;
             Exporter = exporter;
         }
 
         public DesktopLookupCatalog Lookups { get; }
         public IncomingCompService Incoming { get; }
         public ModuleService Module { get; }
+        public BatchGenerationService Batch { get; }
         public RegistrationExcelExporter Exporter { get; }
 
         public static DesktopAppServices Create()
@@ -2395,10 +2405,13 @@ public sealed class MainForm : Form
             }
 
             var textService = new ProductTextService(specProvider);
+            var incomingService = new IncomingCompService(specProvider, textService);
+            var moduleService = new ModuleService(specProvider, textService);
             return new DesktopAppServices(
                 new DesktopLookupCatalog(specProvider),
-                new IncomingCompService(specProvider, textService),
-                new ModuleService(specProvider, textService),
+                incomingService,
+                moduleService,
+                new BatchGenerationService(moduleService, incomingService),
                 new RegistrationExcelExporter());
         }
     }

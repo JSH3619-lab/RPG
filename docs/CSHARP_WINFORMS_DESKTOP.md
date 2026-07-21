@@ -18,7 +18,8 @@ C:\RPG\RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop
 
 - `RamosPartGenerator.Desktop.csproj`: WinForms 프로젝트 파일
 - `Program.cs`: WinForms 앱 진입점
-- `MainForm.cs`: 전체 화면, 버튼 이벤트, 필드 상태 관리
+- `MainForm.cs`: Incoming/Comp, Module 화면과 공통 버튼/Export 처리
+- `MainForm.Batch.cs`: Batch Generate MDL 일괄 화면과 상태 관리
 - `DesktopLookupCatalog.cs`: Desktop UI용 필드와 선택 옵션 구성
 - `DisplayHelpers.cs`: 표시값과 실제 코드값 변환 helper
 
@@ -67,6 +68,7 @@ RamosPartGenerator.Desktop
 - `ProductTextService`
 - `IncomingCompService`
 - `ModuleService`
+- `BatchGenerationService`
 - `RegistrationExcelExporter`
 
 Desktop 앱은 Web API를 호출하지 않는다. HTML/Vite 프론트엔드도 사용하지 않는다.
@@ -92,10 +94,11 @@ PDF 파일은 실행 중 직접 파싱하지 않는다. PDF는 규격 확인용 
 
 ## 화면 구성
 
-Desktop 앱은 두 개의 탭으로 구성된다.
+Desktop 앱은 세 개의 탭으로 구성된다.
 
 - `Incoming & Comp`
 - `Module`
+- `Batch Generate`
 
 공통 동작:
 
@@ -297,6 +300,23 @@ A100 Special은 아래 조건에서만 입력 가능하다.
 - Vendor = `A`
 - Purchaser = `A`
 
+## Batch Generate 룰
+
+`Batch Generate` 탭의 Phase 2 범위는 MDL Full Part 일괄 생성이다.
+
+- MDL Full Part를 한 줄에 하나씩 입력한다.
+- 기본 PID, 기본 MFGID, Reball, 1차/2차 Repair, Reball Repair, 완제품 Retest를 선택할 수 있다.
+- 원본 Comp 관련과 Reball Comp 관련은 작업 Part와 별도로 선택한다.
+- 모든 옵션은 기본 미선택이다.
+- `Preview`는 입력 Part의 기존 상태와 입력별 성공/실패, 생성 수, 메시지를 보여준다.
+- `Generate`는 Preview와 같은 Core 결과를 하단 결과 테이블에 표시한다.
+- 입력 하나가 실패해도 다른 입력의 정상 결과는 유지한다.
+- 중복되는 최종 Part Code는 한 번만 표시한다.
+- 1차 Repair와 완제품 Retest가 함께 선택된 경우 공용 `00` Dummy도 한 번만 생성한다.
+- 일괄 결과의 선택 행 삭제와 Excel Export를 지원한다.
+
+Comp 일괄과 Comp_MDL 일괄 화면은 Phase 3 범위다.
+
 ### DIMM Type
 
 현재 `shared.json` 기준 DIMM Type 옵션:
@@ -343,6 +363,7 @@ Export 표시 기준:
 | Spec JSON 로딩 | 완료 | 실행 폴더 `specs` 기준 |
 | Incoming & Comp 화면 | 1차 완료 | Parse, Generate, Export, 선택 행 삭제, Reset 구현 |
 | Module 화면 | 1차 완료 | Comp parse, Module parse, Generate, Export, 선택 행 삭제, Reset 구현 |
+| Batch Generate MDL 화면 | 완료 | 다중 입력, 옵션 선택, Preview, Generate, Export, 선택 행 삭제, Reset 구현 |
 | Excel Export | 완료 | 기존 exporter 재사용 |
 | Ramos 색상 테마 | 1차 완료 | Header, Tab, Button, Table 색상 반영 |
 | 필드 겹침/잘림 대응 | 1차 완료 | 상단 입력부와 필드 영역 layout 조정 |
@@ -350,7 +371,7 @@ Export 표시 기준:
 | `.sln` 편입 | 미완료 | 현재 project path로 직접 빌드/실행 |
 | Publish 패키징 | 완료 | 최상위 `Publish` 폴더에 self-contained 단일 exe 생성 |
 | 설치 프로그램 | 미완료 | MSI/Setup 등은 아직 없음 |
-| 전체 UI 수동 QA | 진행 필요 | 긴 option text, 작은 창 크기, DPI 확대 확인 필요 |
+| 전체 UI 수동 QA | 진행 필요 | Batch 탭 포함 긴 option text, 작은 창 크기, DPI 확대 확인 필요 |
 | Desktop UI 자동 테스트 | 미구현 | 현재 Core 단위 테스트 중심 |
 
 ## 현재 주의사항
