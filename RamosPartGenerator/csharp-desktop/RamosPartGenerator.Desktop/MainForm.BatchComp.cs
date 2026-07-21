@@ -105,28 +105,48 @@ public sealed partial class MainForm
 
     private Control BuildBatchCompOptionsGroup()
     {
-        var group = BuildBatchGroup("생성 항목");
-        var layout = new TableLayoutPanel
+        var scrollPanel = new Panel
         {
             Dock = DockStyle.Fill,
-            ColumnCount = 1,
-            RowCount = 5,
-            Padding = new Padding(12),
-            BackColor = RamosTheme.Panel
+            AutoScroll = true,
+            BackColor = RamosTheme.Surface,
+            Padding = new Padding(8, 0, 0, 0)
         };
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 42F));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
-        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 92F));
-        layout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
+        var layout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            Height = 270,
+            ColumnCount = 1,
+            RowCount = 2,
+            BackColor = RamosTheme.Surface
+        };
+        layout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 78F));
+        layout.RowStyles.Add(new RowStyle(SizeType.Absolute, 192F));
 
-        layout.Controls.Add(new Label
+        var compGroup = BuildBatchGroup("Comp 관련");
+        compGroup.Controls.Add(new Label
         {
             Dock = DockStyle.Fill,
             Text = "Incoming + Comp + Comp BIN (항상 생성)",
             TextAlign = ContentAlignment.MiddleLeft,
-            ForeColor = RamosTheme.Text
-        }, 0, 0);
+            ForeColor = RamosTheme.Text,
+            Padding = new Padding(10, 0, 0, 0)
+        });
+        layout.Controls.Add(compGroup, 0, 0);
+
+        var compMdlGroup = BuildBatchGroup("Comp_MDL");
+        var compMdlLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            ColumnCount = 1,
+            RowCount = 3,
+            Padding = new Padding(10, 4, 10, 6),
+            BackColor = RamosTheme.Panel
+        };
+        compMdlLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 38F));
+        compMdlLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 28F));
+        compMdlLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
         _batchIncludeCompMdl = new CheckBox
         {
@@ -144,15 +164,15 @@ public sealed partial class MainForm
 
             InvalidateBatchCompAnalysis();
         };
-        layout.Controls.Add(_batchIncludeCompMdl, 0, 1);
+        compMdlLayout.Controls.Add(_batchIncludeCompMdl, 0, 0);
 
-        layout.Controls.Add(new Label
+        compMdlLayout.Controls.Add(new Label
         {
             Dock = DockStyle.Fill,
-            Text = "Comp_MDL Speed (복수 선택)",
+            Text = "Speed (복수 선택)",
             TextAlign = ContentAlignment.BottomLeft,
             ForeColor = RamosTheme.Text
-        }, 0, 2);
+        }, 0, 1);
 
         var speedFlow = new FlowLayoutPanel
         {
@@ -177,18 +197,12 @@ public sealed partial class MainForm
             _batchCompSpeedChecks.Add(speedCheck);
             speedFlow.Controls.Add(speedCheck);
         }
-        layout.Controls.Add(speedFlow, 0, 3);
+        compMdlLayout.Controls.Add(speedFlow, 0, 2);
+        compMdlGroup.Controls.Add(compMdlLayout);
+        layout.Controls.Add(compMdlGroup, 0, 1);
 
-        layout.Controls.Add(new Label
-        {
-            Dock = DockStyle.Fill,
-            Text = "Speed 누락/불일치 시 Comp_MDL만 실패 처리됩니다.",
-            ForeColor = RamosTheme.Gray,
-            Padding = new Padding(0, 8, 0, 0)
-        }, 0, 4);
-
-        group.Controls.Add(layout);
-        return group;
+        scrollPanel.Controls.Add(layout);
+        return scrollPanel;
     }
 
     private void GenerateBatchComp()

@@ -326,6 +326,7 @@ Comp 일괄 동작:
 - `Comp_MDL 생성`을 선택하면 Comp 판매용 MDL/MDL BIN을 추가한다.
 - Comp_MDL Speed는 체크박스로 복수 선택하며 기본값을 자동 지정하지 않는다.
 - 선택한 각 Speed마다 Comp_MDL과 MDL BIN을 생성한다.
+- 우측 생성 옵션은 `Comp 관련`, `Comp_MDL` 그룹으로 구분하고 옵션 영역에 세로 스크롤을 적용한다.
 - Reball Comp는 Reball Comp_MDL로 변환한다.
 - Speed 누락/불일치 또는 Module Density 결정 불가 시 Comp 관련 결과는 유지하고 Comp_MDL 오류를 입력 분석에 표시한다.
 - 중복 입력과 최종 Part Code는 한 번만 표시한다.

@@ -207,6 +207,7 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
   - Comp_MDL 선택 생성과 Speed 복수 체크
   - Reball Comp의 Reball Comp_MDL 변환
   - 확정할 수 없는 값은 추정하지 않고 입력별 오류 처리
+  - Comp 옵션은 `Comp 관련`, `Comp_MDL` 그룹으로 구분하고 우측 영역은 세로 스크롤 지원
 - 상세 범위는 `docs/BATCH_GENERATION.md`를 기준으로 한다.
 
 Phase 3 보완 코드 빌드와 전체 83개 테스트는 통과했다. 자동 UI 실행 도구는 시간 초과되었으므로 배포 EXE에서 Batch 탭의 실제 화면 배치와 DPI별 표시는 수동 확인한다.
