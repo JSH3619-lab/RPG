@@ -816,7 +816,7 @@ public class UnitTest1
     }
 
     [Theory]
-    [InlineData("BMRDAG58A1A-CPARRWMAAAR", "BMRDAG58A1A-CPARRWMAAA00", "1st Repair", "1st Repair Dummy")]
+    [InlineData("BMRDAG58A1A-CPARRWMAAAR", "BMRDAG58A1A-CPARRWMAAA00", "1st Repair", "Dummy")]
     [InlineData("BMRDAG58A1A-CPARRWMAAAS", "BMRDAG58A1A-CPARRWMAAAR0", "2nd Repair", "2nd Repair Dummy")]
     [InlineData("BMRDAG58A1A-CPARRWMAAAC", "BMRDAG58A1A-CPARRWMAAAB0", "Reball Repair", "Reball Repair Dummy")]
     public void GeneratePreview_ModuleFullPart_GeneratesRepairDummy(

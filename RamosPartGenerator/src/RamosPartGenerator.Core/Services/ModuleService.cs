@@ -663,7 +663,7 @@ public sealed class ModuleService
     {
         (sourceStatusLabel, replacementSuffix, dummyStatusLabel) = specialCode2Code switch
         {
-            "R" => ("1st Repair", "00", "1st Repair Dummy"),
+            "R" => ("1st Repair", "00", "Dummy"),
             "S" => ("2nd Repair", "R0", "2nd Repair Dummy"),
             "C" => ("Reball Repair", "B0", "Reball Repair Dummy"),
             _ => (string.Empty, string.Empty, string.Empty)

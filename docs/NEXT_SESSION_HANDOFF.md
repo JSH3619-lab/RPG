@@ -1,6 +1,6 @@
 # Ramos Part Generator 다음 세션 인수인계
 
-최종 정리일: 2026-07-14
+최종 정리일: 2026-07-21
 
 ## 작업 원칙
 
@@ -133,7 +133,7 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
 - `R` (`1st Repair`):
   - 예: `BMRDAG58A1A-CPARRWMAAAR`
   - Dummy code: `BMRDAG58A1A-CPARRWMAAA00`
-  - 규격 끝: `1st Repair Dummy`
+  - 규격 끝: `Dummy`
 - `S` (`2nd Repair`):
   - 예: `BMRDAG58A1A-CPARRWMAAAS`
   - Dummy code: `BMRDAG58A1A-CPARRWMAAAR0`
@@ -144,6 +144,7 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
   - 규격 끝: `Reball Repair Dummy`
 - `B` (`Reball`)은 Dummy를 만들지 않는다.
 - 이 규칙은 A100 한정이 아니라 전체 Module에 적용한다.
+- 1차 Repair의 `00` Dummy는 완제품 Retest의 `00` Dummy와 같은 Part로 사용한다.
 
 ### Module 완제품 Retest
 
@@ -164,7 +165,7 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
 
 ## 테스트 기준
 
-현재 기준 전체 테스트는 61개다.
+현재 기준 전체 테스트는 76개다.
 
 주요 테스트 범위:
 
@@ -174,8 +175,24 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
 - Module A100/PCB/IC Brand 규격
 - Module Repair Dummy 생성/미생성
 - Module 완제품 Retest 생성/파싱 및 Repair Dummy 우선순위
+- MDL 일괄 기본 PID/MFGID와 작업 Part 조합 생성
+- 1차 Repair/완제품 Retest 공용 `00` 중복 제거
+- MDL→원본/Reball Incoming, Comp, Comp BIN 변환
+- 일괄 입력 중복 제거와 입력별 오류 격리
 - Export `영업코드`, Arial, `MDL Dummy`, 자동 열 폭
 - embedded specs fallback
+
+## Batch Generate 진행 상황
+
+- Phase 1 Core 구현 완료
+  - `BatchGenerationService`
+  - `MdlBatchOptions`
+  - `BatchGenerationResult`, `BatchItemResult`
+  - MDL 작업 Part 조합 및 원본/Reball Comp 관련 생성
+  - Part Code 중복 제거와 입력별 오류 처리
+- Phase 2 Desktop MDL 일괄 UI는 아직 미구현이다.
+- Phase 3 Comp 일괄/Comp_MDL UI는 아직 미구현이다.
+- 상세 범위는 `docs/BATCH_GENERATION.md`를 기준으로 한다.
 
 ## 커밋/배포 주의
 

@@ -89,6 +89,7 @@ C:\RPG
 
 - `IncomingCompService`: Incoming / Comp 생성 및 Comp Full Part 파싱
 - `ModuleService`: Module / Module BIN 생성 및 Module 관련 파싱
+- `BatchGenerationService`: MDL 일괄 작업 조합, MDL→Comp 변환, 중복/입력별 오류 처리
 - `SpecProvider`: `specs` JSON 로딩
 - `ProductTextService`: 품명, General Info, Specification 텍스트 생성
 - `RegistrationExcelExporter`: 등록용 Excel 파일 생성

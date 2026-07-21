@@ -73,6 +73,17 @@
 - `00` 또는 `0Y` Part를 파싱하면 완제품 Retest 옵션을 자동으로 켠다.
 - 기존 Module Repair Dummy 조건과 동시에 적용되면 완제품 Retest를 우선하고 별도의 Repair Dummy 행은 추가하지 않는다.
 
+## Module 일괄 생성 규칙
+- 기본 PID와 기본 MFGID는 각각 선택해서 생성한다.
+- Reball, 1차 Repair, 2차 Repair, Reball Repair, 완제품 Retest는 필요한 작업만 선택한다.
+- Repair 작업 선택은 Incoming/Comp/Comp BIN 생성을 자동으로 포함하지 않는다.
+- Comp 관련은 `원본 Comp 관련`, `Reball Comp 관련` 두 종류를 별도로 선택한다.
+- 원본 Comp 관련은 Comp Type 2를 비우고, Reball Comp 관련은 Comp Type 2에 `B`를 사용한다.
+- 1차 Repair Dummy와 완제품 Retest Dummy의 `{기본 MDL}00`은 같은 Part다.
+- 1차 Repair와 완제품 Retest를 동시에 생성할 때 `{기본 MDL}00`은 한 번만 생성하고 품목규격 끝은 `Dummy`로 통일한다.
+- 2차 Repair Dummy `R0`와 Reball Repair Dummy `B0`는 기존 개별 규칙을 유지한다.
+- 지원하지 않는 MDL→Comp 변환 조합은 임의로 대체하지 않고 해당 생성 실패로 처리한다.
+
 ## A100 규칙
 - `Only A100` 계열 필드는 아래 조건에서만 사용할 수 있다.
   - Third-party family
