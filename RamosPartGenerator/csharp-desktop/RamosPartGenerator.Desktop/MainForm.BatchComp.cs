@@ -163,7 +163,7 @@ public sealed partial class MainForm
         layout.Controls.Add(new Label
         {
             Dock = DockStyle.Fill,
-            Text = "Speed가 없거나 입력 Comp와 맞지 않으면\r\nComp_MDL만 실패하고 Comp 관련 결과는 유지됩니다.",
+            Text = "Speed 누락/불일치 시 Comp_MDL만 실패 처리됩니다.",
             ForeColor = RamosTheme.Gray,
             Padding = new Padding(0, 8, 0, 0)
         }, 0, 4);
