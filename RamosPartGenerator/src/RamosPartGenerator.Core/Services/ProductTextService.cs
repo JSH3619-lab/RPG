@@ -174,7 +174,7 @@ public sealed class ProductTextService
             specPieces.Add(icBrandLabel);
         }
 
-        var isA100 = IsModuleA100(isThirdParty, compTestCode, vendorCode, purchaserCode);
+        var isA100 = IsModuleA100(isThirdParty, vendorCode, purchaserCode);
         var ownerLabel = ResolveModuleOwnerLabel(moduleSourceCode, isA100);
         if (!string.IsNullOrWhiteSpace(ownerLabel))
         {
@@ -218,7 +218,7 @@ public sealed class ProductTextService
         string? speedText,
         bool isManufacturing)
     {
-        var isA100 = IsModuleA100(isThirdParty, compTestCode, vendorCode, purchaserCode);
+        var isA100 = IsModuleA100(isThirdParty, vendorCode, purchaserCode);
         var specPieces = new List<string>
         {
             dramTypeLabel,
@@ -319,10 +319,9 @@ public sealed class ProductTextService
                NormalizeLookupCode(purchaserCode).Equals("A", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool IsModuleA100(bool isThirdParty, string compTestCode, string vendorCode, string purchaserCode)
+    private static bool IsModuleA100(bool isThirdParty, string vendorCode, string purchaserCode)
     {
         return isThirdParty &&
-               NormalizeLookupCode(compTestCode).Equals("A", StringComparison.OrdinalIgnoreCase) &&
                NormalizeLookupCode(vendorCode).Equals("A", StringComparison.OrdinalIgnoreCase) &&
                NormalizeLookupCode(purchaserCode).Equals("A", StringComparison.OrdinalIgnoreCase);
     }

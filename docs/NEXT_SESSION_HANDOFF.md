@@ -110,8 +110,8 @@ dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/Ramo
 - Module Density, Die Density, Composition, Rank 조합이 계산상 맞지 않으면 생성하지 않는다.
 - IC count 표기는 `64 / compositionWidth * rankCount` 기준이다.
 - A100 Module 규칙:
-  - Third-party Module에서 `Comp Test Site = A`, `Vendor = A`, `Purchaser = A`가 모두 맞을 때만 `A100`으로 표기한다.
-  - Purchaser만 `A`이거나 Vendor/Purchaser만 `A`인 경우는 A100이 아니며 Source 기준 표기를 사용한다.
+  - Third-party Module에서 `Vendor = A`, `Purchaser = A`가 모두 맞으면 `Comp Test Site`와 관계없이 `A100`으로 표기한다.
+  - Vendor 또는 Purchaser 중 하나라도 `A`가 아니면 A100이 아니며 Source 기준 표기를 사용한다.
   - A100은 `TP` 표현을 쓰지 않는다.
 - Third-party Module Source 기준 표기:
   - `TM`은 `RAmos TP`

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.0.2 - 2026-07-23
+
+- Module A100 판정과 A100 Special 활성 조건에서 Comp Test Site 제외
+- Third-party Module의 Vendor와 Purchaser가 모두 `A`이면 Comp Test Site와 관계없이 A100으로 처리
+
 ## 1.0.1 - 2026-07-23
 
 - Bank/VDD `8` 표시에서 `POD` 문구 제거

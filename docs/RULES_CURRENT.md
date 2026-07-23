@@ -104,6 +104,7 @@
   - Third-party family
   - `Vendor = A`
   - `Purchaser = A`
+- Comp Test Site는 A100 판정에 사용하지 않는다.
 
 ## 품목 텍스트 규칙
 - DRAM / Comp / Comp BIN의 품목일반정보는 비운다.

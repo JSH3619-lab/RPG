@@ -663,7 +663,8 @@ public class UnitTest1
     [InlineData("TMRDAG58A1P-GPWRRWM7GH", "RAmos TP", "RMHK")]
     [InlineData("BMRDAG58A1P-GPWRRWM7GH", "CT TP", "RMHK")]
     [InlineData("BMRDAG58A1P-GPWRRWM7GA", "CT TP", "A100")]
-    [InlineData("BMRDAG58A1P-GPWRRWMBAA", "CT TP", "A100")]
+    [InlineData("BMRDAG58A1P-GPWRRWMBAA", "A100", "CT TP")]
+    [InlineData("BMRDAG58A1P-GPWRRWM7AA", "A100", "CT TP")]
     public void GeneratePreview_ModuleFullPart_UsesSourceOwnerForThirdPartyUnlessA100(
         string moduleFullPartCode,
         string expectedOwnerText,
@@ -1142,17 +1143,18 @@ public class UnitTest1
     }
 
     [Fact]
-    public void ParseModuleFullPart_A100SpecialCode_RequiresCompTestVendorAndPurchaserA()
+    public void ParseModuleFullPart_A100SpecialCode_AllowsNonACompTestWhenVendorAndPurchaserAreA()
     {
         var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
         var provider = new SpecProvider(specDirectory);
         provider.Load();
         var service = new ModuleService(provider, new ProductTextService(provider));
 
-        var ex = Assert.Throws<InvalidOperationException>(() =>
-            service.ParseModuleFullPart("30", "TMRDAG58A1P-GPWRRWM7AA1R"));
+        var request = service.ParseModuleFullPart("30", "TMRDAG58A1P-GPWRRWM7AA1R");
 
-        Assert.Contains("1R", ex.Message);
+        Assert.Equal("W", request.CompTestCode);
+        Assert.Equal("1", request.A100SpecialCode);
+        Assert.Equal("R", request.SpecialCode2Code);
     }
 
     [Fact]

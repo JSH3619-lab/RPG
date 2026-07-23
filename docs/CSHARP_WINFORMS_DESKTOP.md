@@ -307,10 +307,10 @@ Third-party Module Source:
 A100 Special은 아래 조건에서만 입력 가능하다.
 
 - Third-party Module
-- Comp Test Site = `A`
 - Vendor = `A`
 - Purchaser = `A`
 
+Comp Test Site는 A100 판정에 사용하지 않는다.
 Module 상태 안내에 A100 Special 활성 조건 또는 활성 상태를 표시한다.
 
 ## Batch Generate 룰

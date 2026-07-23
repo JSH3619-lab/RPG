@@ -415,7 +415,6 @@ public sealed class ModuleService
     private static bool IsA100SpecialEligible(ModuleRequest request)
     {
         return IsThirdPartyModule(request.ModuleSourceCode) &&
-               IsA100Code(request.CompTestCode) &&
                IsA100Code(request.VendorCode) &&
                IsA100Code(request.PurchaserCode);
     }
@@ -1012,7 +1011,7 @@ public sealed class ModuleService
 
         if (!IsA100SpecialEligible(request))
         {
-            throw new InvalidOperationException("A100 Special Code는 Third-Party + Comp Test Site A + Vendor A + Purchaser A 조건에서만 사용할 수 있습니다.");
+            throw new InvalidOperationException("A100 Special Code는 Third-Party + Vendor A + Purchaser A 조건에서만 사용할 수 있습니다.");
         }
     }
 }
