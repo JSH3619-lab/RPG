@@ -2,6 +2,11 @@
 
 RAMOS DRAM/Module Part Code를 규칙 기반으로 생성, 파싱, 검증하고 등록용 Excel 파일로 내보내는 WinForms 프로그램입니다.
 
+현재 관리 버전:
+
+- Part Generator: `v1.0.0`
+- Spec: `Rev 30.4`
+
 ## 주요 기능
 
 - Incoming / Comp Part Code 생성
@@ -130,3 +135,5 @@ C:\Users\<사용자>\AppData\Local\RamosPartGenerator\logs\20260510.log
 ## 참고
 
 현재 기준 실행 대상은 WinForms Desktop 앱입니다.
+
+프로그램/규칙 버전 관리 기준은 `docs/VERSIONING.md`, 변경 내역은 `CHANGELOG.md`를 참조합니다.

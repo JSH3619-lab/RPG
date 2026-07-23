@@ -44,6 +44,7 @@ public class UnitTest1
 
         Assert.Contains("C - Comp", dimmTypeOptions);
         Assert.DoesNotContain("Comp - Comp", dimmTypeOptions);
+        Assert.Equal("30.4", revisionSpec.DisplayRevision);
     }
 
     [Fact]

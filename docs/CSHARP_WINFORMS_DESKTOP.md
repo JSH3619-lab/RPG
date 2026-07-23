@@ -26,6 +26,13 @@ C:\RPG\RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop
 
 ## 실행 형태
 
+현재 표시 버전:
+
+- Part Generator `v1.0.0`
+- Spec Rev `30.4`
+
+프로그램 제목, 상단 헤더, EXE 파일 속성, 시작 로그에 프로그램 버전을 표시한다. Spec Rev는 `rev30.json`의 `display_revision`을 사용한다.
+
 Target framework:
 
 ```text

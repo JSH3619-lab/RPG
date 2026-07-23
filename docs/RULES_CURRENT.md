@@ -7,7 +7,8 @@
 
 ## 지원 Rev
 - 현재 운영 키: `30`
-- 표시 기준: DRAM PART `Rev.30.3`, TM PART `Rev 2.1`
+- 표시 기준: DRAM PART `Rev.30.4`, TM PART `Rev 2.1`
+- Rev.30.4는 Rev.30.3 원본 문서에 고객사 추가 MDL 규칙을 반영한 프로그램 표시 버전이다.
 
 ## 기본 원칙
 - LPDDR 계열은 범위에서 제외한다.
@@ -42,7 +43,7 @@
 - Rev 30 Module의 `DIMM Type`에는 `Comp`가 포함된다.
 - Rev 30 Module의 `Rank`에는 `0 : Comp`가 포함된다.
 
-## Rev 30.3 / TM Rev 2.1 확인 차이
+## Rev 30.4 / TM Rev 2.1 확인 차이
 - DRAM PART Rev.30.3의 Product Bin에는 `B00 : H/T (Hammer Test)`가 포함된다.
 - DRAM PART Rev.30.3의 Module Density에는 `CG : 64GB`가 포함된다.
 - TM PART Rev 2.1의 입고 Source는 `X : RAmos TM`, `Z : CTST TM`이다.

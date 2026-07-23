@@ -15,15 +15,15 @@ public sealed partial class MainForm : Form
     private const int ModeRowHeight = 34;
     private const int SelectorGroupColumnWidth = 220;
     private const int SelectorFieldColumnWidth = 360;
+    private static string ApplicationVersion =>
+        typeof(MainForm).Assembly.GetName().Version?.ToString(3) ?? "1.0.0";
     private static readonly string[] IncomingDdr4DensityCodes = { "4G", "8G", "AG" };
     private static readonly string[] IncomingDdr5DensityCodes = { "AH", "HE", "BH" };
     private static readonly string[] IncomingStandardBitCodes = { "04", "08", "16" };
     private static readonly string[] IncomingManufacturingBitCodes = { "04", "08", "16", "48" };
-    private static readonly string[] ModuleDdr5SpeedCodes = { "QK", "WM", "CM", "CQ", "CR", "CS" };
     private static readonly string[] ModuleStandardDensityCodes = { "4G", "8G", "AG", "BG", "CG" };
     private static readonly string[] ModuleDdr4DieDensityCodes = { "4", "8", "A" };
     private static readonly string[] ModuleDdr5DieDensityCodes = { "A", "H", "B" };
-    private static readonly string[] ModuleDdr5BankVddCodes = { "5", "6", "7" };
     private static readonly string[] ModuleStandardCompositionCodes = { "4", "8", "6" };
     private static readonly string[] ModuleManufacturingCompositionCodes = { "4", "8", "6", "9" };
     private static readonly string[] StandardVendorCodes = { "S", "G", "B", "A" };
@@ -80,14 +80,18 @@ public sealed partial class MainForm : Form
         ResetModule();
         ResetBatchMdl();
         ResetBatchComp();
-        AppLog.Info("MainForm.Initialized", ("revision", Revision));
+        AppLog.Info(
+            "MainForm.Initialized",
+            ("revision", Revision),
+            ("displayRevision", _moduleLookups.DisplayRevision),
+            ("appVersion", ApplicationVersion));
     }
 
     private void InitializeComponent()
     {
         SuspendLayout();
 
-        Text = "Ramos Part Generator - C#";
+        Text = $"Ramos Part Generator v{ApplicationVersion}";
         ApplyApplicationIcon();
         StartPosition = FormStartPosition.CenterScreen;
         MinimumSize = new Size(1180, 740);
@@ -107,7 +111,7 @@ public sealed partial class MainForm : Form
         root.RowStyles.Add(new RowStyle(SizeType.Absolute, 88F));
         root.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
 
-        root.Controls.Add(BuildHeader(), 0, 0);
+        root.Controls.Add(BuildHeader(_moduleLookups.DisplayRevision), 0, 0);
 
         var tabs = BuildTabControl();
         tabs.TabPages.Add(BuildIncomingPage());
@@ -168,7 +172,7 @@ public sealed partial class MainForm : Form
         return tabs;
     }
 
-    private static Control BuildHeader()
+    private static Control BuildHeader(string displayRevision)
     {
         var panel = new TableLayoutPanel
         {
@@ -214,7 +218,7 @@ public sealed partial class MainForm : Form
         var subtitle = new Label
         {
             Dock = DockStyle.Fill,
-            Text = "Spec Rev 30",
+            Text = $"App Ver {ApplicationVersion}  |  Spec Rev {displayRevision}",
             ForeColor = RamosTheme.Gray,
             TextAlign = ContentAlignment.MiddleLeft,
             Padding = new Padding(2, 0, 0, 0)
@@ -1395,8 +1399,9 @@ public sealed partial class MainForm : Form
             {
                 var speedOptions = dramTypeCode switch
                 {
-                    "4" => ModuleOptionsByCodes("speedCode", "WE"),
-                    "R" => ModuleOptionsByCodes("speedCode", ModuleDdr5SpeedCodes),
+                    "4" or "R" => ModuleOptionsByCodes(
+                        "speedCode",
+                        _services.Lookups.ModuleSpeedCodes(dramTypeCode).ToArray()),
                     _ => ModuleOptions("speedCode")
                 };
                 SetFieldOptions(speedCombo, speedOptions);
@@ -1423,8 +1428,9 @@ public sealed partial class MainForm : Form
                     ? ModuleOptionsByCodes("bankVddCode", DisplayHelpers.ExtractCode(bankVddCode))
                     : dramTypeCode switch
                     {
-                        "4" => ModuleOptionsByCodes("bankVddCode", "4"),
-                        "R" => ModuleOptionsByCodes("bankVddCode", ModuleDdr5BankVddCodes),
+                        "4" or "R" => ModuleOptionsByCodes(
+                            "bankVddCode",
+                            _services.Lookups.ModuleBankVddCodes(dramTypeCode).ToArray()),
                         _ => ModuleOptions("bankVddCode")
                     };
                 SetFieldOptions(bankVddCombo, bankVddOptions);
@@ -1525,14 +1531,7 @@ public sealed partial class MainForm : Form
 
     private string ResolveModuleBankVdd(string dramTypeCode, string speedCode)
     {
-        var bankVddCode = (dramTypeCode, speedCode) switch
-        {
-            ("4", "WE") => "4",
-            ("R", "QK") or ("R", "WM") => "5",
-            ("R", "CM") or ("R", "CQ") => "6",
-            ("R", "CR") or ("R", "CS") => "7",
-            _ => string.Empty
-        };
+        var bankVddCode = _services.Lookups.ResolveModuleBankVddCode(dramTypeCode, speedCode);
 
         return DisplayHelpers.ResolveDisplayValue(bankVddCode, ModuleOptions("bankVddCode"));
     }

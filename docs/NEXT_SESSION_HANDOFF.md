@@ -1,6 +1,12 @@
 # Ramos Part Generator 다음 세션 인수인계
 
-최종 정리일: 2026-07-21
+최종 정리일: 2026-07-23
+
+현재 버전:
+
+- Part Generator `v1.0.0`
+- Spec Rev `30.4`
+- 내부 규칙 키는 기존 호환을 위해 `30` 유지
 
 ## 작업 원칙
 
@@ -70,6 +76,8 @@ dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/Ramo
 - 결과 테이블은 셀 단위 다중 선택과 드래그 선택을 지원하며, `Ctrl+C` 복사 시 헤더를 포함하지 않는다.
 - `Delete Selected`는 선택 셀이 포함된 결과 행만 삭제하고, 기존 `Reset`은 입력과 전체 결과를 초기화한다.
 - 로그 시간은 한국 로컬 사용 기준으로 timezone offset 없이 `[2026-05-10 10:25:16.536]` 형식으로 기록한다.
+- 프로그램 시작 로그에 Part Generator 버전을 기록한다.
+- 화면 제목과 헤더에는 `App Ver 1.0.0 | Spec Rev 30.4`를 표시한다.
 
 ### 공통 표시/Export
 

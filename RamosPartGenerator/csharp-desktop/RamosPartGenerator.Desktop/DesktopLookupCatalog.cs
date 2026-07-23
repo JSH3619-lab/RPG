@@ -1,4 +1,5 @@
 using RamosPartGenerator.Core.Services;
+using RamosPartGenerator.Core.Specs;
 
 namespace RamosPartGenerator.Desktop;
 
@@ -87,6 +88,40 @@ internal sealed class DesktopLookupCatalog
         };
 
         return new DesktopLookupPage(spec.Revision, spec.DisplayRevision, fields);
+    }
+
+    public IReadOnlyList<string> ModuleSpeedCodes(string dramTypeCode)
+    {
+        return TryGetModuleSpeedRule(dramTypeCode, out var rule)
+            ? rule.AllowedSpeeds.ToArray()
+            : Array.Empty<string>();
+    }
+
+    public IReadOnlyList<string> ModuleBankVddCodes(string dramTypeCode)
+    {
+        return TryGetModuleSpeedRule(dramTypeCode, out var rule)
+            ? rule.BankVddBySpeed.Values.Distinct(StringComparer.OrdinalIgnoreCase).ToArray()
+            : Array.Empty<string>();
+    }
+
+    public string ResolveModuleBankVddCode(string dramTypeCode, string speedCode)
+    {
+        return TryGetModuleSpeedRule(dramTypeCode, out var rule) &&
+               rule.BankVddBySpeed.TryGetValue(speedCode, out var bankVddCode)
+            ? bankVddCode
+            : string.Empty;
+    }
+
+    private bool TryGetModuleSpeedRule(string dramTypeCode, out ModuleSpeedRule rule)
+    {
+        var ruleKey = dramTypeCode switch
+        {
+            "4" or "A" => "DDR4",
+            "R" => "DDR5",
+            _ => string.Empty
+        };
+
+        return _specProvider.SharedSpec.ModuleSpeedRules.TryGetValue(ruleKey, out rule!);
     }
 
     private IReadOnlyList<string> Options(params string[] keys)

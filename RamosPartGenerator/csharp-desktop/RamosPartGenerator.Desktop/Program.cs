@@ -14,7 +14,8 @@ internal static class Program
             AppLog.Error("App.UnhandledException", exception, ("isTerminating", args.IsTerminating.ToString()));
         };
 
-        AppLog.Info("App.Start", ("logPath", AppLog.CurrentLogPath));
+        var appVersion = typeof(Program).Assembly.GetName().Version?.ToString(3) ?? "1.0.0";
+        AppLog.Info("App.Start", ("version", appVersion), ("logPath", AppLog.CurrentLogPath));
         try
         {
             Application.Run(new MainForm());
