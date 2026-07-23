@@ -277,6 +277,7 @@ DDR5:
 - `QK - 4800 MT/s`
 - `WM - 5600 MT/s`
 - `CM - 6000 MT/s`
+- `CA - 6000 MT/s (3000MHz @ 48/48/48)`
 - `CQ - 6400 MT/s`
 - `CR - 6800 MT/s`
 - `CS - 7200 MT/s`
@@ -286,6 +287,7 @@ Bank/VDD 자동 계산:
 - DDR4 + `WE` -> `4`
 - DDR5 + `QK` or `WM` -> `5`
 - DDR5 + `CM` or `CQ` -> `6`
+- DDR5 + `CA` -> `8` (`32Bank / POD 1.25V`)
 - DDR5 + `CR` or `CS` -> `7`
 
 Third-party Module Source일 때만 Purchaser를 입력할 수 있다.

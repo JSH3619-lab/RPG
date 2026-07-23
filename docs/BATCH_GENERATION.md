@@ -125,4 +125,4 @@ Comp_MDL 고정/변환 규칙:
 
 24Gb처럼 Module Density를 확정할 수 없거나 Speed가 비어 있거나 DRAM Type과 맞지 않으면 값을 추정하지 않는다. 이 경우 Incoming/Comp/Comp BIN 결과는 유지하고 해당 Comp_MDL만 실패 처리한다.
 
-Phase 3 보완 완료 기준 전체 테스트는 83개다.
+고객사 MDL Speed/Bank 규칙 추가 후 현재 전체 테스트는 85개다.

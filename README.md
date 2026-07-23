@@ -15,6 +15,7 @@ RAMOS DRAM/Module Part Code를 규칙 기반으로 생성, 파싱, 검증하고 
 - Module Full Part 파싱
 - 그룹 → 필드 → 옵션의 3열 클릭 선택 UI 제공
 - DRAM Type, Density, Bank, Interface, Speed 등 조합 검증
+- MDL `CA - DDR5-6000 (48/48/48)`과 Bank/VDD `8 - 1.25V` 지원
 - Rev 30 기준 Vendor / Purchaser / A100 Special 조건 반영
 - Existing PART / TM PART 모드 전환
 - 생성 결과 미리보기

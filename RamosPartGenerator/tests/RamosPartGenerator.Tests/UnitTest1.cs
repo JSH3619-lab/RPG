@@ -927,6 +927,74 @@ public class UnitTest1
     }
 
     [Fact]
+    public void GeneratePreview_Module_CaSpeed_UsesBankVdd8()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        Assert.Contains("8 - 32Bank / POD 1.25V", provider.SharedSpec.CodeOptions["module_bank_vdd"]);
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleSourceCode = "RM",
+            DramTypeCode = "R",
+            DimmTypeCode = "D",
+            ModuleDensityCode = "AG",
+            DieDensityCode = "A",
+            CompositionCode = "8",
+            RankCode = "1",
+            GenerationCode = "A",
+            IcBrandCode = "G",
+            ModuleCompTypeCode = "P",
+            CompTestCode = "W",
+            ModuleSmtCode = "R",
+            ModuleTestCode = "R",
+            SpeedCode = "CA",
+            PcbCode = "7",
+            VendorCode = "G"
+        });
+
+        Assert.Equal("RMRDAG88A1A-GPWRRCA7G", rows[0].PartCode);
+        Assert.Contains("6000 MT/s (3000MHz @ 48/48/48)", rows[1].Specification);
+    }
+
+    [Fact]
+    public void GeneratePreview_Module_CaSpeed_RejectsOtherBankVdd()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var ex = Assert.Throws<InvalidOperationException>(() => service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleSourceCode = "RM",
+            DramTypeCode = "R",
+            DimmTypeCode = "D",
+            ModuleDensityCode = "AG",
+            BankVddCode = "6",
+            DieDensityCode = "A",
+            CompositionCode = "8",
+            RankCode = "1",
+            GenerationCode = "A",
+            IcBrandCode = "G",
+            ModuleCompTypeCode = "P",
+            CompTestCode = "W",
+            ModuleSmtCode = "R",
+            ModuleTestCode = "R",
+            SpeedCode = "CA",
+            PcbCode = "7",
+            VendorCode = "G"
+        }));
+
+        Assert.Contains("Bank/VDD code 8", ex.Message);
+    }
+
+    [Fact]
     public void ParseCompPart_RejectsDdr5WithDdr4Bank()
     {
         var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));

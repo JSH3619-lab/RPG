@@ -56,12 +56,14 @@
 - Module은 `Comp Full Part`를 해석해 공통 정보를 먼저 채울 수 있다.
 - 이후 사용자가 `DIMM Type`, `Module Density`, `PCB` 등 Module 전용 항목을 결정한다.
 - DDR4 Speed는 현재 `WE`만 허용한다.
-- DDR5 Speed는 `QK`, `WM`, `CM`, `CQ`, `CR`, `CS`를 허용한다.
+- DDR5 Speed는 `QK`, `WM`, `CM`, `CA`, `CQ`, `CR`, `CS`를 허용한다.
 - Bank/VDD 매핑:
   - DDR4 `WE` -> `16Bank / 1.2V`
   - DDR5 `QK`, `WM` -> `32Bank / 1.1V`
   - DDR5 `CM`, `CQ` -> `32Bank / 1.35V`
+  - DDR5 `CA` -> `32Bank / POD 1.25V`
   - DDR5 `CR`, `CS` -> `32Bank / 1.4V`
+- `CA`는 `DDR5-6000 (3000MHz @ 48/48/48)` 조건이다.
 
 ## Module 완제품 Retest 규칙
 - Module 화면의 `완제품 Retest (00/0Y)` 옵션은 기본적으로 꺼져 있다.
