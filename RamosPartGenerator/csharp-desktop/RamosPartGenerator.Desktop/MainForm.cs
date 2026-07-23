@@ -1489,7 +1489,12 @@ public sealed partial class MainForm : Form
             : (sourceText is "TM" or "BM")
             ? "Third-party module"
             : string.IsNullOrEmpty(sourceText) ? "Source not determined yet" : "Internal module";
-        SetInfo(_moduleStatusLabel, $"{sourceStatus} | Rev 30: I.C Brand / Comp Type / Vendor + Purchaser | {partyStatus}");
+        var a100Status = IsModuleA100SpecialEnabled(sourceText is "TM" or "BM")
+            ? "A100 Special 활성"
+            : "A100 조건: Third-party + Comp Test A + Vendor A + Purchaser A";
+        SetInfo(
+            _moduleStatusLabel,
+            $"{sourceStatus} | Rev {_moduleLookups.DisplayRevision} | {partyStatus} | {a100Status}");
     }
 
     private void ApplyModuleCompSaleDefaults()

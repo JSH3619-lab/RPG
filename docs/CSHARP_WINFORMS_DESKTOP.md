@@ -28,7 +28,7 @@ C:\RPG\RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop
 
 현재 표시 버전:
 
-- Part Generator `v1.0.0`
+- Part Generator `v1.0.1`
 - Spec Rev `30.4`
 
 프로그램 제목, 상단 헤더, EXE 파일 속성, 시작 로그에 프로그램 버전을 표시한다. Spec Rev는 `rev30.json`의 `display_revision`을 사용한다.
@@ -277,24 +277,24 @@ Speed 제한:
 
 DDR4:
 
-- `WE - 3200 MT/s`
+- `WE - 3200 MT/s (1600MHz @ 22/22/22)`
 
 DDR5:
 
-- `QK - 4800 MT/s`
-- `WM - 5600 MT/s`
-- `CM - 6000 MT/s`
+- `QK - 4800 MT/s (2400MHz @ 40/39/39)`
+- `WM - 5600 MT/s (2800MHz @ 46/45/45)`
+- `CM - 6000 MT/s (3000MHz @ 34/44/44)`
 - `CA - 6000 MT/s (3000MHz @ 48/48/48)`
-- `CQ - 6400 MT/s`
-- `CR - 6800 MT/s`
-- `CS - 7200 MT/s`
+- `CQ - 6400 MT/s (3200MHz @ 36/44/44)`
+- `CR - 6800 MT/s (3400MHz @ 36/44/44)`
+- `CS - 7200 MT/s (3600MHz @ 38/46/46)`
 
 Bank/VDD 자동 계산:
 
 - DDR4 + `WE` -> `4`
 - DDR5 + `QK` or `WM` -> `5`
 - DDR5 + `CM` or `CQ` -> `6`
-- DDR5 + `CA` -> `8` (`32Bank / POD 1.25V`)
+- DDR5 + `CA` -> `8` (`32Bank / 1.25V`)
 - DDR5 + `CR` or `CS` -> `7`
 
 Third-party Module Source일 때만 Purchaser를 입력할 수 있다.
@@ -307,8 +307,11 @@ Third-party Module Source:
 A100 Special은 아래 조건에서만 입력 가능하다.
 
 - Third-party Module
+- Comp Test Site = `A`
 - Vendor = `A`
 - Purchaser = `A`
+
+Module 상태 안내에 A100 Special 활성 조건 또는 활성 상태를 표시한다.
 
 ## Batch Generate 룰
 

@@ -386,7 +386,7 @@ public class UnitTest1
         Assert.Equal("RMRC2G58A0A-GPW00WM0G-TN2GA00", rows[1].PartCode);
         Assert.Equal("DDR5 Comp 2GB COO : KR", rows[0].GeneralInfo);
         Assert.Equal("DDR5 16Gb x8 A-die GIGA S1 Partial Comp", rows[0].Specification);
-        Assert.Equal("DDR5 16Gb x8 A-die GIGA S1 Partial Comp 5600 MT/s", rows[1].Specification);
+        Assert.Equal("DDR5 16Gb x8 A-die GIGA S1 Partial Comp 5600 MT/s (2800MHz @ 46/45/45)", rows[1].Specification);
     }
 
     [Fact]
@@ -656,7 +656,7 @@ public class UnitTest1
 
         Assert.Equal("UDIMM 16GB COO : KR", rows[0].GeneralInfo);
         Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) GIGA S1 RAmos TP BP PCB", rows[0].Specification);
-        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) GIGA S1 RAmos TP BP PCB 5600 MT/s", rows[1].Specification);
+        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) GIGA S1 RAmos TP BP PCB 5600 MT/s (2800MHz @ 46/45/45)", rows[1].Specification);
     }
 
     [Theory]
@@ -792,7 +792,7 @@ public class UnitTest1
         });
 
         Assert.Equal("DDR5 UDIMM 8GB (16Gb x16 *4) S3 A100 BP PCB", rows[0].Specification);
-        Assert.Equal("DDR5 UDIMM 8GB (16Gb x16 *4) S3 A100 BP PCB 5600 MT/s", rows[1].Specification);
+        Assert.Equal("DDR5 UDIMM 8GB (16Gb x16 *4) S3 A100 BP PCB 5600 MT/s (2800MHz @ 46/45/45)", rows[1].Specification);
         Assert.DoesNotContain("TP", rows[0].Specification);
         Assert.DoesNotContain("ADATA", rows[0].Specification);
     }
@@ -935,7 +935,7 @@ public class UnitTest1
         provider.Load();
         var service = new ModuleService(provider, new ProductTextService(provider));
 
-        Assert.Contains("8 - 32Bank / POD 1.25V", provider.SharedSpec.CodeOptions["module_bank_vdd"]);
+        Assert.Contains("8 - 32Bank / 1.25V", provider.SharedSpec.CodeOptions["module_bank_vdd"]);
 
         var rows = service.GeneratePreview(new ModuleRequest
         {
@@ -1254,7 +1254,7 @@ public class UnitTest1
                 "ZCAAG485WA-5BGRX-CA",
                 "ZCAAG485WA-5BGRX-CA",
                 "",
-                "DDR4 16Gb x8 (x4 -> x8) A-die S1 Reball/EMC/Laser-Marking Comp 3200 MT/s")
+                "DDR4 16Gb x8 (x4 -> x8) A-die S1 Reball/EMC/Laser-Marking Comp 3200 MT/s (1600MHz @ 22/22/22)")
         });
 
         using var stream = new MemoryStream(content);

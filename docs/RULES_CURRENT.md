@@ -62,7 +62,7 @@
   - DDR4 `WE` -> `16Bank / 1.2V`
   - DDR5 `QK`, `WM` -> `32Bank / 1.1V`
   - DDR5 `CM`, `CQ` -> `32Bank / 1.35V`
-  - DDR5 `CA` -> `32Bank / POD 1.25V`
+  - DDR5 `CA` -> `32Bank / 1.25V`
   - DDR5 `CR`, `CS` -> `32Bank / 1.4V`
 - `CA`는 `DDR5-6000 (3000MHz @ 48/48/48)` 조건이다.
 

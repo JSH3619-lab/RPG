@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1 - 2026-07-23
+
+- Bank/VDD `8` 표시에서 `POD` 문구 제거
+- 현재 지원하는 모든 MDL Speed에 Clock과 Timing 정보 추가
+- MDL Speed/Bank UI 필터를 JSON 규칙 기반으로 변경
+- Module 화면에 A100 Special 활성 조건 안내 추가
+
 ## 1.0.0 - 2026-07-23
 
 첫 프로그램 버전 관리 기준점.
