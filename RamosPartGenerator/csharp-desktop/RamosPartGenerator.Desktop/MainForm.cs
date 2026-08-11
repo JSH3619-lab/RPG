@@ -40,6 +40,7 @@ public sealed partial class MainForm : Form
     private readonly Dictionary<string, LookupFieldState> _moduleFields = new(StringComparer.OrdinalIgnoreCase);
     private readonly BindingList<GeneratedPartRow> _incomingRows = new();
     private readonly BindingList<GeneratedPartRow> _moduleRows = new();
+    private readonly ErpPartIndex _erpIndex = new();
 
     private TextBox _incomingCompPartText = null!;
     private TextBox _moduleCompPartText = null!;
@@ -53,6 +54,10 @@ public sealed partial class MainForm : Form
     private RadioButton _moduleStandardMode = null!;
     private RadioButton _moduleManufacturingMode = null!;
     private CheckBox _moduleFinishedProductRetest = null!;
+    private Label _incomingErpStatusLabel = null!;
+    private Label _moduleErpStatusLabel = null!;
+    private CheckBox _incomingIncludeDuplicates = null!;
+    private CheckBox _moduleIncludeDuplicates = null!;
     private bool _updatingIncoming;
     private bool _updatingModule;
 
@@ -76,6 +81,8 @@ public sealed partial class MainForm : Form
         _moduleLookups = _services.Lookups.BuildModule(Revision);
 
         InitializeComponent();
+        _erpIndex.Load();
+        UpdateErpStatusLabels();
         ResetIncoming();
         ResetModule();
         ResetBatchMdl();
@@ -276,7 +283,7 @@ public sealed partial class MainForm : Form
             Padding = new Padding(8),
             BackColor = RamosTheme.Surface
         };
-        page.RowStyles.Add(new RowStyle(SizeType.Absolute, ModeRowHeight + ActionRowHeight + 8F));
+        page.RowStyles.Add(new RowStyle(SizeType.Absolute, ModeRowHeight + ActionRowHeight * 2 + 8F));
         page.RowStyles.Add(new RowStyle(SizeType.Absolute, 34F));
         page.RowStyles.Add(new RowStyle(SizeType.Percent, 62F));
         page.RowStyles.Add(new RowStyle(SizeType.Percent, 38F));
@@ -298,6 +305,7 @@ public sealed partial class MainForm : Form
             0,
             2);
         _incomingResultGrid = BuildResultGrid(_incomingRows);
+        AddErpStatusColumn(_incomingResultGrid);
         page.Controls.Add(_incomingResultGrid, 0, 3);
 
         tab.Controls.Add(page);
@@ -310,13 +318,14 @@ public sealed partial class MainForm : Form
         {
             Dock = DockStyle.Fill,
             ColumnCount = 2,
-            RowCount = 2,
+            RowCount = 3,
             Padding = new Padding(0, 4, 0, 4),
             BackColor = RamosTheme.Surface
         };
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
         panel.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, ActionButtonColumnWidth));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, ModeRowHeight));
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, ActionRowHeight));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, ActionRowHeight));
 
         var inputPanel = new Panel { Dock = DockStyle.Fill, BackColor = RamosTheme.Surface };
@@ -328,11 +337,16 @@ public sealed partial class MainForm : Form
         buttons.Controls.Add(BuildButton("Export Excel", ExportIncoming));
         buttons.Controls.Add(BuildButton("Delete Selected", DeleteSelectedIncoming));
         buttons.Controls.Add(BuildButton("Reset", ResetIncoming));
+        buttons.Controls.Add(BuildErpUploadButton(() => UploadErpParts(_incomingStatusLabel, "IncomingComp")));
+        _incomingIncludeDuplicates = BuildIncludeDuplicatesCheckBox();
+        buttons.Controls.Add(_incomingIncludeDuplicates);
+        _incomingErpStatusLabel = BuildErpStatusLabel();
+        buttons.Controls.Add(_incomingErpStatusLabel);
 
         panel.Controls.Add(BuildIncomingModeSelector(), 0, 0);
         panel.Controls.Add(inputPanel, 0, 1);
         panel.Controls.Add(buttons, 1, 0);
-        panel.SetRowSpan(buttons, 2);
+        panel.SetRowSpan(buttons, 3);
         return panel;
     }
 
@@ -370,6 +384,7 @@ public sealed partial class MainForm : Form
             0,
             2);
         _moduleResultGrid = BuildResultGrid(_moduleRows);
+        AddErpStatusColumn(_moduleResultGrid);
         page.Controls.Add(_moduleResultGrid, 0, 3);
 
         tab.Controls.Add(page);
@@ -412,6 +427,11 @@ public sealed partial class MainForm : Form
         buttons.Controls.Add(BuildButton("Export Excel", ExportModule));
         buttons.Controls.Add(BuildButton("Delete Selected", DeleteSelectedModule));
         buttons.Controls.Add(BuildButton("Reset", ResetModule));
+        buttons.Controls.Add(BuildErpUploadButton(() => UploadErpParts(_moduleStatusLabel, "Module")));
+        _moduleIncludeDuplicates = BuildIncludeDuplicatesCheckBox();
+        buttons.Controls.Add(_moduleIncludeDuplicates);
+        _moduleErpStatusLabel = BuildErpStatusLabel();
+        buttons.Controls.Add(_moduleErpStatusLabel);
 
         panel.Controls.Add(BuildModuleModeSelector(), 0, 0);
         panel.Controls.Add(inputRows, 0, 1);
@@ -647,6 +667,96 @@ public sealed partial class MainForm : Form
             ForeColor = RamosTheme.Blue,
             Padding = new Padding(3, 0, 0, 0),
             BackColor = RamosTheme.Surface
+        };
+    }
+
+    private static Button BuildErpUploadButton(Action action)
+    {
+        var button = BuildButton("ERP 품목 업로드…", action);
+        button.Size = new Size(140, 30);
+        return button;
+    }
+
+    private static CheckBox BuildIncludeDuplicatesCheckBox()
+    {
+        return new CheckBox
+        {
+            Text = "중복 포함",
+            AutoSize = true,
+            Margin = new Padding(4, 10, 4, 3),
+            ForeColor = RamosTheme.Text
+        };
+    }
+
+    private static Label BuildErpStatusLabel()
+    {
+        return new Label
+        {
+            AutoSize = true,
+            Margin = new Padding(4, 12, 0, 0),
+            ForeColor = RamosTheme.Gray
+        };
+    }
+
+    private void UpdateErpStatusLabels()
+    {
+        var text = _erpIndex.HasData
+            ? $"등록 파트 기준: {_erpIndex.UploadedAt:yyyy-MM-dd} ({_erpIndex.Count:n0}건)"
+            : "ERP 품목 미업로드";
+        _incomingErpStatusLabel.Text = text;
+        _moduleErpStatusLabel.Text = text;
+        _incomingResultGrid.Invalidate();
+        _moduleResultGrid.Invalidate();
+    }
+
+    private void UploadErpParts(Label statusLabel, string area)
+    {
+        RunGuarded(statusLabel, $"{area}.ErpUpload", () =>
+        {
+            using var dialog = new OpenFileDialog
+            {
+                Title = "ERP 품목 업로드",
+                Filter = "Excel Workbook (*.xlsx)|*.xlsx"
+            };
+
+            if (dialog.ShowDialog(this) != DialogResult.OK)
+            {
+                AppLog.Info("ErpUpload.Canceled", ("area", area));
+                return;
+            }
+
+            var codes = new ErpRegisteredPartsReader().Read(dialog.FileName);
+            _erpIndex.Update(Path.GetFileName(dialog.FileName), codes);
+            UpdateErpStatusLabels();
+            AppLog.Info(
+                "ErpUpload.Success",
+                ("area", area),
+                ("fileName", Path.GetFileName(dialog.FileName)),
+                ("codeCount", codes.Count.ToString()));
+            SetInfo(statusLabel, $"ERP 품목 업로드 완료: {codes.Count:n0}건");
+        });
+    }
+
+    private void AddErpStatusColumn(DataGridView grid)
+    {
+        var column = new DataGridViewTextBoxColumn
+        {
+            Name = "ErpStatus",
+            HeaderText = "상태",
+            FillWeight = 60,
+            SortMode = DataGridViewColumnSortMode.NotSortable
+        };
+        grid.Columns.Insert(2, column);
+        grid.CellFormatting += (_, args) =>
+        {
+            if (args.ColumnIndex >= 0 &&
+                args.RowIndex >= 0 &&
+                grid.Columns[args.ColumnIndex].Name == "ErpStatus" &&
+                grid.Rows[args.RowIndex].DataBoundItem is GeneratedPartRow row)
+            {
+                args.Value = _erpIndex.HasData && _erpIndex.Contains(row.PartCode) ? "등록됨" : "신규";
+                args.FormattingApplied = true;
+            }
         };
     }
 
@@ -917,7 +1027,7 @@ public sealed partial class MainForm : Form
 
     private void ExportIncoming()
     {
-        ExportRows(_incomingStatusLabel, "IncomingComp");
+        ExportRows(_incomingStatusLabel, "IncomingComp", BuildExportRows(), _incomingIncludeDuplicates.Checked);
     }
 
     private void DeleteSelectedIncoming()
@@ -1235,7 +1345,7 @@ public sealed partial class MainForm : Form
 
     private void ExportModule()
     {
-        ExportRows(_moduleStatusLabel, "Module");
+        ExportRows(_moduleStatusLabel, "Module", BuildExportRows(), _moduleIncludeDuplicates.Checked);
     }
 
     private void DeleteSelectedModule()
@@ -1609,25 +1719,31 @@ public sealed partial class MainForm : Form
         return selectedRowIndices.Length;
     }
 
-    private void ExportRows(Label statusLabel, string area)
-    {
-        ExportRows(statusLabel, area, BuildExportRows());
-    }
-
-    private void ExportRows(Label statusLabel, string area, IReadOnlyList<GeneratedPartRow> exportRows)
+    private void ExportRows(Label statusLabel, string area, IReadOnlyList<GeneratedPartRow> exportRows, bool includeDuplicates = true)
     {
         RunGuarded(statusLabel, $"{area}.Export", () =>
         {
             var rows = exportRows.ToArray();
+            var excludedCount = 0;
+            if (!includeDuplicates && _erpIndex.HasData)
+            {
+                var filtered = rows.Where(row => !_erpIndex.Contains(row.PartCode)).ToArray();
+                excludedCount = rows.Length - filtered.Length;
+                rows = filtered;
+            }
+
             AppLog.Info(
                 "Export.Start",
                 ("area", area),
                 ("rowCount", rows.Length.ToString()),
+                ("excludedRegistered", excludedCount.ToString()),
                 ("incomingRows", _incomingRows.Count.ToString()),
                 ("moduleRows", _moduleRows.Count.ToString()));
             if (rows.Length == 0)
             {
-                throw new InvalidOperationException("먼저 생성 결과를 만들어 주세요.");
+                throw new InvalidOperationException(excludedCount > 0
+                    ? $"등록됨 {excludedCount:n0}건이 모두 제외되어 내보낼 행이 없습니다. 중복 포함을 체크해 주세요."
+                    : "먼저 생성 결과를 만들어 주세요.");
             }
 
             using var dialog = new SaveFileDialog
@@ -1652,9 +1768,10 @@ public sealed partial class MainForm : Form
                 ("rowCount", rows.Length.ToString()),
                 ("opened", opened.ToString()),
                 ("filePath", dialog.FileName));
-            SetInfo(statusLabel, opened
+            var excludedSuffix = excludedCount > 0 ? $" | 등록됨 {excludedCount:n0}건 제외" : string.Empty;
+            SetInfo(statusLabel, (opened
                 ? $"Excel 내보내기 완료 및 열기: {dialog.FileName}"
-                : $"Excel 내보내기 완료(파일 열기 실패): {dialog.FileName}");
+                : $"Excel 내보내기 완료(파일 열기 실패): {dialog.FileName}") + excludedSuffix);
         });
     }
 
