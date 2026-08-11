@@ -39,12 +39,12 @@ internal sealed class DesktopLookupCatalog
             new("interfaceCode", "Interface", "common", true, true, Options("interface_ddr4", "interface_ddr5")),
             new("revisionCode", "Part Revision", "common", true, true, AlphabetOptions()),
             new("compTypeCode", "Comp Type", "comp", true, true, Options("comp_type", "manufacturing_comp_type")),
+            new("packageTypeCode", "Package", "comp", true, true, Options("package_type")),
             new("dieBrandCode", "Die Brand", "comp", true, true, Options("die_brand")),
+            new("testerCode", "Tester", "comp", true, true, Options("tester")),
             new("vendorCode", tail.VendorFieldLabel, "comp", true, true, Options("vendor", "vendor_tm")),
             new("purchaserCode", tail.PurchaserFieldLabel ?? "Purchaser", "comp", tail.PurchaserFieldPresent, true, Options("purchaser")),
-            new("compType2Code", "Comp Type 2", "comp", true, true, Options("comp_type2")),
-            new("packageTypeCode", "Package", "extra", true, true, Options("package_type")),
-            new("testerCode", "Tester", "extra", true, true, Options("tester"))
+            new("compType2Code", "Comp Type 2", "comp", true, true, Options("comp_type2"))
         };
 
         return new DesktopLookupPage(spec.Revision, spec.DisplayRevision, fields);
@@ -67,16 +67,16 @@ internal sealed class DesktopLookupCatalog
             new("dimmTypeCode", "DIMM Type", "base", true, true, dimmTypeItems),
             new("moduleDensityCode", "Module Density", "base", true, true, Options("module_density")),
             new("bankVddCode", "Bank / VDD", "base", true, true, Options("module_bank_vdd")),
-            new("dieDensityCode", "Die Density", "base", true, true, Options("module_die_density")),
             new("compositionCode", "Composition", "base", true, true, ModuleCompositionOptions()),
+            new("dieDensityCode", "Die Density", "base", true, true, Options("module_die_density")),
             new("rankCode", "Rank", "base", true, true, rankItems),
             new("generationCode", "Generation", "base", true, true, AlphabetOptions()),
             new("icBrandCode", "I.C Brand", "structure", true, true, Options("module_ic_brand")),
             new("moduleCompTypeCode", "Comp Type", "structure", true, true, Options("comp_type", "manufacturing_comp_type")),
             new("compTestCode", "Comp Test Site", "structure", true, true, Options("tester")),
-            new("speedCode", "Speed", "structure", true, true, Options("speed_ddr4", "speed_ddr5")),
             new("moduleSmtCode", "SMT Site", "structure", true, true, new[] { "0 - No Ass'y" }.Concat(Options("tester")).ToArray()),
             new("moduleTestCode", "Module Test Site", "structure", true, true, new[] { "0 - No Ass'y" }.Concat(Options("tester")).ToArray()),
+            new("speedCode", "Speed", "structure", true, true, Options("speed_ddr4", "speed_ddr5")),
             new("pcbCode", "PCB", "structure", true, true, Options("pcb")),
             new("vendorCode", spec.Module.VendorFieldLabel, "output", true, true, Options("vendor", "vendor_tm")),
             new("purchaserCode", spec.Module.PurchaserFieldLabel ?? "Purchaser", "output", spec.Module.PurchaserFieldPresent, true, Options("purchaser")),

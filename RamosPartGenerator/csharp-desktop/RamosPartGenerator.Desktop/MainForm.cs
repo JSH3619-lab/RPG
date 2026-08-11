@@ -290,8 +290,7 @@ public sealed partial class MainForm : Form
                 new[]
                 {
                     new SelectorSection("common", "Common"),
-                    new SelectorSection("comp", "Comp Fields"),
-                    new SelectorSection("extra", "Extra")
+                    new SelectorSection("comp", "Comp Fields")
                 },
                 _incomingLookups.Fields,
                 _incomingFields,
