@@ -1047,7 +1047,7 @@ public sealed partial class MainForm : Form
                 var densityOptions = dramTypeCode switch
                 {
                     "A" => IncomingOptionsByCodes("densityCode", IncomingDdr4DensityCodes),
-                    "R" => IncomingOptionsByCodes("densityCode", IncomingDdr5DensityCodes),
+                    "R" or "S" => IncomingOptionsByCodes("densityCode", IncomingDdr5DensityCodes),
                     _ => IncomingOptions("densityCode")
                 };
                 SetFieldOptions(densityCombo, densityOptions);
@@ -1059,16 +1059,16 @@ public sealed partial class MainForm : Form
                 var bankOptions = dramTypeCode switch
                 {
                     "A" => IncomingOptionsByCodes("bankCode", "5"),
-                    "R" => IncomingOptionsByCodes("bankCode", "6"),
+                    "R" or "S" => IncomingOptionsByCodes("bankCode", "6"),
                     _ => IncomingOptions("bankCode")
                 };
                 SetFieldOptions(bankCombo, bankOptions);
-                bankCombo.Enabled = dramTypeCode is not ("A" or "R");
+                bankCombo.Enabled = dramTypeCode is not ("A" or "R" or "S");
                 if (dramTypeCode == "A")
                 {
                     bankCombo.Text = DisplayHelpers.ResolveDisplayValue("5", IncomingOptions("bankCode"));
                 }
-                else if (dramTypeCode == "R")
+                else if (dramTypeCode is "R" or "S")
                 {
                     bankCombo.Text = DisplayHelpers.ResolveDisplayValue("6", IncomingOptions("bankCode"));
                 }
@@ -1080,16 +1080,16 @@ public sealed partial class MainForm : Form
                 var interfaceOptions = dramTypeCode switch
                 {
                     "A" => IncomingOptionsByCodes("interfaceCode", "W"),
-                    "R" => IncomingOptionsByCodes("interfaceCode", "V"),
+                    "R" or "S" => IncomingOptionsByCodes("interfaceCode", "V"),
                     _ => IncomingOptions("interfaceCode")
                 };
                 SetFieldOptions(interfaceCombo, interfaceOptions);
-                interfaceCombo.Enabled = dramTypeCode is not ("A" or "R");
+                interfaceCombo.Enabled = dramTypeCode is not ("A" or "R" or "S");
                 if (dramTypeCode == "A")
                 {
                     interfaceCombo.Text = DisplayHelpers.ResolveDisplayValue("W", IncomingOptions("interfaceCode"));
                 }
-                else if (dramTypeCode == "R")
+                else if (dramTypeCode is "R" or "S")
                 {
                     interfaceCombo.Text = DisplayHelpers.ResolveDisplayValue("V", IncomingOptions("interfaceCode"));
                 }
@@ -1125,6 +1125,7 @@ public sealed partial class MainForm : Form
         {
             "A" => "DDR4 fixed: 16Bank / POD 1.2V",
             "R" => "DDR5 fixed: 32Bank / POD 1.1V",
+            "S" => "DDR5 RDIMM fixed: 32Bank / POD 1.1V",
             _ => "Select DRAM Type to apply Bank / Interface defaults"
         };
         var sourceText = selectedManufacturingMode

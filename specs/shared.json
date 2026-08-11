@@ -60,6 +60,7 @@
   "code_options": {
     "incoming_source": ["K - RAmos Memory", "T - Ramos TP", "C - CTST Memory", "B - CTST TP"],
     "dram_type": ["A - DDR4", "R - DDR5"],
+    "dram_type_comp_extra": ["S - DDR5 RDIMM"],
     "density_ddr4": ["4G - 4Gb", "8G - 8Gb", "AG - 16Gb"],
     "density_ddr5": ["AH - 16Gb", "HE - 24Gb", "BH - 32Gb"],
     "bit": ["04 - x4", "08 - x8", "16 - x16"],
@@ -80,8 +81,8 @@
     "comp_type2": ["(None)", "B - Reball", "1 - Reball / EMC"],
     "package_type": ["B - FBGA(Flip Chip)", "M - FBGA(DDP)", "R - FBGA(FC-ReMark)", "N - FBGA(DDP-ReMark)"],
     "tester": ["R - Ramos", "S - No-Test", "A - ADATA", "W - Winpac", "T - DynaCard", "G - GoldKey", "K - CKMT", "Y - Yueyin", "D - OM", "L - SemiconTest", "1 - HTSI", "2 - DLI", "3 - Rayson", "4 - Ramsun", "5 - Powev"],
-    "dimm_type_common": ["D - UDIMM 288pin", "S - SODIMM 262pin", "G - x64 288pin GamingUDIMM (RGB)"],
-    "module_density": ["1G - 1GB", "2G - 2GB", "4G - 4GB", "8G - 8GB", "AG - 16GB", "BG - 32GB", "CG - 64GB"],
+    "dimm_type_common": ["D - UDIMM 288pin", "S - SODIMM 262pin", "G - x64 288pin GamingUDIMM (RGB)", "R - x80 288pin Registered DIMM"],
+    "module_density": ["1G - 1GB", "2G - 2GB", "4G - 4GB", "8G - 8GB", "AG - 16GB", "3G - 24GB", "BG - 32GB", "6G - 48GB", "CG - 64GB", "DG - 128GB"],
     "module_die_density": ["4 - 4Gb", "8 - 8Gb", "A - 16Gb", "H - 24Gb", "B - 32Gb"],
     "module_bank_vdd": ["4 - 16Bank / 1.2V", "5 - 32Bank / 1.1V", "6 - 32Bank / 1.35V", "7 - 32Bank / 1.4V", "8 - 32Bank / 1.25V"],
     "module_source": ["RM - RAmos Memory", "TM - Ramos TP", "CM - CTST Memory", "BM - CTST TP"],

@@ -44,7 +44,50 @@ public class UnitTest1
 
         Assert.Contains("C - Comp", dimmTypeOptions);
         Assert.DoesNotContain("Comp - Comp", dimmTypeOptions);
-        Assert.Equal("30.4", revisionSpec.DisplayRevision);
+        Assert.Equal("30.6", revisionSpec.DisplayRevision);
+    }
+
+    [Fact]
+    public void GeneratePreview_Rdimm_CompDramTypeS_GeneratesLikeDdr5()
+    {
+        var provider = LoadProvider();
+        var service = new IncomingCompService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new IncomingCompRequest
+        {
+            Revision = "30",
+            SourceCode = "K",
+            DramTypeCode = "S",
+            DensityCode = "AH",
+            BitOrganizationCode = "08",
+            BankCode = "6",
+            InterfaceCode = "V",
+            RevisionCode = "A",
+            CompTypeCode = "P",
+            DieBrandCode = "S",
+            VendorCode = "S",
+            PackageTypeCode = "B",
+            TesterCode = "R"
+        });
+
+        Assert.Equal("K4SAH086VA-PSSEL", rows[0].PartCode);
+        Assert.Equal("RCSAH086VA-PBSRS", rows[1].PartCode);
+        Assert.Contains("DDR5 RDIMM", rows[1].Specification);
+        Assert.Equal(6, rows.Count(row => row.Kind == "Comp BIN"));
+    }
+
+    [Fact]
+    public void BuildLookups_IncludesRev306Additions()
+    {
+        var provider = LoadProvider();
+
+        Assert.Contains("S - DDR5 RDIMM", SharedOptions(provider, "dram_type_comp_extra"));
+        Assert.Contains("R - x80 288pin Registered DIMM", SharedOptions(provider, "dimm_type_common"));
+
+        var moduleDensityOptions = SharedOptions(provider, "module_density");
+        Assert.Contains("3G - 24GB", moduleDensityOptions);
+        Assert.Contains("6G - 48GB", moduleDensityOptions);
+        Assert.Contains("DG - 128GB", moduleDensityOptions);
     }
 
     [Fact]

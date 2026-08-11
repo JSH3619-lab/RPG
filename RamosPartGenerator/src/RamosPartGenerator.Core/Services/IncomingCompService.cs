@@ -52,7 +52,7 @@ public sealed class IncomingCompService
         ValidateDensity(dramTypeCode, densityCode);
         ValidateAllowedCodes(
             ("Source", sourceCode, Codes("incoming_source", "manufacturing_incoming_source"), false),
-            ("DRAM Type", dramTypeCode, Codes("dram_type"), false),
+            ("DRAM Type", dramTypeCode, Codes("dram_type", "dram_type_comp_extra"), false),
             ("Bit", bitOrganizationCode, Codes(isManufacturing ? new[] { "bit", "bit_tm" } : new[] { "bit" }), false),
             ("Bank", bankCode, Codes("bank_ddr4", "bank_ddr5"), false),
             ("Interface", interfaceCode, Codes("interface_ddr4", "interface_ddr5"), false),
@@ -83,7 +83,12 @@ public sealed class IncomingCompService
             purchaserCode,
             compType2Code);
 
-        var dramTypeLabel = dramTypeCode == "R" ? "DDR5" : "DDR4";
+        var dramTypeLabel = dramTypeCode switch
+        {
+            "R" => "DDR5",
+            "S" => "DDR5 RDIMM",
+            _ => "DDR4"
+        };
         var densityLabel = GetDensityLabel(densityCode);
         var bitLabel = GetBitLabel(bitOrganizationCode);
         var dieRevisionLabel = $"{partRevisionCode}-die";
@@ -112,7 +117,7 @@ public sealed class IncomingCompService
 
         rows.Add(new("Comp", compPartCode, compTexts.Name, compTexts.GeneralInfo, compTexts.Specification));
 
-        if (dramTypeCode == "R")
+        if (dramTypeCode is "R" or "S")
         {
             foreach (var pair in _specProvider.SharedSpec.CompBinSpeedMap)
             {
@@ -269,7 +274,7 @@ public sealed class IncomingCompService
         var valid = dramTypeCode switch
         {
             "A" => densityCode is "4G" or "8G" or "AG",
-            "R" => densityCode is "AH" or "HE" or "BH",
+            "R" or "S" => densityCode is "AH" or "HE" or "BH",
             _ => false
         };
 
@@ -278,7 +283,7 @@ public sealed class IncomingCompService
             throw new InvalidOperationException(dramTypeCode switch
             {
                 "A" => "DDR4: Density must be 4G / 8G / AG.",
-                "R" => "DDR5: Density must be AH / HE / BH.",
+                "R" or "S" => "DDR5: Density must be AH / HE / BH.",
                 _ => "Unsupported DRAM Type."
             });
         }
@@ -342,7 +347,7 @@ public sealed class IncomingCompService
             throw new InvalidOperationException("DDR4 only allows Bank 5 / Interface W.");
         }
 
-        if (dramTypeCode == "R" && (bankCode != "6" || interfaceCode != "V"))
+        if (dramTypeCode is "R" or "S" && (bankCode != "6" || interfaceCode != "V"))
         {
             throw new InvalidOperationException("DDR5 only allows Bank 6 / Interface V.");
         }

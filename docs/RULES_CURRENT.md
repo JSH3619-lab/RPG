@@ -2,13 +2,19 @@
 
 원본 문서는 아래 두 파일을 기준으로 한다.
 
-- `RAMOS_DRAM_PART (Rev.30.3).pdf`
+- `RAMOS_DRAM_PART (Rev.30.6).pdf`
 - `RAMOS_DRAM_TM_PART (Rev 2.1).pdf`
 
 ## 지원 Rev
 - 현재 운영 키: `30`
-- 표시 기준: DRAM PART `Rev.30.4`, TM PART `Rev 2.1`
-- Rev.30.4는 Rev.30.3 원본 문서에 고객사 추가 MDL 규칙을 반영한 프로그램 표시 버전이다.
+- 표시 기준: DRAM PART `Rev.30.6`, TM PART `Rev 2.1`
+
+## Rev.30.6 반영 차이
+- Comp Dram Type에 `S : DDR5 RDIMM`을 추가한다. 생성 규칙은 DDR5(`R`)와 동일하게 적용한다 (Density AH/HE/BH, Bank 6, Interface V, Comp BIN CA~CF).
+- Module DIMM Type에 `R : x80 288pin Registered DIMM`을 추가한다. RDIMM 전용 규칙은 아직 없다.
+- Module Density에 `3G : 24GB`, `6G : 48GB`, `DG : 128GB`를 추가한다. 96GB는 코드 확정 전이라 보류한다.
+- Tester `S : PTS (Package test Stock)`는 `S : No-Test`와 코드가 충돌하여 미반영한다 (PDF 정정 대기).
+- LPDDR 계열(신규 K5 입고 Comp 포함)은 계속 범위에서 제외한다.
 
 ## 기본 원칙
 - LPDDR 계열은 범위에서 제외한다.

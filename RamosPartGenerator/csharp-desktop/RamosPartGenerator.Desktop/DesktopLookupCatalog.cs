@@ -32,7 +32,7 @@ internal sealed class DesktopLookupCatalog
         var fields = new List<DesktopLookupField>
         {
             new("sourceCode", "Comp Source", "common", true, true, CompSourceOptions()),
-            new("dramTypeCode", "DRAM Type", "common", true, true, Options("dram_type")),
+            new("dramTypeCode", "DRAM Type", "common", true, true, Options("dram_type", "dram_type_comp_extra")),
             new("densityCode", "Density", "common", true, true, Options("density_ddr4", "density_ddr5")),
             new("bitOrganizationCode", "Bit", "common", true, true, Options("bit", "bit_tm")),
             new("bankCode", "Bank", "common", true, true, Options("bank_ddr4", "bank_ddr5")),

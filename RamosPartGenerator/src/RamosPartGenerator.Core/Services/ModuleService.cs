@@ -698,6 +698,7 @@ public sealed class ModuleService
         {
             "D" => "UDIMM",
             "S" => "SODIMM",
+            "R" => "RDIMM",
             "C" => "Comp",
             _ => dimmTypeCode
         };
@@ -712,8 +713,11 @@ public sealed class ModuleService
             "4G" => "4GB",
             "8G" => "8GB",
             "AG" => "16GB",
+            "3G" => "24GB",
             "BG" => "32GB",
+            "6G" => "48GB",
             "CG" => "64GB",
+            "DG" => "128GB",
             _ => moduleDensityCode
         };
     }
@@ -847,8 +851,11 @@ public sealed class ModuleService
             "4G" => 4d,
             "8G" => 8d,
             "AG" => 16d,
+            "3G" => 24d,
             "BG" => 32d,
+            "6G" => 48d,
             "CG" => 64d,
+            "DG" => 128d,
             _ => 0d
         };
 
