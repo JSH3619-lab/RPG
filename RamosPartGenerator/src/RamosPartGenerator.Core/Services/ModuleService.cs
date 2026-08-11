@@ -71,7 +71,7 @@ public sealed class ModuleService
             ("PCB", effectiveRequest.PcbCode, Codes("pcb"), false),
             ("Vendor", effectiveRequest.VendorCode, Codes(isManufacturing ? "vendor_tm" : "vendor"), false),
             ("Purchaser", effectiveRequest.PurchaserCode, Codes("purchaser"), true),
-            ("A100 Special", effectiveRequest.A100SpecialCode, Codes("a100_special"), true),
+            ("Special Code 1", effectiveRequest.A100SpecialCode, Codes("special_code1_table1", "special_code1_table2"), true),
             ("Special Code 2", effectiveRequest.SpecialCode2Code, Codes("module_special_code2"), true),
             ("Special Code 3", effectiveRequest.SpecialCode3Code, Codes("module_special_code3"), true),
             ("Grade Code", effectiveRequest.GradeCode, Codes("grade_code"), true),
@@ -80,7 +80,7 @@ public sealed class ModuleService
         ValidateModuleDensityForDimmType(effectiveRequest);
         ValidateModuleDieDensity(effectiveRequest);
         ValidateModuleDensityCombination(effectiveRequest);
-        ValidateA100Special(effectiveRequest);
+        ValidateSpecialCode1(effectiveRequest);
 
         var sourceBasePartCode = BuildModuleBasePartCode(effectiveRequest);
         var basePartCode = effectiveRequest.IsFinishedProductRetest
@@ -312,9 +312,11 @@ public sealed class ModuleService
             trailingText = trailingText[1..];
         }
 
-        if (IsA100SpecialEligible(request) &&
-            !string.IsNullOrEmpty(trailingText) &&
-            IsA100SpecialCode(trailingText[..1]))
+        // Special Code 1은 Vendor/Purchaser에 따라 Table 1(A100+ADATA) 또는 Table 2(그 외)를 적용한다.
+        // 마지막 한 글자가 Special Code 1/2 양쪽에 모두 있는 코드(예: B)면 기존 파트 호환을 위해 Special Code 2로 해석한다.
+        if (!string.IsNullOrEmpty(trailingText) &&
+            IsSpecialCode1(request, trailingText[..1]) &&
+            !(trailingText.Length == 1 && IsSpecialCode2(trailingText[..1])))
         {
             request.A100SpecialCode = trailingText[..1];
             trailingText = trailingText[1..];
@@ -412,11 +414,9 @@ public sealed class ModuleService
         return code is "V" or "H" or "A" or "0";
     }
 
-    private static bool IsA100SpecialEligible(ModuleRequest request)
+    private static bool IsSpecialCode1Table1(ModuleRequest request)
     {
-        return IsThirdPartyModule(request.ModuleSourceCode) &&
-               IsA100Code(request.VendorCode) &&
-               IsA100Code(request.PurchaserCode);
+        return IsA100Code(request.VendorCode) && IsA100Code(request.PurchaserCode);
     }
 
     private static bool IsA100Code(string code)
@@ -424,9 +424,14 @@ public sealed class ModuleService
         return code.Equals(A100Code, StringComparison.OrdinalIgnoreCase);
     }
 
-    private bool IsA100SpecialCode(string code)
+    private bool IsSpecialCode1(ModuleRequest request, string code)
     {
-        return Codes("a100_special").Contains(code, StringComparer.OrdinalIgnoreCase);
+        return SpecialCode1Codes(request).Contains(code, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private IReadOnlyCollection<string> SpecialCode1Codes(ModuleRequest request)
+    {
+        return Codes(IsSpecialCode1Table1(request) ? "special_code1_table1" : "special_code1_table2");
     }
 
     private bool IsSpecialCode2(string code)
@@ -490,6 +495,12 @@ public sealed class ModuleService
         if (IsBlankCode(request.PcbCode))
         {
             request.PcbCode = "0";
+        }
+
+        // Comp 판매용 MDL은 PMIC/SPD류 BOM이 없어 Special Code 1을 X(N/A)로 고정한다.
+        if (IsBlankCode(request.A100SpecialCode))
+        {
+            request.A100SpecialCode = "X";
         }
     }
 
@@ -1009,16 +1020,19 @@ public sealed class ModuleService
         };
     }
 
-    private static void ValidateA100Special(ModuleRequest request)
+    private void ValidateSpecialCode1(ModuleRequest request)
     {
         if (IsBlankCode(request.A100SpecialCode))
         {
             return;
         }
 
-        if (!IsA100SpecialEligible(request))
+        if (!IsSpecialCode1(request, request.A100SpecialCode))
         {
-            throw new InvalidOperationException("A100 Special Code는 Third-Party + Vendor A + Purchaser A 조건에서만 사용할 수 있습니다.");
+            var tableLabel = IsSpecialCode1Table1(request)
+                ? "Table 1 (Vendor A100 + Purchaser ADATA)"
+                : "Table 2 (일반)";
+            throw new InvalidOperationException($"Special Code 1 '{request.A100SpecialCode}'은(는) {tableLabel} 허용 코드가 아닙니다.");
         }
     }
 }

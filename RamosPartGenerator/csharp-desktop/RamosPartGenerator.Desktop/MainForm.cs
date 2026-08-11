@@ -1459,14 +1459,9 @@ public sealed partial class MainForm : Form
                 }
             }
 
-            if (_moduleFields.TryGetValue("a100SpecialCode", out var a100Combo))
+            if (_moduleFields.TryGetValue("a100SpecialCode", out var specialCode1Combo))
             {
-                var enabled = IsModuleA100SpecialEnabled(isThirdParty);
-                a100Combo.Enabled = enabled;
-                if (!enabled)
-                {
-                    a100Combo.Text = string.Empty;
-                }
+                SetFieldOptions(specialCode1Combo, _services.Lookups.SpecialCode1Options(IsModuleSpecialCode1Table1()));
             }
 
             if (dimmTypeCode == "C" &&
@@ -1490,9 +1485,9 @@ public sealed partial class MainForm : Form
             : (sourceText is "TM" or "BM")
             ? "Third-party module"
             : string.IsNullOrEmpty(sourceText) ? "Source not determined yet" : "Internal module";
-        var a100Status = IsModuleA100SpecialEnabled(sourceText is "TM" or "BM")
-            ? "A100 Special 활성"
-            : "A100 조건: Vendor A + Purchaser A";
+        var a100Status = IsModuleSpecialCode1Table1()
+            ? "Special Code 1: Table 1 (A100/ADATA)"
+            : "Special Code 1: Table 2 (일반)";
         SetInfo(
             _moduleStatusLabel,
             $"{sourceStatus} | Rev {_moduleLookups.DisplayRevision} | {partyStatus} | {a100Status}");
@@ -1510,6 +1505,7 @@ public sealed partial class MainForm : Form
         SetModuleField("moduleSmtCode", "0");
         SetModuleField("moduleTestCode", "0");
         SetModuleField("pcbCode", "0");
+        SetModuleField("a100SpecialCode", "X");
     }
 
     private string ReadModuleCode(string key)
@@ -1542,10 +1538,9 @@ public sealed partial class MainForm : Form
         return DisplayHelpers.ResolveDisplayValue(bankVddCode, ModuleOptions("bankVddCode"));
     }
 
-    private bool IsModuleA100SpecialEnabled(bool isThirdParty)
+    private bool IsModuleSpecialCode1Table1()
     {
-        return isThirdParty &&
-               ReadModuleCode("vendorCode") == "A" &&
+        return ReadModuleCode("vendorCode") == "A" &&
                ReadModuleCode("purchaserCode") == "A";
     }
 

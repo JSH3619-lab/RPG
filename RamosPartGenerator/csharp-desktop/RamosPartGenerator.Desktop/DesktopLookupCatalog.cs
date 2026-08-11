@@ -80,7 +80,7 @@ internal sealed class DesktopLookupCatalog
             new("pcbCode", "PCB", "structure", true, true, Options("pcb")),
             new("vendorCode", spec.Module.VendorFieldLabel, "output", true, true, Options("vendor", "vendor_tm")),
             new("purchaserCode", spec.Module.PurchaserFieldLabel ?? "Purchaser", "output", spec.Module.PurchaserFieldPresent, true, Options("purchaser")),
-            new("a100SpecialCode", "A100 Special", "output", true, true, Options("a100_special")),
+            new("a100SpecialCode", "Special Code 1", "output", true, true, Options("special_code1_table1", "special_code1_table2")),
             new("specialCode2Code", "Special Code 2", "output", true, true, Options("module_special_code2")),
             new("specialCode3Code", "Special Code 3", "output", true, true, Options("module_special_code3")),
             new("gradeCode", "Grade Code", "output", true, true, Options("grade_code")),
@@ -88,6 +88,11 @@ internal sealed class DesktopLookupCatalog
         };
 
         return new DesktopLookupPage(spec.Revision, spec.DisplayRevision, fields);
+    }
+
+    public IReadOnlyList<string> SpecialCode1Options(bool isTable1)
+    {
+        return Options(isTable1 ? "special_code1_table1" : "special_code1_table2");
     }
 
     public IReadOnlyList<string> ModuleSpeedCodes(string dramTypeCode)

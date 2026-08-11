@@ -189,8 +189,8 @@ public sealed class BatchGenerationServiceTests
 
         Assert.Equal(BatchItemStatus.Success, result.Items[0].Status);
         Assert.Equal(10, result.Rows.Count);
-        Assert.Equal("RMRC2G58A0A-GPW00WM0G", result.Rows[8].PartCode);
-        Assert.Equal("RMRC2G58A0A-GPW00WM0G-TN2GA00", result.Rows[9].PartCode);
+        Assert.Equal("RMRC2G58A0A-GPW00WM0GX", result.Rows[8].PartCode);
+        Assert.Equal("RMRC2G58A0A-GPW00WM0GX-TN2GA00", result.Rows[9].PartCode);
     }
 
     [Fact]
@@ -204,8 +204,8 @@ public sealed class BatchGenerationServiceTests
 
         Assert.Equal(ModuleBatchInputKind.Reball, result.Items[0].DetectedInputKind);
         Assert.Equal(BatchItemStatus.Success, result.Items[0].Status);
-        Assert.Contains(result.Rows, row => row.PartCode == "RMRC2G58A0A-GPW00WM0GB");
-        Assert.Contains(result.Rows, row => row.Kind == "Module BIN" && row.PartCode.Contains("WM0GB-"));
+        Assert.Contains(result.Rows, row => row.PartCode == "RMRC2G58A0A-GPW00WM0GXB");
+        Assert.Contains(result.Rows, row => row.Kind == "Module BIN" && row.PartCode.Contains("WM0GXB-"));
     }
 
     [Fact]

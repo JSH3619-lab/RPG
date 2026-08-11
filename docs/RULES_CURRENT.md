@@ -105,12 +105,15 @@
 - Speed가 없거나 입력과 맞지 않거나 Module Density를 결정할 수 없으면 임의 값을 사용하지 않고 Comp_MDL만 실패 처리한다.
 - Comp_MDL 실패 시에도 정상 생성된 Incoming/Comp/Comp BIN 결과는 유지한다.
 
-## A100 규칙
-- `Only A100` 계열 필드는 아래 조건에서만 사용할 수 있다.
-  - Third-party family
-  - `Vendor = A`
-  - `Purchaser = A`
-- Comp Test Site는 A100 판정에 사용하지 않는다.
+## Special Code 1 규칙 (구 A100 Special)
+- Rev.30.6부터 `Only A100` 게이팅을 폐지하고 조건부 테이블을 적용한다.
+- `Vendor = A(A100)` 그리고 `Purchaser = A(ADATA)`이면 Table 1을 적용한다.
+  - `0(Blank) : MPS PMIC + Renesas SPD`, `1 : Richtek + Renesas`, `2 : Richtek + Montage`, `X : N/A`
+- 그 외 모든 경우 Table 2를 적용한다.
+  - `0(Blank) : anpec + anpec`, `A : Richtek / Montage / Montage Gen2 RCD / Montage TS`, `B : Rambus / Rambus / Rambus Gen2 RCD / Rambus TS`, `X : N/A`
+- Comp 판매용 MDL(DIMM Type `C`)은 SPD류 BOM이 없으므로 Special Code 1을 `X(N/A)`로 자동 입력한다.
+- Comp Test Site는 Table 판정에 사용하지 않는다.
+- 파싱 시 마지막 한 글자가 Special Code 1/2 양쪽에 존재하는 코드(예: `B`)면 기존 파트 호환을 위해 Special Code 2로 해석한다.
 
 ## 품목 텍스트 규칙
 - DRAM / Comp / Comp BIN의 품목일반정보는 비운다.

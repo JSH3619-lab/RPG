@@ -425,8 +425,8 @@ public class UnitTest1
             SpeedCode = "WM"
         });
 
-        Assert.Equal("RMRC2G58A0A-GPW00WM0G", rows[0].PartCode);
-        Assert.Equal("RMRC2G58A0A-GPW00WM0G-TN2GA00", rows[1].PartCode);
+        Assert.Equal("RMRC2G58A0A-GPW00WM0GX", rows[0].PartCode);
+        Assert.Equal("RMRC2G58A0A-GPW00WM0GX-TN2GA00", rows[1].PartCode);
         Assert.Equal("DDR5 Comp 2GB COO : KR", rows[0].GeneralInfo);
         Assert.Equal("DDR5 16Gb x8 A-die GIGA S1 Partial Comp", rows[0].Specification);
         Assert.Equal("DDR5 16Gb x8 A-die GIGA S1 Partial Comp 5600 MT/s (2800MHz @ 46/45/45)", rows[1].Specification);
@@ -1153,6 +1153,106 @@ public class UnitTest1
         });
 
         Assert.Equal("TMRDAG58A1P-GPWRRWM7GH", rows[0].PartCode);
+    }
+
+    [Fact]
+    public void GeneratePreview_Module_SpecialCode1Table2_AllowsRambusCodeForNonA100()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleSourceCode = "RM",
+            DramTypeCode = "R",
+            DimmTypeCode = "D",
+            ModuleDensityCode = "AG",
+            DieDensityCode = "A",
+            CompositionCode = "8",
+            RankCode = "1",
+            GenerationCode = "P",
+            IcBrandCode = "G",
+            ModuleCompTypeCode = "P",
+            CompTestCode = "W",
+            ModuleSmtCode = "R",
+            ModuleTestCode = "R",
+            SpeedCode = "WM",
+            PcbCode = "7",
+            VendorCode = "G",
+            A100SpecialCode = "B"
+        });
+
+        Assert.Equal("RMRDAG58A1P-GPWRRWM7GB", rows[0].PartCode);
+    }
+
+    [Fact]
+    public void GeneratePreview_Module_SpecialCode1Table1CodeRejectedForNonA100()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var ex = Assert.Throws<InvalidOperationException>(() => service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleSourceCode = "RM",
+            DramTypeCode = "R",
+            DimmTypeCode = "D",
+            ModuleDensityCode = "AG",
+            DieDensityCode = "A",
+            CompositionCode = "8",
+            RankCode = "1",
+            GenerationCode = "P",
+            IcBrandCode = "G",
+            ModuleCompTypeCode = "P",
+            CompTestCode = "W",
+            ModuleSmtCode = "R",
+            ModuleTestCode = "R",
+            SpeedCode = "WM",
+            PcbCode = "7",
+            VendorCode = "G",
+            A100SpecialCode = "1"
+        }));
+
+        Assert.Contains("Special Code 1", ex.Message);
+        Assert.Contains("Table 2", ex.Message);
+    }
+
+    [Fact]
+    public void ParseModuleFullPart_SpecialCode1Table2_RoundTripsRambusCode()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var request = service.ParseModuleFullPart("30", "RMRDAG58A1P-GPWRRWM7GBR");
+
+        Assert.Equal("B", request.A100SpecialCode);
+        Assert.Equal("R", request.SpecialCode2Code);
+    }
+
+    [Fact]
+    public void GeneratePreview_ModuleCompDimm_AutoAppliesSpecialCode1NA()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            CompFullPartCode = "RCRAH086VA-PBGWG",
+            DimmTypeCode = "C",
+            SpeedCode = "WM"
+        });
+
+        Assert.EndsWith("X", rows[0].PartCode);
     }
 
     [Fact]
