@@ -9,8 +9,8 @@
 
 현재 기준:
 
-- Part Generator `v1.0.2`
-- Spec Rev `30.4`
+- Part Generator `v1.1.0`
+- Spec Rev `30.6`
 
 ## 프로그램 버전 규칙
 
@@ -33,9 +33,9 @@
 
 Spec Rev 표시값은 `specs/rev30.json`의 `display_revision`에서 관리한다.
 
-내부 API와 파일명 호환을 위해 규칙 키 `30`과 `rev30.json` 파일명은 유지한다. 사용자 화면에는 `display_revision`인 `30.4`를 표시한다.
+내부 API와 파일명 호환을 위해 규칙 키 `30`과 `rev30.json` 파일명은 유지한다. 사용자 화면에는 `display_revision`인 `30.6`을 표시한다.
 
-Rev 30.4는 Rev 30.3 원본 규격을 기준으로 고객사 요청 MDL Speed `CA`와 Bank/VDD `8`을 추가한 프로그램 규칙 버전이다.
+Rev 30.6은 `RAMOS_DRAM_PART (Rev.30.6).pdf` 원본 규격을 반영한 버전이다.
 
 ## 배포 체크리스트
 
