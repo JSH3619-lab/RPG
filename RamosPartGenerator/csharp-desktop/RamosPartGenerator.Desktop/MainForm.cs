@@ -296,8 +296,8 @@ public sealed partial class MainForm : Form
             BuildFieldSelector(
                 new[]
                 {
-                    new SelectorSection("common", "Common"),
-                    new SelectorSection("comp", "Comp Fields")
+                    new SelectorSection("common", "Spec"),
+                    new SelectorSection("comp", "Comp / Source")
                 },
                 _incomingLookups.Fields,
                 _incomingFields,
@@ -374,9 +374,9 @@ public sealed partial class MainForm : Form
             BuildFieldSelector(
                 new[]
                 {
-                    new SelectorSection("base", "Module Base"),
-                    new SelectorSection("structure", "Structure"),
-                    new SelectorSection("output", "Output")
+                    new SelectorSection("base", "Spec"),
+                    new SelectorSection("structure", "Process"),
+                    new SelectorSection("output", "Source / BIN")
                 },
                 _moduleLookups.Fields,
                 _moduleFields,
