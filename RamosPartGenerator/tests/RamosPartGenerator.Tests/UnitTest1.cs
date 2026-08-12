@@ -383,7 +383,7 @@ public class UnitTest1
             PcbCode = "7"
         });
 
-        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 (x4 -> x8) *8) GIGA S1 RAmos BP PCB", rows[0].Specification);
+        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 (x4 -> x8) *8) GIGA S1 RAmos BP PCB(Black)", rows[0].Specification);
     }
 
     [Fact]
@@ -743,8 +743,8 @@ public class UnitTest1
         });
 
         Assert.Equal("UDIMM 16GB COO : KR", rows[0].GeneralInfo);
-        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) GIGA S1 RAmos TP BP PCB", rows[0].Specification);
-        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) GIGA S1 RAmos TP BP PCB 5600 MT/s (2800MHz @ 46/45/45)", rows[1].Specification);
+        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) GIGA S1 RAmos TP BP PCB(Black)", rows[0].Specification);
+        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) GIGA S1 RAmos TP BP PCB(Black) 5600 MT/s (2800MHz @ 46/45/45)", rows[1].Specification);
     }
 
     [Theory]
@@ -863,7 +863,7 @@ public class UnitTest1
             specialCode2Code: "",
             specialCode3Code: "");
 
-        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) GIGA S1 RAmos BP PCB", texts.Specification);
+        Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) GIGA S1 RAmos BP PCB(Black)", texts.Specification);
     }
 
     [Fact]
@@ -880,8 +880,8 @@ public class UnitTest1
             ModuleFullPartCode = "BMRD8G56A1H-MPARRWMBAA"
         });
 
-        Assert.Equal("DDR5 UDIMM 8GB (16Gb x16 *4) S3 A100 BP PCB", rows[0].Specification);
-        Assert.Equal("DDR5 UDIMM 8GB (16Gb x16 *4) S3 A100 BP PCB 5600 MT/s (2800MHz @ 46/45/45)", rows[1].Specification);
+        Assert.Equal("DDR5 UDIMM 8GB (16Gb x16 *4) S3 A100 BP PCB(Black)", rows[0].Specification);
+        Assert.Equal("DDR5 UDIMM 8GB (16Gb x16 *4) S3 A100 BP PCB(Black) 5600 MT/s (2800MHz @ 46/45/45)", rows[1].Specification);
         Assert.DoesNotContain("TP", rows[0].Specification);
         Assert.DoesNotContain("ADATA", rows[0].Specification);
     }

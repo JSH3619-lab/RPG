@@ -186,10 +186,10 @@ public sealed class ProductTextService
             specPieces.Add("TP");
         }
 
-        var pcbLabel = GetModulePcbSpecLabel(pcbCode);
-        if (!string.IsNullOrWhiteSpace(pcbLabel))
+        var pcbPiece = GetModulePcbSpecPiece(pcbCode);
+        if (!string.IsNullOrWhiteSpace(pcbPiece))
         {
-            specPieces.Add($"{pcbLabel} PCB");
+            specPieces.Add(pcbPiece);
         }
 
         specPieces.AddRange(GetModuleStatusLabels(specialCode2Code, specialCode3Code));
@@ -279,19 +279,24 @@ public sealed class ProductTextService
         };
     }
 
-    private static string GetModulePcbSpecLabel(string pcbCode)
+    private static string GetModulePcbSpecPiece(string pcbCode)
     {
         return pcbCode switch
         {
             "0" => string.Empty,
-            "1" or "3" => "DN",
-            "2" or "4" => "HJ",
-            "5" => "X-comp",
-            "6" or "7" or "8" => "BP",
-            "9" => "BP",
-            "A" => "AXA5UR02",
-            "B" => "BP",
-            "G" or "K" => "Hammer",
+            "1" => "DN PCB(Green)",
+            "2" => "HJ PCB(Green)",
+            "3" => "DN PCB(Black)",
+            "4" => "HJ PCB(Black)",
+            "5" => "HJ PCB(Black, 11x11)",
+            "6" => "BP PCB(Green)",
+            "7" => "BP PCB(Black)",
+            "8" => "BP RGB PCB(Black)",
+            "9" => "BP PCB(Black)",
+            "A" => "AXA5UR02 PCB(Black)",
+            "B" => "BP PCB(Black)",
+            "G" => "Hammer Pass",
+            "K" => "Hammer Fail",
             _ => pcbCode
         };
     }

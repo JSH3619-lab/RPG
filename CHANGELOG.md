@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.1 - 2026-08-12
+
+- PCB 필드 드롭다운 설명을 PDF 원문 그대로 표기 (예: `6 - BrainPower(BP) PCB (Green)`, `7 - BrainPower(BP) PCB (Black)`)
+- 품목규격의 PCB 표기에 색상 추가 (예: `BP PCB` → `BP PCB(Black)`, `DN PCB(Green)` 등)
+- PCB `5` 규격 표기를 실제 값(`HJ PCB(Black, 11x11)`)으로 정정, Hammer는 `Hammer Pass`/`Hammer Fail`로 표기
+- 버전 관리: Publish는 최신 버전만 보관, 릴리스는 git 태그(`v1.0.0`~)로 아카이브
+
 ## 1.3.0 - 2026-08-12
 
 - RDIMM(S) Comp에 RDIMM 상위빈 `EA~EF` 생성 추가 (속도 매핑은 `CA~CF`와 동일: EA=7200 … EF=4800)

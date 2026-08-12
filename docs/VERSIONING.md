@@ -9,7 +9,7 @@
 
 현재 기준:
 
-- Part Generator `v1.3.0`
+- Part Generator `v1.3.1`
 - Spec Rev `30.6`
 
 ## 프로그램 버전 규칙
@@ -45,4 +45,10 @@ Rev 30.6은 `RAMOS_DRAM_PART (Rev.30.6).pdf` 원본 규격을 반영한 버전�
 4. 전체 테스트와 Desktop 빌드를 실행한다.
 5. 단일 EXE를 Publish한다.
 6. EXE 파일 버전과 화면 표시를 확인한다.
-7. 커밋 후 최종 Phase에서 원격 저장소에 Push한다.
+7. 커밋 후 `git tag -a vX.Y.Z`로 릴리스를 태그한다.
+8. 커밋과 태그를 원격 저장소에 Push한다.
+
+## 빌드 아카이브 정책
+
+- `Publish/`에는 최신 버전 폴더 하나만 보관한다. 이전 버전 폴더는 남기지 않는다.
+- 릴리스 아카이브는 git 태그(`vX.Y.Z`)로 관리한다. 특정 버전 EXE가 필요하면 해당 태그를 체크아웃해 다시 Publish한다.
