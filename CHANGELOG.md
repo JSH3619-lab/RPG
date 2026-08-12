@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.3 - 2026-08-12
+
+- Gaming(DIMM Type G) 모듈의 품목일반정보·규격 표기를 `UDIMM`으로 변경 (코드 문자 `G` 대신). 예: `G 16GB COO : KR` → `UDIMM 16GB COO : KR`
+
 ## 1.3.2 - 2026-08-12
 
 - 전체 필드 드롭다운 설명을 DRAM PART PDF(Rev.30.6) 원문에 맞춰 정리 (Sourcing, DRAM Type, Density, Interface, Comp Type, Die Brand, Vendor, Package, Tester, DIMM Type, Module Source, I.C Brand)

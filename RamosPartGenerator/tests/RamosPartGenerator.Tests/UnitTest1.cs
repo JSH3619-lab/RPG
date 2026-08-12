@@ -329,6 +329,41 @@ public class UnitTest1
     }
 
     [Fact]
+    public void GeneratePreview_GamingModule_UsesUdimmInText()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleSourceCode = "RM",
+            DramTypeCode = "R",
+            DimmTypeCode = "G",
+            ModuleDensityCode = "AG",
+            DieDensityCode = "A",
+            CompositionCode = "8",
+            RankCode = "1",
+            GenerationCode = "P",
+            IcBrandCode = "G",
+            ModuleCompTypeCode = "P",
+            CompTestCode = "W",
+            ModuleSmtCode = "R",
+            ModuleTestCode = "R",
+            SpeedCode = "WM",
+            PcbCode = "8",
+            VendorCode = "G"
+        });
+
+        // Gaming(G)도 UDIMM이므로 코드 문자 G가 아닌 UDIMM으로 표기한다.
+        Assert.Equal("UDIMM 16GB COO : KR", rows[0].GeneralInfo);
+        Assert.Contains("UDIMM", rows[0].Specification);
+        Assert.DoesNotContain("G 16GB", rows[0].GeneralInfo);
+    }
+
+    [Fact]
     public void ParseCompPart_ManufacturingBit48MapsToModuleComposition9()
     {
         var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));

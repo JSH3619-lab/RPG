@@ -708,6 +708,7 @@ public sealed class ModuleService
         return dimmTypeCode switch
         {
             "D" => "UDIMM",
+            "G" => "UDIMM", // Gaming UDIMM (RGB)도 UDIMM으로 표기한다.
             "S" => "SODIMM",
             "R" => "RDIMM",
             "C" => "Comp",

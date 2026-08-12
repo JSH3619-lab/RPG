@@ -9,7 +9,7 @@
 
 현재 기준:
 
-- Part Generator `v1.3.2`
+- Part Generator `v1.3.3`
 - Spec Rev `30.6`
 
 ## 프로그램 버전 규칙

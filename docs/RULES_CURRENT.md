@@ -124,7 +124,7 @@
 
 ## 품목 텍스트 규칙
 - DRAM / Comp / Comp BIN의 품목일반정보는 비운다.
-- 일반 Module 품목일반정보: `{UDIMM|SODIMM} {용량} COO : KR`
+- 일반 Module 품목일반정보: `{UDIMM|SODIMM} {용량} COO : KR` (Gaming DIMM Type `G`도 `UDIMM`으로 표기, RDIMM `R`은 `RDIMM`)
 - Comp 판매용 Module 품목일반정보: `{DDR타입} Comp {용량} COO : KR`
 - DRAM / Comp / Comp BIN 품목규격은 `Comp Type` 설명을 포함한다.
 - Module / Module BIN 품목규격은 Module 관점으로 작성하고 `Comp Type` 설명은 넣지 않는다.
