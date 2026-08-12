@@ -34,8 +34,8 @@ public sealed partial class MainForm : Form
     private static readonly string[] ManufacturingCompTypeCodes = { "0", "1", "2", "3", "4", "5", "6", "7" };
 
     private readonly DesktopAppServices _services;
-    private readonly DesktopLookupPage _incomingLookups;
-    private readonly DesktopLookupPage _moduleLookups;
+    private DesktopLookupPage _incomingLookups;
+    private DesktopLookupPage _moduleLookups;
     private readonly Dictionary<string, LookupFieldState> _incomingFields = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, LookupFieldState> _moduleFields = new(StringComparer.OrdinalIgnoreCase);
     private readonly BindingList<GeneratedPartRow> _incomingRows = new();
@@ -179,7 +179,7 @@ public sealed partial class MainForm : Form
         return tabs;
     }
 
-    private static Control BuildHeader(string displayRevision)
+    private Control BuildHeader(string displayRevision)
     {
         var panel = new TableLayoutPanel
         {
@@ -239,9 +239,29 @@ public sealed partial class MainForm : Form
             BackColor = RamosTheme.Blue
         };
 
+        var specEditButton = new Button
+        {
+            Text = "스펙 편집",
+            Size = new Size(120, 32),
+            FlatStyle = FlatStyle.Flat,
+            BackColor = RamosTheme.Panel,
+            ForeColor = RamosTheme.BlueDark,
+            Margin = new Padding(0, 20, 6, 0)
+        };
+        specEditButton.FlatAppearance.BorderColor = RamosTheme.Border;
+        specEditButton.Click += (_, _) => OpenSpecEditor();
+        var rightPanel = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            FlowDirection = FlowDirection.RightToLeft,
+            WrapContents = false,
+            BackColor = RamosTheme.Panel
+        };
+        rightPanel.Controls.Add(specEditButton);
+
         panel.Controls.Add(logo, 0, 0);
         panel.Controls.Add(titlePanel, 1, 0);
-        panel.Controls.Add(new Panel { Dock = DockStyle.Fill, BackColor = RamosTheme.Panel }, 2, 0);
+        panel.Controls.Add(rightPanel, 2, 0);
         panel.Controls.Add(line, 0, 1);
         panel.SetColumnSpan(line, 3);
         return panel;
@@ -1653,6 +1673,49 @@ public sealed partial class MainForm : Form
                ReadModuleCode("purchaserCode") == "A";
     }
 
+    private void OpenSpecEditor()
+    {
+        using var form = new SpecEditorForm(_services.SpecEdit);
+        form.SpecChanged += (_, _) => ReloadSpecAndRefresh();
+        form.ShowDialog(this);
+    }
+
+    private void ReloadSpecAndRefresh()
+    {
+        _incomingLookups = _services.Lookups.BuildIncoming(Revision);
+        _moduleLookups = _services.Lookups.BuildModule(Revision);
+
+        ReapplyFieldOptions(_incomingLookups, _incomingFields, () => _updatingIncoming = true, () => _updatingIncoming = false);
+        ReapplyFieldOptions(_moduleLookups, _moduleFields, () => _updatingModule = true, () => _updatingModule = false);
+
+        RefreshIncomingFieldRules();
+        RefreshModuleFieldRules();
+        AppLog.Info("Spec.Reloaded", ("displayRevision", _moduleLookups.DisplayRevision));
+    }
+
+    private static void ReapplyFieldOptions(
+        DesktopLookupPage page,
+        IReadOnlyDictionary<string, LookupFieldState> fields,
+        Action beginUpdate,
+        Action endUpdate)
+    {
+        beginUpdate();
+        try
+        {
+            foreach (var field in page.Fields)
+            {
+                if (fields.TryGetValue(field.Key, out var combo))
+                {
+                    SetFieldOptions(combo, field.Options);
+                }
+            }
+        }
+        finally
+        {
+            endUpdate();
+        }
+    }
+
     private static string[] OptionsByCodes(IEnumerable<string> options, params string[] codes)
     {
         var allowedCodes = new HashSet<string>(codes, StringComparer.OrdinalIgnoreCase);
@@ -2486,13 +2549,15 @@ public sealed partial class MainForm : Form
             IncomingCompService incoming,
             ModuleService module,
             BatchGenerationService batch,
-            RegistrationExcelExporter exporter)
+            RegistrationExcelExporter exporter,
+            SpecEditService specEdit)
         {
             Lookups = lookups;
             Incoming = incoming;
             Module = module;
             Batch = batch;
             Exporter = exporter;
+            SpecEdit = specEdit;
         }
 
         public DesktopLookupCatalog Lookups { get; }
@@ -2500,6 +2565,7 @@ public sealed partial class MainForm : Form
         public ModuleService Module { get; }
         public BatchGenerationService Batch { get; }
         public RegistrationExcelExporter Exporter { get; }
+        public SpecEditService SpecEdit { get; }
 
         public static DesktopAppServices Create()
         {
@@ -2528,7 +2594,8 @@ public sealed partial class MainForm : Form
                 incomingService,
                 moduleService,
                 new BatchGenerationService(moduleService, incomingService),
-                new RegistrationExcelExporter());
+                new RegistrationExcelExporter(),
+                new SpecEditService(specProvider));
         }
     }
 }

@@ -24,6 +24,22 @@ public sealed class SpecProvider
 
     public SharedSpec SharedSpec => _sharedSpec ?? throw new InvalidOperationException("Shared spec is not loaded.");
 
+    public string SpecDirectory => _specDirectory;
+
+    public string ReadRawSpecJson(string fileName)
+    {
+        var path = Path.Combine(_specDirectory, fileName);
+        return File.Exists(path) ? File.ReadAllText(path) : ReadEmbeddedSpec(fileName, path);
+    }
+
+    public IReadOnlyList<string> GetSpecFileNames()
+    {
+        EnsureLoaded();
+        var names = new List<string> { "shared.json" };
+        names.AddRange(SharedSpec.SupportedRevisions.Select(revision => $"rev{revision}.json"));
+        return names;
+    }
+
     public void Load()
     {
         _sharedSpec = DeserializeSpec<SharedSpec>("shared.json");
@@ -64,12 +80,9 @@ public sealed class SpecProvider
 
     private T DeserializeSpec<T>(string fileName)
     {
-        var path = Path.Combine(_specDirectory, fileName);
-        var json = File.Exists(path)
-            ? File.ReadAllText(path)
-            : ReadEmbeddedSpec(fileName, path);
+        var json = ReadRawSpecJson(fileName);
         var value = JsonSerializer.Deserialize<T>(json, _jsonOptions);
-        return value ?? throw new InvalidOperationException($"Failed to deserialize spec file: {path}");
+        return value ?? throw new InvalidOperationException($"Failed to deserialize spec file: {fileName}");
     }
 
     private static string ReadEmbeddedSpec(string fileName, string fallbackPath)
