@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.2 - 2026-08-12
+
+- 전체 필드 드롭다운 설명을 DRAM PART PDF(Rev.30.6) 원문에 맞춰 정리 (Sourcing, DRAM Type, Density, Interface, Comp Type, Die Brand, Vendor, Package, Tester, DIMM Type, Module Source, I.C Brand)
+- 규격 생성 로직에는 영향 없음(규격 라벨은 별도 하드코딩). Speed는 규격에 직접 쓰이므로 기존 표기 유지, TM PART 계열과 Bank/VDD POD 표기는 기존 방침 유지
+
 ## 1.3.1 - 2026-08-12
 
 - PCB 필드 드롭다운 설명을 PDF 원문 그대로 표기 (예: `6 - BrainPower(BP) PCB (Green)`, `7 - BrainPower(BP) PCB (Black)`)

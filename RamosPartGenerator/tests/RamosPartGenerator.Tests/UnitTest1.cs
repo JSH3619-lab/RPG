@@ -158,16 +158,16 @@ public class UnitTest1
         Assert.Contains("X - RAmos TM", incomingSourceOptions);
         Assert.Contains("0 - Only Test", incomingCompTypeOptions);
         Assert.Contains("X - RAMBO", incomingVendorOptions);
-        Assert.Contains("V - GIGA S1(SV)", SharedOptions(provider, "die_brand"));
-        Assert.Contains("P - GIGA S1(SP)", SharedOptions(provider, "die_brand"));
+        Assert.Contains("V - GIGA S1 (SV)", SharedOptions(provider, "die_brand"));
+        Assert.Contains("P - GIGA S1 (SP)", SharedOptions(provider, "die_brand"));
 
         var moduleSourceOptions = SharedOptions(provider, "module_source", "manufacturing_module_source");
         var moduleCompTypeOptions = SharedOptions(provider, "comp_type", "manufacturing_comp_type");
 
         Assert.Contains("XM - Ramos Module TM", moduleSourceOptions);
         Assert.Contains("7 - EMC/Laser-Marking", moduleCompTypeOptions);
-        Assert.Contains("V - GIGA S1(SV)", SharedOptions(provider, "module_ic_brand"));
-        Assert.Contains("P - GIGA S1(SP)", SharedOptions(provider, "module_ic_brand"));
+        Assert.Contains("V - GIGA S1 (SV)", SharedOptions(provider, "module_ic_brand"));
+        Assert.Contains("P - GIGA S1 (SP)", SharedOptions(provider, "module_ic_brand"));
     }
 
     [Fact]
