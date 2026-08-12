@@ -83,12 +83,15 @@ public sealed class IncomingCompService
             purchaserCode,
             compType2Code);
 
+        // 입고 파트는 RDIMM/일반 DIMM을 구분하지 않는다. Comp/Comp BIN만 S(DDR5 RDIMM)를 유지한다.
+        var incomingDramTypeCode = dramTypeCode == "S" ? "R" : dramTypeCode;
         var dramTypeLabel = dramTypeCode switch
         {
             "R" => "DDR5",
             "S" => "DDR5 RDIMM",
             _ => "DDR4"
         };
+        var incomingDramTypeLabel = incomingDramTypeCode == "R" ? "DDR5" : "DDR4";
         var densityLabel = GetDensityLabel(densityCode);
         var bitLabel = GetBitLabel(bitOrganizationCode);
         var dieRevisionLabel = $"{partRevisionCode}-die";
@@ -99,7 +102,7 @@ public sealed class IncomingCompService
 
         var rows = new List<GeneratedPartRow>();
         var incomingPartCode = BuildIncomingPartCode(
-            dramTypeCode,
+            incomingDramTypeCode,
             densityCode,
             bitOrganizationCode,
             bankCode,
@@ -112,7 +115,7 @@ public sealed class IncomingCompService
             purchaserCode,
             compType2Code);
         var incomingTexts = _productTextService.BuildIncomingCompTexts(
-            incomingPartCode, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
+            incomingPartCode, incomingDramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
         rows.Add(new("Incoming", incomingPartCode, incomingTexts.Name, incomingTexts.GeneralInfo, incomingTexts.Specification));
 
         rows.Add(new("Comp", compPartCode, compTexts.Name, compTexts.GeneralInfo, compTexts.Specification));

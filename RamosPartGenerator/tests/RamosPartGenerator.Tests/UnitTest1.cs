@@ -70,7 +70,10 @@ public class UnitTest1
             TesterCode = "R"
         });
 
-        Assert.Equal("K4SAH086VA-PSSEL", rows[0].PartCode);
+        // 입고 파트는 RDIMM 구분 없이 R로 생성한다.
+        Assert.Equal("K4RAH086VA-PSSEL", rows[0].PartCode);
+        Assert.DoesNotContain("RDIMM", rows[0].Specification);
+        // Comp/Comp BIN은 S(DDR5 RDIMM)를 유지한다.
         Assert.Equal("RCSAH086VA-PBSRS", rows[1].PartCode);
         Assert.Contains("DDR5 RDIMM", rows[1].Specification);
         Assert.Equal(6, rows.Count(row => row.Kind == "Comp BIN"));
