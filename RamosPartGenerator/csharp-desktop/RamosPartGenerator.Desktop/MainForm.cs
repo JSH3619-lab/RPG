@@ -72,6 +72,9 @@ public sealed partial class MainForm : Form
         public static readonly Color Panel = Color.White;
         public static readonly Color Border = Color.FromArgb(205, 213, 226);
         public static readonly Color Danger = Color.FromArgb(169, 45, 45);
+        public static readonly Color Warning = Color.FromArgb(140, 84, 20);
+        public static readonly Color WarningBack = Color.FromArgb(255, 240, 210);
+        public static readonly Color WarningSelect = Color.FromArgb(243, 210, 150);
     }
 
     public MainForm()
@@ -769,13 +772,26 @@ public sealed partial class MainForm : Form
         grid.Columns.Insert(2, column);
         grid.CellFormatting += (_, args) =>
         {
-            if (args.ColumnIndex >= 0 &&
-                args.RowIndex >= 0 &&
-                grid.Columns[args.ColumnIndex].Name == "ErpStatus" &&
-                grid.Rows[args.RowIndex].DataBoundItem is GeneratedPartRow row)
+            if (args.RowIndex < 0 ||
+                grid.Rows[args.RowIndex].DataBoundItem is not GeneratedPartRow row)
             {
-                args.Value = _erpIndex.HasData && _erpIndex.Contains(row.PartCode) ? "등록됨" : "신규";
+                return;
+            }
+
+            var isRegistered = _erpIndex.HasData && _erpIndex.Contains(row.PartCode);
+
+            if (args.ColumnIndex >= 0 && grid.Columns[args.ColumnIndex].Name == "ErpStatus")
+            {
+                args.Value = isRegistered ? "등록됨" : "신규";
                 args.FormattingApplied = true;
+            }
+
+            if (isRegistered)
+            {
+                args.CellStyle.BackColor = RamosTheme.WarningBack;
+                args.CellStyle.ForeColor = RamosTheme.Warning;
+                args.CellStyle.SelectionBackColor = RamosTheme.WarningSelect;
+                args.CellStyle.SelectionForeColor = RamosTheme.Warning;
             }
         };
     }
@@ -1041,7 +1057,16 @@ public sealed partial class MainForm : Form
                 ("generatedRows", generatedRows.Length.ToString()),
                 ("totalRows", _incomingRows.Count.ToString()),
                 ("firstPartCode", FirstPartCode(generatedRows)));
-            SetInfo(_incomingStatusLabel, $"Generated {_incomingRows.Count} incoming/comp rows.");
+
+            var registeredCount = NotifyRegisteredParts(generatedRows);
+            if (registeredCount > 0)
+            {
+                SetWarn(_incomingStatusLabel, $"생성 {_incomingRows.Count}건 · 이미 등록됨 {registeredCount}건 (품목규격 확인)");
+            }
+            else
+            {
+                SetInfo(_incomingStatusLabel, $"Generated {_incomingRows.Count} incoming/comp rows.");
+            }
         });
     }
 
@@ -1359,7 +1384,16 @@ public sealed partial class MainForm : Form
                 ("generatedRows", generatedRows.Length.ToString()),
                 ("totalRows", _moduleRows.Count.ToString()),
                 ("firstPartCode", FirstPartCode(generatedRows)));
-            SetInfo(_moduleStatusLabel, $"Generated {_moduleRows.Count} module rows.");
+
+            var registeredCount = NotifyRegisteredParts(generatedRows);
+            if (registeredCount > 0)
+            {
+                SetWarn(_moduleStatusLabel, $"생성 {_moduleRows.Count}건 · 이미 등록됨 {registeredCount}건 (품목규격 확인)");
+            }
+            else
+            {
+                SetInfo(_moduleStatusLabel, $"Generated {_moduleRows.Count} module rows.");
+            }
         });
     }
 
@@ -1893,6 +1927,37 @@ public sealed partial class MainForm : Form
     {
         statusLabel.ForeColor = RamosTheme.Blue;
         statusLabel.Text = message;
+    }
+
+    private static void SetWarn(Label statusLabel, string message)
+    {
+        statusLabel.ForeColor = RamosTheme.Warning;
+        statusLabel.Text = message;
+    }
+
+    private int NotifyRegisteredParts(IReadOnlyList<GeneratedPartRow> generatedRows)
+    {
+        if (!_erpIndex.HasData)
+        {
+            return 0;
+        }
+
+        var registered = generatedRows.Where(row => _erpIndex.Contains(row.PartCode)).ToArray();
+        if (registered.Length == 0)
+        {
+            return 0;
+        }
+
+        var list = string.Join(Environment.NewLine, registered.Select(row => $"  · {row.PartCode}"));
+        MessageBox.Show(
+            this,
+            $"생성한 {generatedRows.Count}건 중 {registered.Length}건은 이미 ERP에 등록된 파트입니다." +
+            Environment.NewLine + Environment.NewLine + list + Environment.NewLine + Environment.NewLine +
+            "이미 등록된 파트는 결과 표에 주황색으로 표시됩니다. '중복 포함'을 체크하지 않으면 Export에서 자동 제외됩니다.",
+            "이미 등록된 파트",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Warning);
+        return registered.Length;
     }
 
     private sealed record SelectorSection(string Key, string Title);
