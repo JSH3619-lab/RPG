@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.3.0 - 2026-08-12
+
+- RDIMM(S) Comp에 RDIMM 상위빈 `EA~EF` 생성 추가 (속도 매핑은 `CA~CF`와 동일: EA=7200 … EF=4800)
+- `CA~CF`는 UDIMM 구제빈으로, UDIMM 조립이 가능한 x8일 때만 생성. x4 RDIMM은 `EA~EF`만 생성(UDIMM 불가)
+- 품목규격 구분: `EA~EF`=`DDR5 RDIMM …`, `CA~CF`=`DDR5 …`(RDIMM 미표기)
+
 ## 1.2.0 - 2026-08-12
 
 - 스펙 코드 옵션 편집기 추가: 헤더 `스펙 편집` 버튼 → 필드 옵션셋(code_options) 코드 추가/수정/삭제, `specs/shared.json`에 부분 저장

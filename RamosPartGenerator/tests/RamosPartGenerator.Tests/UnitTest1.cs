@@ -48,7 +48,7 @@ public class UnitTest1
     }
 
     [Fact]
-    public void GeneratePreview_Rdimm_CompDramTypeS_GeneratesLikeDdr5()
+    public void GeneratePreview_RdimmX8_GeneratesUdimmSalvageAndRdimmBins()
     {
         var provider = LoadProvider();
         var service = new IncomingCompService(provider, new ProductTextService(provider));
@@ -73,10 +73,52 @@ public class UnitTest1
         // 입고 파트는 RDIMM 구분 없이 R로 생성한다.
         Assert.Equal("K4RAH086VA-PSSEL", rows[0].PartCode);
         Assert.DoesNotContain("RDIMM", rows[0].Specification);
-        // Comp/Comp BIN은 S(DDR5 RDIMM)를 유지한다.
+        // Comp 파트는 S(DDR5 RDIMM)를 유지한다.
         Assert.Equal("RCSAH086VA-PBSRS", rows[1].PartCode);
         Assert.Contains("DDR5 RDIMM", rows[1].Specification);
-        Assert.Equal(6, rows.Count(row => row.Kind == "Comp BIN"));
+
+        // x8 RDIMM은 CA~CF(UDIMM 구제) + EA~EF(RDIMM) 12개.
+        var bins = rows.Where(row => row.Kind == "Comp BIN").ToArray();
+        Assert.Equal(12, bins.Length);
+
+        var udimmBin = bins.Single(row => row.PartCode == "RCSAH086VA-PBSRS-CA");
+        Assert.DoesNotContain("RDIMM", udimmBin.Specification);
+
+        var rdimmBin = bins.Single(row => row.PartCode == "RCSAH086VA-PBSRS-EA");
+        Assert.Contains("DDR5 RDIMM", rdimmBin.Specification);
+    }
+
+    [Fact]
+    public void GeneratePreview_RdimmX4_GeneratesRdimmBinsOnly()
+    {
+        var provider = LoadProvider();
+        var service = new IncomingCompService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new IncomingCompRequest
+        {
+            Revision = "30",
+            SourceCode = "K",
+            DramTypeCode = "S",
+            DensityCode = "AH",
+            BitOrganizationCode = "04",
+            BankCode = "6",
+            InterfaceCode = "V",
+            RevisionCode = "A",
+            CompTypeCode = "P",
+            DieBrandCode = "S",
+            VendorCode = "S",
+            PackageTypeCode = "B",
+            TesterCode = "R"
+        });
+
+        Assert.Equal("RCSAH046VA-PBSRS", rows[1].PartCode);
+
+        // x4 RDIMM은 UDIMM 불가라 EA~EF만 6개, CA~CF는 없다.
+        var bins = rows.Where(row => row.Kind == "Comp BIN").ToArray();
+        Assert.Equal(6, bins.Length);
+        Assert.All(bins, row => Assert.Contains("-E", row.PartCode));
+        Assert.DoesNotContain(bins, row => row.PartCode.EndsWith("-CA"));
+        Assert.Contains("DDR5 RDIMM", bins.Single(row => row.PartCode.EndsWith("-EA")).Specification);
     }
 
     [Fact]

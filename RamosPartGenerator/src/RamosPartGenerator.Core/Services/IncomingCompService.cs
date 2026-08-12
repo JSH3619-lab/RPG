@@ -120,23 +120,41 @@ public sealed class IncomingCompService
 
         rows.Add(new("Comp", compPartCode, compTexts.Name, compTexts.GeneralInfo, compTexts.Specification));
 
-        if (dramTypeCode is "R" or "S")
+        void AddCompBin(string suffix, string speed, string typeLabel)
+        {
+            var code = $"{compPartCode}-{suffix}";
+            var text = _productTextService.BuildIncomingCompTexts(
+                code, typeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, speedText: speed, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
+            rows.Add(new("Comp BIN", code, text.Name, text.GeneralInfo, text.Specification));
+        }
+
+        if (dramTypeCode == "S")
+        {
+            // RDIMM: EA~EF는 RDIMM 상위빈. CA~CF(UDIMM 구제빈)는 UDIMM 조립이 가능한 x8에서만 생성한다.
+            // x4는 UDIMM으로 못 만들어 상위빈만 쓰이고 FAIL은 폐기이므로 CA~CF를 만들지 않는다.
+            if (bitOrganizationCode == "08")
+            {
+                foreach (var pair in _specProvider.SharedSpec.CompBinSpeedMap)
+                {
+                    AddCompBin(pair.Key, pair.Value, incomingDramTypeLabel);
+                }
+            }
+
+            foreach (var pair in _specProvider.SharedSpec.CompBinSpeedMap)
+            {
+                AddCompBin("E" + pair.Key[1..], pair.Value, dramTypeLabel);
+            }
+        }
+        else if (dramTypeCode == "R")
         {
             foreach (var pair in _specProvider.SharedSpec.CompBinSpeedMap)
             {
-                var code = $"{compPartCode}-{pair.Key}";
-                var text = _productTextService.BuildIncomingCompTexts(
-                    code, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, speedText: pair.Value, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
-                rows.Add(new("Comp BIN", code, text.Name, text.GeneralInfo, text.Specification));
+                AddCompBin(pair.Key, pair.Value, dramTypeLabel);
             }
         }
         else
         {
-            var speed = GetDdr4CompBinSpeedText();
-            var code = $"{compPartCode}-CA";
-            var text = _productTextService.BuildIncomingCompTexts(
-                code, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, speedText: speed, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
-            rows.Add(new("Comp BIN", code, text.Name, text.GeneralInfo, text.Specification));
+            AddCompBin("CA", GetDdr4CompBinSpeedText(), dramTypeLabel);
         }
 
         return rows;

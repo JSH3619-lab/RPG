@@ -26,7 +26,14 @@
 - 입고 Part, Comp Part, Comp BIN을 함께 생성한다.
 - TM PART도 입고 Part, Comp Part, Comp BIN을 함께 생성한다.
 - DDR4는 `-CA` BIN 1개만 생성한다.
-- DDR5는 `-CA`부터 `-CF`까지 생성한다.
+- DDR5(R)는 `-CA`부터 `-CF`까지 생성한다.
+
+## RDIMM(S) Comp BIN 규칙
+- RDIMM Comp는 RDIMM 상위빈 `EA~EF`를 생성한다. 속도 매핑은 `CA~CF`와 동일하다 (EA=7200 … EF=4800 MT/s).
+- `CA~CF`는 RDIMM ATE FAIL 시 UDIMM으로 쓰기 위한 구제빈이며, UDIMM 조립이 가능한 x8(`08`)일 때만 생성한다.
+- x4 RDIMM은 UDIMM/SODIMM으로 만들 수 없어 상위빈 `EA~EF`만 생성한다 (FAIL은 폐기).
+- 품목규격은 `EA~EF`에만 RDIMM을 표기한다: `EA~EF`=`DDR5 RDIMM …`, `CA~CF`=`DDR5 …`.
+- 입고 Part는 RDIMM을 구분하지 않고 `R`(DDR5)로 생성한다.
 - Comp BIN 속도:
   - `CA = 7200 MT/s`
   - `CB = 6800 MT/s`
