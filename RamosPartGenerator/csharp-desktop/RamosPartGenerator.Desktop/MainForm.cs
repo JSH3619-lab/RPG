@@ -723,9 +723,12 @@ public sealed partial class MainForm : Form
 
     private void UpdateErpStatusLabels()
     {
-        var text = _erpIndex.HasData
-            ? $"등록 파트 기준: {_erpIndex.UploadedAt:yyyy-MM-dd} ({_erpIndex.Count:n0}건)"
-            : "ERP 품목 미업로드";
+        var exportedSuffix = _erpIndex.ExportedCount > 0 ? $" + 생성 {_erpIndex.ExportedCount:n0}건" : string.Empty;
+        var text = _erpIndex.UploadedAt is not null
+            ? $"등록 파트 기준: {_erpIndex.UploadedAt:yyyy-MM-dd} (ERP {_erpIndex.Count:n0}건{exportedSuffix})"
+            : _erpIndex.ExportedCount > 0
+                ? $"ERP 미업로드 (생성 {_erpIndex.ExportedCount:n0}건)"
+                : "ERP 품목 미업로드";
         _incomingErpStatusLabel.Text = text;
         _moduleErpStatusLabel.Text = text;
         _incomingResultGrid.Invalidate();
@@ -1858,6 +1861,8 @@ public sealed partial class MainForm : Form
             }
 
             File.WriteAllBytes(dialog.FileName, _services.Exporter.Export(rows));
+            _erpIndex.RecordExported(rows.Select(row => row.PartCode));
+            UpdateErpStatusLabels();
             var opened = TryOpenExportedFile(dialog.FileName, area);
             AppLog.Info(
                 "Export.Success",

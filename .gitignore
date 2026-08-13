@@ -9,3 +9,4 @@ Publish/
 DRAM 품목정보*.xlsx
 specs/backup/
 erp-part-cache.json
+pgm-exported-cache.json
