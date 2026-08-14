@@ -230,7 +230,11 @@ public sealed class ProductTextService
             "Comp"
         };
 
-        if (isThirdParty && !isA100)
+        if (isA100)
+        {
+            specPieces.Add("A100");
+        }
+        else if (isThirdParty)
         {
             specPieces.Add("TP");
         }

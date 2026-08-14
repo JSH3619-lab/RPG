@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.1 - 2026-08-13
+
+- Comp 판매용 MDL(DIMM Type C) 품목규격에 A100 표기 누락 수정: Third-party + Vendor A + Purchaser A이면 규격에 `A100` 표기(그 외 third-party는 `TP`) — 일반 모듈/입고와 일치
+
 ## 1.4.0 - 2026-08-12
 
 - ERP 중복 판정에 PGM 자체 생성 이력을 추가: Export한 파트코드를 `pgm-exported-cache.json`에 누적하고, ERP 스냅샷과 합쳐서 `등록됨` 판정

@@ -490,6 +490,41 @@ public class UnitTest1
     }
 
     [Fact]
+    public void GeneratePreview_CompSaleMdl_A100_ShowsA100InSpec()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleSourceCode = "TM",
+            DramTypeCode = "R",
+            DimmTypeCode = "C",
+            ModuleDensityCode = "1G",
+            DieDensityCode = "A",
+            CompositionCode = "8",
+            RankCode = "0",
+            GenerationCode = "A",
+            IcBrandCode = "G",
+            ModuleCompTypeCode = "P",
+            CompTestCode = "W",
+            ModuleSmtCode = "0",
+            ModuleTestCode = "0",
+            SpeedCode = "WM",
+            PcbCode = "0",
+            VendorCode = "A",
+            PurchaserCode = "A"
+        });
+
+        // Comp 판매용 MDL도 A100(Vendor A + Purchaser A) 조건이면 규격에 A100을 표기한다.
+        Assert.Contains("Comp A100", rows[0].Specification);
+        Assert.DoesNotContain("TP", rows[0].Specification);
+    }
+
+    [Fact]
     public void GeneratePreview_ModuleCompDimm_AppliesCompPartDefaults()
     {
         var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
