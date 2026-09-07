@@ -357,8 +357,8 @@ public class UnitTest1
             VendorCode = "G"
         });
 
-        // Gaming(G)도 UDIMM이므로 코드 문자 G가 아닌 UDIMM으로 표기한다.
-        Assert.Equal("UDIMM 16GB COO : KR", rows[0].GeneralInfo);
+        // Gaming(G)도 UDIMM이므로 코드 문자 G가 아닌 UDIMM으로 표기하고, 앞에 DDR 타입을 붙인다.
+        Assert.Equal("DDR5 UDIMM 16GB COO : KR", rows[0].GeneralInfo);
         Assert.Contains("UDIMM", rows[0].Specification);
         Assert.DoesNotContain("G 16GB", rows[0].GeneralInfo);
     }
@@ -812,7 +812,7 @@ public class UnitTest1
             ModuleFullPartCode = "TMRDAG58A1P-GPWRRWM7GH"
         });
 
-        Assert.Equal("UDIMM 16GB COO : KR", rows[0].GeneralInfo);
+        Assert.Equal("DDR5 UDIMM 16GB COO : KR", rows[0].GeneralInfo);
         Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) GIGA S1 RAmos TP BP PCB(Black)", rows[0].Specification);
         Assert.Equal("DDR5 UDIMM 16GB (16Gb x8 *8) GIGA S1 RAmos TP BP PCB(Black) 5600 MT/s (2800MHz @ 46/45/45)", rows[1].Specification);
     }

@@ -95,7 +95,7 @@ public sealed class ProductTextService
         var name = partCode;
         var generalInfo = isCompSale
             ? $"{dramTypeLabel} Comp {capacityLabel} COO : {shared.ItemTextRules.CooDefault}"
-            : $"{formFactorLabel} {capacityLabel} COO : {shared.ItemTextRules.CooDefault}";
+            : $"{dramTypeLabel} {formFactorLabel} {capacityLabel} COO : {shared.ItemTextRules.CooDefault}";
 
         var specification = isCompSale
             ? BuildCompSaleSpecification(
