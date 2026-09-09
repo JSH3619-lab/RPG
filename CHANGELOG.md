@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.5.0 - 2026-08-19
+
+- LPDDR 파트 생성 지원 (PDF Rev.31.0): 새 LPDDR 탭에서 입고 + Product 베이스 + Product BIN 3개를 체인으로 생성. 현재 운용대로 입고가 Product(RP)로 바로 연결되며 Comp(RD)는 추후 변경 전까지 생성하지 않음
+- 입고 형태 2종 지원: PKG 입고(K5/T5/C5/B5, 기본) / Die 입고(K4/T4/C4/B4, Die Density·Die Bit 별도 입력)
+- Product(`RP/TP/CP/BP`)는 몸통에 조립/테스트/Speed/PCB Rev 포함. DRAM Module처럼 베이스 파트와 `-TN{Density}A00` BIN 파트를 함께 생성 (BIN은 Normal 1종)
+- PKG 입고 시 Comp 조립 업체 기본 `0 : No Ass'y`, Third-party(T/B)는 Purchaser 필수
+- ERP 기등록 LPDDR4 파트 3건(B5F1G324H1M-P*) 재현 테스트로 검증. 기등록 품목명의 `W`(Whole) 표기는 코드 `P`(Partial)와 불일치한 등록 오류로 확인 — 품목명=품목코드 원칙 유지
+- LPDDR 탭도 ERP 중복 체크·Export 공용 흐름 사용
+- LPDDR Product(RP)는 MDL 파트로 취급: Excel 내보내기에 영업코드 열 포함 (기존 MDL과 동일하게 빈칸으로 생성, 수기 기입), 품목일반정보도 Comp 판매용 MDL 패턴으로 생성 (`LPDDR4 Comp 2GB COO : KR`)
+- LPDDR Full Part 역파싱: 코드 붙여넣기 → 계열(K4/K5 입고, RD Comp, RP Product) 자동 판별 후 필드 복원. 코드에 없는 필드(K5의 조립/테스트/Speed 등)는 비워두고 직접 선택 (RP의 `-TN…` BIN 태그는 재생성 시 자동 부여라 파싱 생략)
+- 일반 Module 품목일반정보에 DDR 타입 접두 추가: `UDIMM 16GB COO : KR` → `DDR5 UDIMM 16GB COO : KR` (Comp 판매용 MDL은 기존 유지)
+- ERP 파트 인덱스·PGM 등록 원장 저장 위치를 실행 폴더에서 `%LocalAppData%\RamosPartGenerator\`로 이동: 새 버전 빌드를 받아도 ERP 업로드·등록 파트가 초기화되지 않음 (첫 실행 시 기존 exe 폴더 cache 자동 이전)
+- 표시 리비전 31.0으로 갱신 (PDF Rev.31.0 반영)
+
 ## 1.4.1 - 2026-08-13
 
 - Comp 판매용 MDL(DIMM Type C) 품목규격에 A100 표기 누락 수정: Third-party + Vendor A + Purchaser A이면 규격에 `A100` 표기(그 외 third-party는 `TP`) — 일반 모듈/입고와 일치

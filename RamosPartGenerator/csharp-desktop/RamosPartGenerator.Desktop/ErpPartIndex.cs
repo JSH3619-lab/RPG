@@ -22,8 +22,15 @@ internal sealed class ErpPartIndex
     public int ExportedCount => _exported.Count;
     public bool HasData => UploadedAt is not null || _exported.Count > 0;
 
-    private static string CachePath => Path.Combine(AppContext.BaseDirectory, "erp-part-cache.json");
-    private static string ExportedCachePath => Path.Combine(AppContext.BaseDirectory, "pgm-exported-cache.json");
+    private const string ErpCacheFile = "erp-part-cache.json";
+    private const string ExportedCacheFile = "pgm-exported-cache.json";
+
+    // 실행 폴더가 아닌 사용자 고정 위치에 둔다. 버전(Publish 폴더)이 바뀌어도 등록 데이터가 유지된다.
+    private static string DataDirectory => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "RamosPartGenerator");
+    private static string CachePath => Path.Combine(DataDirectory, ErpCacheFile);
+    private static string ExportedCachePath => Path.Combine(DataDirectory, ExportedCacheFile);
 
     public bool Contains(string partCode)
     {
@@ -33,8 +40,36 @@ internal sealed class ErpPartIndex
 
     public void Load()
     {
+        MigrateLegacyCache(ErpCacheFile);
+        MigrateLegacyCache(ExportedCacheFile);
         LoadErpCache();
         LoadExportedCache();
+    }
+
+    // 구버전은 exe 폴더에 저장했다. 새 위치에 없고 실행 폴더에 있으면 1회 옮겨 준다.
+    private static void MigrateLegacyCache(string fileName)
+    {
+        try
+        {
+            var newPath = Path.Combine(DataDirectory, fileName);
+            if (File.Exists(newPath))
+            {
+                return;
+            }
+
+            var legacyPath = Path.Combine(AppContext.BaseDirectory, fileName);
+            if (!File.Exists(legacyPath))
+            {
+                return;
+            }
+
+            Directory.CreateDirectory(DataDirectory);
+            File.Copy(legacyPath, newPath);
+        }
+        catch (Exception exception)
+        {
+            AppLog.Error("ErpPartIndex.MigrateFailed", exception, ("fileName", fileName));
+        }
     }
 
     public void Update(string sourceFileName, IReadOnlyCollection<string> codes)
@@ -42,6 +77,7 @@ internal sealed class ErpPartIndex
         _codes = new HashSet<string>(codes, StringComparer.Ordinal);
         SourceFileName = sourceFileName;
         UploadedAt = DateTime.Now;
+        Directory.CreateDirectory(DataDirectory);
         File.WriteAllText(
             CachePath,
             JsonSerializer.Serialize(new CacheModel(sourceFileName, UploadedAt, _codes.ToArray()), JsonOptions));
@@ -61,6 +97,7 @@ internal sealed class ErpPartIndex
 
         if (added)
         {
+            Directory.CreateDirectory(DataDirectory);
             File.WriteAllText(ExportedCachePath, JsonSerializer.Serialize(_exported.ToArray(), JsonOptions));
         }
     }

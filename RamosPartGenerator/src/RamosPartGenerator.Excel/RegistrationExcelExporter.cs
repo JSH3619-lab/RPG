@@ -174,7 +174,10 @@ public sealed class RegistrationExcelExporter
                string.Equals(kind, "Module BIN", StringComparison.OrdinalIgnoreCase) ||
                string.Equals(kind, "MDL", StringComparison.OrdinalIgnoreCase) ||
                string.Equals(kind, "MDL Dummy", StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(kind, "MDL BIN", StringComparison.OrdinalIgnoreCase);
+               string.Equals(kind, "MDL BIN", StringComparison.OrdinalIgnoreCase) ||
+               // LPDDR Product(RP)도 MDL 파트라 영업코드 열이 필요하다.
+               string.Equals(kind, "Product", StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(kind, "Product BIN", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string Escape(string? value) => SecurityElement.Escape(value ?? string.Empty) ?? string.Empty;

@@ -90,6 +90,35 @@ internal sealed class DesktopLookupCatalog
         return new DesktopLookupPage(spec.Revision, spec.DisplayRevision, fields);
     }
 
+    public DesktopLookupPage BuildLpddr(string revision)
+    {
+        var spec = _specProvider.GetRevisionSpec(revision);
+        var fields = new List<DesktopLookupField>
+        {
+            new("sourceCode", "Source", "spec", true, true, Options("lpddr_incoming_source")),
+            new("dramTypeCode", "LPDDR Type", "spec", true, true, Options("lpddr_dram_type")),
+            new("densityCode", "Density", "spec", true, true, Options("lpddr_density")),
+            new("bitCode", "Bit Org", "spec", true, true, Options("lpddr_bit")),
+            new("dieDensityCode", "Die Density (K4)", "spec", true, true, Options("lpddr_die_density")),
+            new("dieBitCode", "Die Bit (K4)", "spec", true, true, Options("lpddr_bit")),
+            new("bankCode", "Bank", "spec", true, true, Options("lpddr_bank")),
+            new("interfaceCode", "Interface", "spec", true, true, Options("lpddr_interface")),
+            new("stackCode", "Stack", "spec", true, true, Options("lpddr_stack")),
+            new("revisionCode", "Part Revision", "spec", true, true, AlphabetOptions()),
+            new("dieTypeCode", "Die Type", "comp", true, true, Options("lpddr_die_type")),
+            new("packageTypeCode", "Package", "comp", true, true, Options("lpddr_package_type")),
+            new("dieBrandCode", "Die Brand", "comp", true, true, Options("lpddr_die_brand")),
+            new("assemblyCode", "조립 업체", "comp", true, true, Options("lpddr_assembly")),
+            new("testerCode", "Test Site", "comp", true, true, Options("lpddr_tester")),
+            new("speedCode", "Speed", "comp", true, true, Options("lpddr_speed")),
+            new("pcbRevisionCode", "PCB Revision", "comp", true, true, new[] { "1" }),
+            new("vendorCode", "Vendor", "comp", true, true, Options("lpddr_vendor")),
+            new("purchaserCode", "Purchaser", "comp", true, true, Options("lpddr_purchaser"))
+        };
+
+        return new DesktopLookupPage(spec.Revision, spec.DisplayRevision, fields);
+    }
+
     public IReadOnlyList<string> SpecialCode1Options(bool isTable1)
     {
         return Options(isTable1 ? "special_code1_table1" : "special_code1_table2");

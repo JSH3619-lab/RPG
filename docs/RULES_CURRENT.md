@@ -2,7 +2,7 @@
 
 원본 문서는 아래 두 파일을 기준으로 한다.
 
-- `RAMOS_DRAM_PART (Rev.30.6).pdf`
+- `RAMOS_DRAM_PART (Rev.31.0).pdf` (LPDDR 파트 규칙 포함)
 - `RAMOS_DRAM_TM_PART (Rev 2.1).pdf`
 
 ## 지원 Rev
@@ -14,13 +14,24 @@
 - Module DIMM Type에 `R : x80 288pin Registered DIMM`을 추가한다. RDIMM 전용 규칙은 아직 없다.
 - Module Density에 `3G : 24GB`, `6G : 48GB`, `DG : 128GB`를 추가한다. 96GB는 코드 확정 전이라 보류한다.
 - Tester `S : PTS (Package test Stock)`는 `S : No-Test`와 코드가 충돌하여 미반영한다 (PDF 정정 대기).
-- LPDDR 계열(신규 K5 입고 Comp 포함)은 계속 범위에서 제외한다.
 
 ## 기본 원칙
-- LPDDR 계열은 범위에서 제외한다.
 - 품목명은 품목코드와 동일하게 생성한다.
 - COO 기본값은 `KR`이다.
 - PDF는 원본 확인용이고, 실행 규칙은 `specs/shared.json`, `specs/rev30.json`, Core 코드, API/Frontend 순서로 반영한다.
+
+## LPDDR 규칙 (Rev.31.0)
+- LPDDR 탭에서 입고 + Product 2개를 체인으로 함께 생성한다. 현재 운용은 입고가 Product(RP)로 바로 연결되며, **Comp(`RD/TD/CD/BD`)는 추후 변경 전까지 생성하지 않는다** (역파싱 입력으로는 RD 코드도 허용).
+- 입고 형태 2종: `Die 입고(K4/T4/C4/B4)`, `PKG 입고(K5/T5/C5/B5)`. Die 입고만 Die Density/Die Bit를 따로 입력한다 (K4 코드에는 Stack/Package 없음).
+- Product는 `RP/TP/CP/BP` prefix. 몸통에 조립/테스트/Speed/PCB Rev이 포함된다. DRAM Module처럼 **베이스 파트 + BIN 파트(-TN{Density}A00)** 2행을 생성한다 (BIN은 Normal 1종만).
+- Product(RP)는 MDL 파트: Excel 내보내기에 영업코드 열이 포함된다 (빈칸, 수기 기입).
+- LPDDR은 DDR과 달리 Comp BIN이 없다. Speed(CH~CV)가 코드 안의 필드라서 속도가 다르면 별도 파트가 된다 (속도별 다중 생성 방식은 보류 중).
+- PKG 입고 시 Comp 조립 업체 기본값은 `0 : No Ass'y` (이미 패키지 상태로 입고). 특수 케이스만 수동 변경.
+- Third-party(T/B)는 Purchaser 필수. Purchaser `0`(Non-TP)은 코드에서 생략한다.
+- Vendor는 `S/G/B`만, Purchaser는 `V/H`만 (A100/ADATA 규칙 없음).
+- 품목규격 예: 입고 PKG `LPDDR4 1GB Comp X32 M-die GIGA S1 Partial 1.0T / 10x15`, 입고 Die `LPDDR4 4Gb Die x16 M-die GIGA S1 Whole`, Product는 PKG 형식 + Speed(`6400 Mbps` 등).
+- 품목일반정보: 입고는 공란, Product/Product BIN은 MDL 파트라 Comp 판매용 MDL 패턴으로 생성 (`LPDDR4 Comp 2GB COO : KR`).
+- ERP 기등록 3건(B5F1G324H1M-P*)의 품목명 `W`(Whole) 표기는 코드 `P`(Partial)와 불일치 — 등록 오류로 확인되어, 프로그램은 품목명=품목코드 원칙을 유지한다.
 
 ## 입고/Comp 규칙
 - 입고 Part, Comp Part, Comp BIN을 함께 생성한다.

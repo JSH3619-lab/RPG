@@ -1,6 +1,6 @@
 {
   "supported_revisions": ["30"],
-  "excluded_families": ["LPDDR"],
+  "excluded_families": [],
   "families": {
     "incoming_internal": ["K", "C"],
     "incoming_third_party": ["T", "B"],
@@ -96,6 +96,22 @@
     "module_special_code2": ["(None)", "R - 1st Repair", "S - 2nd Repair", "B - Reball", "C - Reball Repair"],
     "module_special_code3": ["(None)", "R - RMA", "M - RMA", "Y - Retest"],
     "grade_code": ["TN - Normal", "HM - Speed Down"],
-    "product_bin": ["A00 - Normal", "B00 - H/T (Hammer Test)"]
+    "product_bin": ["A00 - Normal", "B00 - H/T (Hammer Test)"],
+    "lpddr_incoming_source": ["K - RAmos Memory", "T - RAmos Third-party", "C - CTST Memory", "B - CTST Third Party"],
+    "lpddr_dram_type": ["F - LPDDR4 SDRAM", "U - LPDDR4X SDRAM", "L - LPDDR5 SDRAM", "K - LPDDR5X SDRAM"],
+    "lpddr_density": ["1G - 1GB, 8K/32ms", "2G - 2GB, 8K/32ms", "3G - 3GB, 8K/32ms", "4G - 4GB, 8K/32ms", "6G - 6GB, 8K/32ms", "8G - 8GB, 8K/32ms"],
+    "lpddr_die_density": ["4K - 4Gb, 8K/32ms", "6S - 6Gb, 8K/32ms", "8E - 8Gb, 8K/32ms", "2E - 12Gb, 8K/32ms", "6E - 16Gb, 8K/32ms"],
+    "lpddr_bit": ["16 - x16", "32 - X32"],
+    "lpddr_bank": ["4 - 8 Bank", "5 - 16 Bank"],
+    "lpddr_interface": ["H - LVSTL (1.8V, 1.1V, 1.1V)", "A - LVSTLE_06 (1.8V, 1.1V, 0.6V)", "Y - LVSTLE_05 (1.8V, 1.05V/0.9V, 0.5V)"],
+    "lpddr_stack": ["0 - SDP", "1 - DDP", "2 - QDP"],
+    "lpddr_die_type": ["P - Partial (NoTested)", "T - Tested", "W - Whole", "A - A-Grade"],
+    "lpddr_package_type": ["A - 200 FBGA (1.0T / 10x15)", "B - 315 FBGA (1.1T / 12.4x15)", "C - 315 FBGA (1.2T / 12.4x15)", "D - 441 FBGA", "E - 496 FBGA", "F - 200 FBGA (1.05T / 10x14.5)", "G - 200 FBGA (1.14T / 10x15)"],
+    "lpddr_die_brand": ["S - S1 (SS)", "G - GIGA S1 (SS)", "H - GIGA S2 (Hynix)", "M - GIGA S3 (Micron)", "C - GIGA S6 (CXMT)"],
+    "lpddr_vendor": ["S - SS", "G - GIGA", "B - BY20"],
+    "lpddr_purchaser": ["(None)", "V - VM", "H - RMHK"],
+    "lpddr_assembly": ["0 - No Ass'y", "R - Ramos", "E - 유로 티에스텍", "W - Winpac", "T - DynaCard (Tiwan)", "G - GoldKey (Tiwan)", "Y - Yueyin (Tiwan)", "D - OM (India)", "L - SemiconTest (China)", "K - CKMT (China)", "1 - HTSI (Taiwan)", "2 - DLI (Taiwan)", "3 - Rayson (China)", "4 - Ramsun System (Taiwan)", "5 - Powev (China)"],
+    "lpddr_tester": ["R - Ramos", "E - 유로 티에스텍", "W - Winpac", "T - DynaCard (Tiwan)", "G - GoldKey (Tiwan)", "Y - Yueyin (Tiwan)", "D - OM (India)", "L - SemiconTest (China)", "K - CKMT (China)", "1 - HTSI (Taiwan)", "2 - DLI (Taiwan)", "3 - Rayson (China)", "4 - Ramsun System (Taiwan)", "5 - Powev (China)", "S - PTS (Package test Stock)"],
+    "lpddr_speed": ["CH - 3200 Mbps", "CJ - 3733 Mbps", "CL - 4266 Mbps", "CN - 5500 Mbps", "CP - 6400 Mbps", "CT - 7500 Mbps", "CU - 8533 Mbps", "CV - 9600 Mbps"]
   }
 }

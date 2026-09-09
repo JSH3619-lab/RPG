@@ -82,12 +82,14 @@ public sealed partial class MainForm : Form
         _services = DesktopAppServices.Create();
         _incomingLookups = _services.Lookups.BuildIncoming(Revision);
         _moduleLookups = _services.Lookups.BuildModule(Revision);
+        _lpddrLookups = _services.Lookups.BuildLpddr(Revision);
 
         InitializeComponent();
         _erpIndex.Load();
         UpdateErpStatusLabels();
         ResetIncoming();
         ResetModule();
+        ResetLpddr();
         ResetBatchMdl();
         ResetBatchComp();
         AppLog.Info(
@@ -126,6 +128,7 @@ public sealed partial class MainForm : Form
         var tabs = BuildTabControl();
         tabs.TabPages.Add(BuildIncomingPage());
         tabs.TabPages.Add(BuildModulePage());
+        tabs.TabPages.Add(BuildLpddrPage());
         tabs.TabPages.Add(BuildBatchPage());
         root.Controls.Add(tabs, 0, 1);
 
@@ -731,8 +734,10 @@ public sealed partial class MainForm : Form
                 : "ERP 품목 미업로드";
         _incomingErpStatusLabel.Text = text;
         _moduleErpStatusLabel.Text = text;
+        _lpddrErpStatusLabel.Text = text;
         _incomingResultGrid.Invalidate();
         _moduleResultGrid.Invalidate();
+        _lpddrResultGrid.Invalidate();
     }
 
     private void UploadErpParts(Label statusLabel, string area)
@@ -1721,12 +1726,15 @@ public sealed partial class MainForm : Form
     {
         _incomingLookups = _services.Lookups.BuildIncoming(Revision);
         _moduleLookups = _services.Lookups.BuildModule(Revision);
+        _lpddrLookups = _services.Lookups.BuildLpddr(Revision);
 
         ReapplyFieldOptions(_incomingLookups, _incomingFields, () => _updatingIncoming = true, () => _updatingIncoming = false);
         ReapplyFieldOptions(_moduleLookups, _moduleFields, () => _updatingModule = true, () => _updatingModule = false);
+        ReapplyFieldOptions(_lpddrLookups, _lpddrFields, () => _updatingLpddr = true, () => _updatingLpddr = false);
 
         RefreshIncomingFieldRules();
         RefreshModuleFieldRules();
+        RefreshLpddrFieldRules();
         AppLog.Info("Spec.Reloaded", ("displayRevision", _moduleLookups.DisplayRevision));
     }
 
@@ -1896,7 +1904,7 @@ public sealed partial class MainForm : Form
 
     private GeneratedPartRow[] BuildExportRows()
     {
-        return _incomingRows.Concat(_moduleRows).ToArray();
+        return _incomingRows.Concat(_moduleRows).Concat(_lpddrRows).ToArray();
     }
 
     private string BuildExportFileName()
@@ -2618,6 +2626,7 @@ public sealed partial class MainForm : Form
             DesktopLookupCatalog lookups,
             IncomingCompService incoming,
             ModuleService module,
+            LpddrService lpddr,
             BatchGenerationService batch,
             RegistrationExcelExporter exporter,
             SpecEditService specEdit)
@@ -2625,6 +2634,7 @@ public sealed partial class MainForm : Form
             Lookups = lookups;
             Incoming = incoming;
             Module = module;
+            Lpddr = lpddr;
             Batch = batch;
             Exporter = exporter;
             SpecEdit = specEdit;
@@ -2633,6 +2643,7 @@ public sealed partial class MainForm : Form
         public DesktopLookupCatalog Lookups { get; }
         public IncomingCompService Incoming { get; }
         public ModuleService Module { get; }
+        public LpddrService Lpddr { get; }
         public BatchGenerationService Batch { get; }
         public RegistrationExcelExporter Exporter { get; }
         public SpecEditService SpecEdit { get; }
@@ -2663,6 +2674,7 @@ public sealed partial class MainForm : Form
                 new DesktopLookupCatalog(specProvider),
                 incomingService,
                 moduleService,
+                new LpddrService(specProvider),
                 new BatchGenerationService(moduleService, incomingService),
                 new RegistrationExcelExporter(),
                 new SpecEditService(specProvider));
