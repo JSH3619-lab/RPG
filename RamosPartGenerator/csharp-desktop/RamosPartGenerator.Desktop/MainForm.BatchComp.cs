@@ -10,6 +10,7 @@ public sealed partial class MainForm
 
     private TextBox _batchCompInputText = null!;
     private CheckBox _batchIncludeCompMdl = null!;
+    private CheckBox _batchCompIncludeDuplicates = null!;
     private readonly List<CheckBox> _batchCompSpeedChecks = new();
     private DataGridView _batchCompAnalysisGrid = null!;
     private DataGridView _batchCompResultGrid = null!;
@@ -40,6 +41,7 @@ public sealed partial class MainForm
         page.Controls.Add(BuildBatchGridGroup("입력 분석", _batchCompAnalysisGrid), 0, 2);
 
         _batchCompResultGrid = BuildResultGrid(_batchCompRows);
+        AddErpStatusColumn(_batchCompResultGrid);
         page.Controls.Add(BuildBatchGridGroup("생성 결과", _batchCompResultGrid), 0, 3);
 
         tab.Controls.Add(page);
@@ -96,6 +98,8 @@ public sealed partial class MainForm
         buttons.Controls.Add(BuildButton("Export Excel", ExportBatchComp));
         buttons.Controls.Add(BuildButton("Delete Selected", DeleteSelectedBatchComp));
         buttons.Controls.Add(BuildButton("Reset", ResetBatchComp));
+        _batchCompIncludeDuplicates = BuildIncludeDuplicatesCheckBox();
+        buttons.Controls.Add(_batchCompIncludeDuplicates);
 
         layout.Controls.Add(_batchCompInputText, 0, 0);
         layout.Controls.Add(buttons, 0, 1);
@@ -289,7 +293,7 @@ public sealed partial class MainForm
 
     private void ExportBatchComp()
     {
-        ExportRows(_batchCompStatusLabel, "BatchComp", _batchCompRows.ToArray());
+        ExportRows(_batchCompStatusLabel, "BatchComp", _batchCompRows.ToArray(), _batchCompIncludeDuplicates.Checked);
     }
 
     private void DeleteSelectedBatchComp()

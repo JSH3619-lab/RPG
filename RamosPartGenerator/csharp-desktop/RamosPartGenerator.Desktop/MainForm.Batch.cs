@@ -9,6 +9,7 @@ public sealed partial class MainForm
     private readonly BindingList<GeneratedPartRow> _batchRows = new();
 
     private TextBox _batchMdlInputText = null!;
+    private CheckBox _batchIncludeDuplicates = null!;
     private CheckBox _batchBasePid = null!;
     private CheckBox _batchBaseMfgId = null!;
     private CheckBox _batchReball = null!;
@@ -58,6 +59,7 @@ public sealed partial class MainForm
         page.Controls.Add(BuildBatchGridGroup("입력 분석", _batchPreviewGrid), 0, 2);
 
         _batchResultGrid = BuildResultGrid(_batchRows);
+        AddErpStatusColumn(_batchResultGrid);
         page.Controls.Add(BuildBatchGridGroup("생성 결과", _batchResultGrid), 0, 3);
 
         tab.Controls.Add(page);
@@ -115,6 +117,8 @@ public sealed partial class MainForm
         buttons.Controls.Add(BuildButton("Export Excel", ExportBatchMdl));
         buttons.Controls.Add(BuildButton("Delete Selected", DeleteSelectedBatchMdl));
         buttons.Controls.Add(BuildButton("Reset", ResetBatchMdl));
+        _batchIncludeDuplicates = BuildIncludeDuplicatesCheckBox();
+        buttons.Controls.Add(_batchIncludeDuplicates);
 
         layout.Controls.Add(_batchMdlInputText, 0, 0);
         layout.Controls.Add(buttons, 0, 1);
@@ -347,7 +351,7 @@ public sealed partial class MainForm
 
     private void ExportBatchMdl()
     {
-        ExportRows(_batchStatusLabel, "BatchMdl", _batchRows.ToArray());
+        ExportRows(_batchStatusLabel, "BatchMdl", _batchRows.ToArray(), _batchIncludeDuplicates.Checked);
     }
 
     private void DeleteSelectedBatchMdl()
