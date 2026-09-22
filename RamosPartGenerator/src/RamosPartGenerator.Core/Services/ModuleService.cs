@@ -95,7 +95,8 @@ public sealed class ModuleService
             effectiveRequest.ModuleDensityCode,
             effectiveRequest.DieDensityCode,
             effectiveRequest.CompositionCode,
-            effectiveRequest.RankCode);
+            effectiveRequest.RankCode,
+            effectiveRequest.DimmTypeCode);
         var speedText = GetModuleSpeedText(effectiveRequest.SpeedCode);
         var isCompSale = effectiveRequest.DimmTypeCode.Equals("C", StringComparison.OrdinalIgnoreCase);
 
@@ -748,7 +749,7 @@ public sealed class ModuleService
         };
     }
 
-    private static string CalculateModuleIcCount(string moduleDensityCode, string dieDensityCode, string compositionCode, string rankCode)
+    private static string CalculateModuleIcCount(string moduleDensityCode, string dieDensityCode, string compositionCode, string rankCode, string dimmTypeCode)
     {
         if (!TryGetCompositionWidth(compositionCode, out var compositionWidth) ||
             !TryGetRankCount(rankCode, out var rankCount))
@@ -756,7 +757,9 @@ public sealed class ModuleService
             return "ERR";
         }
 
-        var icCount = 64 / compositionWidth * rankCount;
+        // RDIMM은 ECC(80-bit) 포함해 IC 수를 계산한다. UDIMM/SODIMM 등은 데이터 64-bit 기준.
+        var busWidth = dimmTypeCode.Equals("R", StringComparison.OrdinalIgnoreCase) ? 80 : 64;
+        var icCount = busWidth / compositionWidth * rankCount;
         return rankCode == "2" ? $"{icCount} (2R)" : icCount.ToString();
     }
 
