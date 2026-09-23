@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.1 - 2026-09-23
+
+- Batch Generate(MDL 일괄·Comp 일괄) 결과 표에 ERP 등록 대조 `상태` 열(등록됨/신규) 추가: 단일 생성 탭과 동일하게 ERP 스냅샷 + PGM Export 이력 기준으로 `등록됨` 표시
+- Batch Generate에도 `중복 포함` 체크박스 추가: 미체크 시 Export에서 등록된 파트 자동 제외 (기존엔 Batch Export가 항상 전체 포함)
+
 ## 1.5.0 - 2026-08-19
 
 - LPDDR 파트 생성 지원 (PDF Rev.31.0): 새 LPDDR 탭에서 입고 + Product 베이스 + Product BIN 3개를 체인으로 생성. 현재 운용대로 입고가 Product(RP)로 바로 연결되며 Comp(RD)는 추후 변경 전까지 생성하지 않음
