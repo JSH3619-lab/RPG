@@ -4,8 +4,8 @@ RAMOS DRAM/Module Part Code를 규칙 기반으로 생성, 파싱, 검증하고 
 
 현재 관리 버전:
 
-- Part Generator: `v1.0.2`
-- Spec: `Rev 30.4`
+- Part Generator: `v1.5.1`
+- Spec: `Rev 31.0`
 
 ## 주요 기능
 
@@ -16,6 +16,8 @@ RAMOS DRAM/Module Part Code를 규칙 기반으로 생성, 파싱, 검증하고 
 - MDL 기준 원본/Reball Incoming, Comp, Comp BIN 일괄 생성
 - Comp Full Part 다중 입력과 Incoming/Comp/Comp BIN 일괄 생성
 - 복수 선택 Speed 기준 Comp_MDL/MDL BIN 일괄 생성
+- LPDDR 입고 + Product + Product BIN 생성과 LPDDR Full Part 역파싱
+- ERP 등록 파트 중복 체크: 단일/일괄 생성 결과에 `등록됨`/`신규` 표시, Export 시 등록 파트 기본 제외
 - Comp Full Part 파싱
 - Module Full Part 파싱
 - 그룹 → 필드 → 옵션의 3열 클릭 선택 UI 제공
@@ -54,13 +56,13 @@ dotnet test RamosPartGenerator\RamosPartGenerator.sln
 
 ```powershell
 cd C:\RPG
-dotnet publish RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop\RamosPartGenerator.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o Publish
+dotnet publish RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop\RamosPartGenerator.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o Publish\1.5.1
 ```
 
-배포 산출물:
+배포 산출물 (`Publish\` 아래에는 최신 버전 폴더 하나만 보관):
 
 ```text
-C:\RPG\Publish\RamosPartGenerator.Desktop.exe
+C:\RPG\Publish\1.5.1\RamosPartGenerator.Desktop.exe
 ```
 
 ## 선택 UI
@@ -76,6 +78,7 @@ C:\RPG\Publish\RamosPartGenerator.Desktop.exe
 - Repair/Dummy 선택만으로 Comp 관련 Part를 만들지 않으며, 원본 Comp 또는 Reball Comp 옵션을 별도로 선택해야 합니다.
 - `Comp 일괄`은 Comp Full Part마다 Incoming/Comp/Comp BIN을 만들고, 선택한 각 Speed의 Comp_MDL/MDL BIN을 추가합니다.
 - Comp_MDL 값을 확정할 수 없으면 임의 값을 넣지 않고 해당 입력의 오류로 표시합니다.
+- 결과 표의 `상태` 열은 ERP 업로드 품목과 PGM Export 이력 기준으로 `등록됨`/`신규`를 표시하며, `중복 포함`을 체크하지 않으면 Export에서 `등록됨` 파트를 제외합니다. (단일/일괄 탭 공통)
 
 ## 프로젝트 구조
 

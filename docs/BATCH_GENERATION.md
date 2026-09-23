@@ -61,7 +61,7 @@ MDL에서 Comp로 변환할 때 다음 값을 자동 적용한다.
 | 1 | Core 일괄 생성, MDL→Comp 변환, 중복/행별 오류 처리, 단위 테스트 | 완료 |
 | 2 | `Batch Generate` 탭과 MDL 일괄 화면 | 완료 |
 | 3 | Comp 일괄, Comp_MDL, Speed 선택 | 완료 |
-| 4 | Export, 로그, 문서, 버전, 전체 검증 | 대기 |
+| 4 | Export, 로그, 문서, 버전, 전체 검증, ERP 등록 대조 | 완료 (v1.5.1) |
 
 ## Phase 1 구현
 
@@ -125,4 +125,13 @@ Comp_MDL 고정/변환 규칙:
 
 24Gb처럼 Module Density를 확정할 수 없거나 Speed가 비어 있거나 DRAM Type과 맞지 않으면 값을 추정하지 않는다. 이 경우 Incoming/Comp/Comp BIN 결과는 유지하고 해당 Comp_MDL만 실패 처리한다.
 
-고객사 MDL Speed/Bank 규칙 추가 후 현재 전체 테스트는 85개다.
+고객사 MDL Speed/Bank 규칙 추가 후 전체 테스트는 85개였다.
+
+## Phase 4 / ERP 등록 대조 (v1.5.1)
+
+- `MDL 일괄`, `Comp 일괄` 생성 결과 표에 단일 탭과 같은 `상태` 열(`등록됨`/`신규`)을 추가했다. ERP 업로드 품목과 PGM Export 이력(`%LocalAppData%\RamosPartGenerator\`) 기준이다.
+- 버튼 열에 `중복 포함` 체크박스를 추가했다. 미체크(기본)면 Export에서 `등록됨` 파트를 제외한다.
+- 상태 표시줄의 `중복 제외 N`은 한 번의 Generate 안에서 겹친 입력/Part Code 수이며, ERP 등록 여부와는 별개다.
+- Export, 선택 행 삭제, Generate는 `AppLog`로 기록된다.
+
+v1.5.1 기준 전체 테스트는 121개다.

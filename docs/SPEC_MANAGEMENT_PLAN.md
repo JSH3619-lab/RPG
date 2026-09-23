@@ -1,5 +1,7 @@
 # Part 규칙 관리 UI 구현 계획
 
+> 현재 구현 상태 (v1.5.1): 이 문서의 overlay(`custom-specs.json`) 방식 대신, 헤더 `스펙 편집` 화면에서 `code_options` 옵션셋을 직접 편집하는 방식으로 구현됐다. 저장은 `{실행폴더}/specs/shared.json` 부분 수정, 백업은 `specs/backup/{타임스탬프}/`(최근 20개). 현행 규칙은 `docs/RULES_CURRENT.md`의 `스펙 코드 옵션 편집 규칙`을 기준으로 한다. 아래는 최초 계획안이다.
+
 ## 목적
 
 새로운 Part Code, Speed, Bank/VDD 같은 규칙을 코드 수정과 재빌드 없이 화면에서 추가·수정·비활성화한다.

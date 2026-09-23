@@ -1,11 +1,11 @@
 # Ramos Part Generator 다음 세션 인수인계
 
-최종 정리일: 2026-07-23
+최종 정리일: 2026-09-23
 
 현재 버전:
 
-- Part Generator `v1.0.1`
-- Spec Rev `30.4`
+- Part Generator `v1.5.1`
+- Spec Rev `31.0`
 - 내부 규칙 키는 기존 호환을 위해 `30` 유지
 
 ## 작업 원칙
@@ -45,13 +45,13 @@ dotnet build RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/RamosP
 단일 exe publish:
 
 ```powershell
-dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/RamosPartGenerator.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o Publish
+dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/RamosPartGenerator.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o Publish/1.5.1
 ```
 
 ## 현재 배포 구조
 
 - WinForms 프로젝트: `RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop`
-- 배포 산출물: `Publish/RamosPartGenerator.Desktop.exe`
+- 배포 산출물: `Publish/1.5.1/RamosPartGenerator.Desktop.exe` (`Publish/`에는 최신 버전 폴더 하나만 보관, `docs/VERSIONING.md` 참조)
 - exe 하나만 배포 가능하도록 Core의 `specs/*.json`은 embedded resource로 포함한다.
 - 외부 `specs` 폴더가 있으면 우선 사용하고, 없으면 embedded specs로 fallback한다.
 - exe 아이콘은 `RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/Assets/RamosPartGenerator.ico`를 사용한다.
@@ -77,7 +77,7 @@ dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/Ramo
 - `Delete Selected`는 선택 셀이 포함된 결과 행만 삭제하고, 기존 `Reset`은 입력과 전체 결과를 초기화한다.
 - 로그 시간은 한국 로컬 사용 기준으로 timezone offset 없이 `[2026-05-10 10:25:16.536]` 형식으로 기록한다.
 - 프로그램 시작 로그에 Part Generator 버전을 기록한다.
-- 화면 제목과 헤더에는 `App Ver 1.0.1 | Spec Rev 30.4`를 표시한다.
+- 화면 제목과 헤더에는 `App Ver 1.5.1 | Spec Rev 31.0`를 표시한다.
 
 ### 공통 표시/Export
 
@@ -108,7 +108,7 @@ dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/Ramo
 - MDL Composition 선택 옵션은 규격서 기준으로 `4 - x4`, `8 - x8`, `6 - x16`을 표시한다.
 - DDR4/DDR5에 맞지 않는 Speed, Bank/VDD, Die Density 조합은 막는다.
 - Module Density, Die Density, Composition, Rank 조합이 계산상 맞지 않으면 생성하지 않는다.
-- IC count 표기는 `64 / compositionWidth * rankCount` 기준이다.
+- IC count 표기는 `busWidth / compositionWidth * rankCount` 기준이다. busWidth는 RDIMM(`R`)만 ECC 포함 `80`, 그 외는 `64`.
 - A100 Module 규칙:
   - Third-party Module에서 `Vendor = A`, `Purchaser = A`가 모두 맞으면 `Comp Test Site`와 관계없이 `A100`으로 표기한다.
   - Vendor 또는 Purchaser 중 하나라도 `A`가 아니면 A100이 아니며 Source 기준 표기를 사용한다.
@@ -165,6 +165,18 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
 - Parse는 두 번째 `-` 앞 구간의 마지막 2자리로 `00/0Y`를 판별하고 옵션을 자동으로 켠다.
 - 기존 Repair Dummy 조건과 겹치면 완제품 Retest를 우선하며 별도 Repair Dummy 행은 생성하지 않는다.
 
+### ERP 등록 파트 중복 체크 (v1.4.0~)
+
+- `ERP 품목 업로드`로 올린 ERP 품목코드와 PGM Export 이력을 합쳐 `등록됨`/`신규`를 판정한다.
+- 캐시는 `%LocalAppData%\RamosPartGenerator\`의 `erp-part-cache.json`, `pgm-exported-cache.json`.
+- 결과 표 `상태` 열과 `중복 포함` 체크박스(미체크 시 Export에서 `등록됨` 제외)는 단일 탭(Incoming/Module/LPDDR)과 Batch 탭(MDL 일괄/Comp 일괄) 모두 적용된다(v1.5.1).
+- 상세 규칙은 `docs/RULES_CURRENT.md`의 `ERP 등록 파트 중복 체크 규칙`.
+
+### LPDDR (v1.5.0~)
+
+- LPDDR 탭에서 입고 + Product + Product BIN을 체인 생성하고, LPDDR Full Part 역파싱을 지원한다.
+- 상세 규칙은 `docs/RULES_CURRENT.md`의 `LPDDR 규칙 (Rev.31.0)`.
+
 ## UI 안정화 메모
 
 - 입력 UI는 그룹, 필드, 선택 옵션의 3열 `ListBox` 클릭 방식이다.
@@ -173,7 +185,7 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
 
 ## 테스트 기준
 
-현재 기준 전체 테스트는 85개다.
+현재 기준 전체 테스트는 121개다.
 
 주요 테스트 범위:
 
@@ -193,6 +205,9 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
 - MDL Speed `CA`와 Bank/VDD `8` 자동 매핑 및 잘못된 Bank/VDD 차단
 - Export `영업코드`, Arial, `MDL Dummy`, 자동 열 폭
 - embedded specs fallback
+- LPDDR 입고/Product 생성과 역파싱
+- ERP 품목 파일 파싱
+- 스펙 코드 옵션 편집/백업/복원
 
 ## Batch Generate 진행 상황
 
@@ -208,6 +223,7 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
   - 기본 PID/MFGID, 작업 Part, 원본/Reball Comp 관련 체크 옵션
   - `Generate` 한 번으로 입력별 감지/처리 상태와 실제 생성 Part 목록 표시
   - Batch 결과 전용 선택 행 삭제와 Excel Export
+  - 결과 표 ERP `상태` 열, `중복 포함` 체크박스 (v1.5.1)
   - 모든 옵션 기본 미선택, 별도 Preview 버튼 없음
 - Phase 3 Comp 일괄/Comp_MDL UI 구현 완료
   - `Batch Generate` 내부 `MDL 일괄 / Comp 일괄` 전환
@@ -219,7 +235,7 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
   - Comp 옵션은 `Comp 관련`, `Comp_MDL` 그룹으로 구분하고 우측 영역은 세로 스크롤 지원
 - 상세 범위는 `docs/BATCH_GENERATION.md`를 기준으로 한다.
 
-고객사 추가 규칙을 포함한 전체 85개 테스트는 통과했다. 자동 UI 실행 도구는 시간 초과되었으므로 배포 EXE에서 Batch 탭의 실제 화면 배치와 DPI별 표시는 수동 확인한다.
+v1.5.1 기준 전체 121개 테스트는 통과했다. 자동 UI 실행 도구는 시간 초과되었으므로 배포 EXE에서 Batch 탭의 실제 화면 배치와 DPI별 표시는 수동 확인한다.
 
 ## 커밋/배포 주의
 

@@ -4,6 +4,7 @@
 
 - Batch Generate(MDL 일괄·Comp 일괄) 결과 표에 ERP 등록 대조 `상태` 열(등록됨/신규) 추가: 단일 생성 탭과 동일하게 ERP 스냅샷 + PGM Export 이력 기준으로 `등록됨` 표시
 - Batch Generate에도 `중복 포함` 체크박스 추가: 미체크 시 Export에서 등록된 파트 자동 제외 (기존엔 Batch Export가 항상 전체 포함)
+- RDIMM 품목규격 IC 수를 ECC 포함 80-bit 기준으로 계산: x8 32GB 16→20, x4 64GB 32→40. UDIMM/SODIMM/Comp는 64-bit 유지, 용량 계산은 변경 없음
 
 ## 1.5.0 - 2026-08-19
 

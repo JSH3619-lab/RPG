@@ -9,8 +9,8 @@
 
 현재 기준:
 
-- Part Generator `v1.4.1`
-- Spec Rev `30.6`
+- Part Generator `v1.5.1`
+- Spec Rev `31.0`
 
 ## 프로그램 버전 규칙
 
@@ -21,10 +21,10 @@
 프로그램 버전은 `RamosPartGenerator.Desktop.csproj`에서 관리한다.
 
 ```xml
-<Version>1.0.2</Version>
-<AssemblyVersion>1.0.2.0</AssemblyVersion>
-<FileVersion>1.0.2.0</FileVersion>
-<InformationalVersion>1.0.2</InformationalVersion>
+<Version>1.5.1</Version>
+<AssemblyVersion>1.5.1.0</AssemblyVersion>
+<FileVersion>1.5.1.0</FileVersion>
+<InformationalVersion>1.5.1</InformationalVersion>
 ```
 
 변경 시 화면 제목, 헤더, EXE 파일 속성, 시작 로그에 같은 버전이 반영된다.
@@ -33,9 +33,9 @@
 
 Spec Rev 표시값은 `specs/rev30.json`의 `display_revision`에서 관리한다.
 
-내부 API와 파일명 호환을 위해 규칙 키 `30`과 `rev30.json` 파일명은 유지한다. 사용자 화면에는 `display_revision`인 `30.6`을 표시한다.
+내부 API와 파일명 호환을 위해 규칙 키 `30`과 `rev30.json` 파일명은 유지한다. 사용자 화면에는 `display_revision`인 `31.0`을 표시한다.
 
-Rev 30.6은 `RAMOS_DRAM_PART (Rev.30.6).pdf` 원본 규격을 반영한 버전이다.
+Rev 31.0은 `RAMOS_DRAM_PART (Rev.31.0).pdf` 원본 규격(LPDDR 파트 규칙 포함)을 반영한 버전이다.
 
 ## 배포 체크리스트
 
@@ -43,7 +43,7 @@ Rev 30.6은 `RAMOS_DRAM_PART (Rev.30.6).pdf` 원본 규격을 반영한 버전�
 2. Spec 변경이면 `display_revision`을 확인한다.
 3. `CHANGELOG.md`에 변경 내역을 기록한다.
 4. 전체 테스트와 Desktop 빌드를 실행한다.
-5. 단일 EXE를 Publish한다.
+5. 단일 EXE를 `Publish/X.Y.Z/`로 Publish하고 이전 버전 폴더를 삭제한다. (`-o Publish/X.Y.Z`, 명령은 `README.md` 참조)
 6. EXE 파일 버전과 화면 표시를 확인한다.
 7. 커밋 후 `git tag -a vX.Y.Z`로 릴리스를 태그한다.
 8. 커밋과 태그를 원격 저장소에 Push한다.

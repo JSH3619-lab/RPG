@@ -21,6 +21,10 @@ C:\RPG\RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop
 - `MainForm.cs`: Incoming/Comp, Module 화면과 공통 버튼/Export 처리
 - `MainForm.Batch.cs`: Batch Generate MDL 일괄 화면과 상태 관리
 - `MainForm.BatchComp.cs`: Batch Generate Comp/Comp_MDL 일괄 화면과 상태 관리
+- `MainForm.Lpddr.cs`: LPDDR 입고/Product 생성과 역파싱 화면
+- `ErpPartIndex.cs`: ERP 업로드 품목·PGM Export 이력 캐시와 `등록됨` 판정
+- `SpecEditorForm.cs`: 스펙 코드 옵션 편집/백업 복원 화면
+- `AppLog.cs`: 일자별 운영 로그
 - `DesktopLookupCatalog.cs`: Desktop UI용 필드와 선택 옵션 구성
 - `DisplayHelpers.cs`: 표시값과 실제 코드값 변환 helper
 
@@ -28,8 +32,8 @@ C:\RPG\RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop
 
 현재 표시 버전:
 
-- Part Generator `v1.0.1`
-- Spec Rev `30.4`
+- Part Generator `v1.5.1`
+- Spec Rev `31.0`
 
 프로그램 제목, 상단 헤더, EXE 파일 속성, 시작 로그에 프로그램 버전을 표시한다. Spec Rev는 `rev30.json`의 `display_revision`을 사용한다.
 
@@ -344,13 +348,20 @@ Comp 일괄 동작:
 - 중복 입력과 최종 Part Code는 한 번만 표시한다.
 - Comp 일괄 결과의 선택 행 삭제와 Excel Export를 지원한다.
 
+MDL 일괄/Comp 일괄 공통 (v1.5.1):
+
+- 생성 결과 표에 단일 탭과 같은 `상태` 열(`등록됨`/`신규`)을 표시한다.
+- 버튼 열의 `중복 포함`을 체크하지 않으면(기본) Export에서 `등록됨` 파트를 제외한다.
+- 상태 표시줄의 `중복 제외 N`은 한 번의 Generate 안에서 겹친 입력/Part Code 수이며 ERP 등록 여부와는 별개다.
+
 ### DIMM Type
 
 현재 `shared.json` 기준 DIMM Type 옵션:
 
-- `D - UDIMM 288pin`
-- `S - SODIMM 262pin`
-- `G - x64 288pin GamingUDIMM (RGB)`
+- `D - x64 288pin Unbuffered DIMM`
+- `S - x64 260pin Unbuffered SODIMM`
+- `G - x64 288pin Gaming UDIMM (RGB)`
+- `R - x80 288pin Registered DIMM`
 - `C - Comp`, Rev30 addition으로 추가 표시
 
 `C - Comp` 선택 시 출하 Comp Module 기본값을 자동 입력한다.
@@ -381,23 +392,31 @@ Export 표시 기준:
 
 결과 row가 없으면 Export하지 않고 오류 메시지를 표시한다.
 
+ERP 등록 대조:
+
+- `중복 포함`을 체크하지 않으면 `등록됨` 파트를 Export 대상에서 제외한다. 모두 제외되면 오류 메시지를 표시한다.
+- Export한 파트코드는 `%LocalAppData%\RamosPartGenerator\pgm-exported-cache.json`에 기록되어 이후 `등록됨`으로 판정된다.
+
 ## 구현 정도
 
 | 항목 | 상태 | 비고 |
 | --- | --- | --- |
 | WinForms 프로젝트 생성 | 완료 | `csharp-desktop` 하위로 기존 프로젝트와 분리 |
 | Core 로직 연결 | 완료 | `IncomingCompService`, `ModuleService` 직접 사용 |
-| Spec JSON 로딩 | 완료 | 실행 폴더 `specs` 기준 |
+| Spec JSON 로딩 | 완료 | 실행 폴더 `specs` 우선, 없으면 embedded specs |
 | Incoming & Comp 화면 | 1차 완료 | Parse, Generate, Export, 선택 행 삭제, Reset 구현 |
 | Module 화면 | 1차 완료 | Comp parse, Module parse, Generate, Export, 선택 행 삭제, Reset 구현 |
 | Batch Generate MDL 화면 | 완료 | 다중 입력, 옵션 선택, Generate, Export, 선택 행 삭제, Reset 구현 |
 | Batch Generate Comp 화면 | 완료 | Comp 다중 입력, Comp_MDL/Speed 복수 선택, Generate, Export, 선택 행 삭제, Reset 구현 |
+| LPDDR 화면 | 완료 | 입고/Product/Product BIN 생성, 역파싱 (v1.5.0) |
+| ERP 등록 대조 | 완료 | 단일·일괄 탭 `상태` 열, `중복 포함` Export 필터 (Batch는 v1.5.1) |
+| 스펙 코드 옵션 편집 | 완료 | 옵션 추가/수정/삭제, 백업 복원 |
 | Excel Export | 완료 | 기존 exporter 재사용 |
 | Ramos 색상 테마 | 1차 완료 | Header, Tab, Button, Table 색상 반영 |
 | 필드 겹침/잘림 대응 | 1차 완료 | 상단 입력부와 필드 영역 layout 조정 |
 | Web/API 없이 exe 실행 | 가능 | Desktop 앱은 API 호출 없음 |
-| `.sln` 편입 | 미완료 | 현재 project path로 직접 빌드/실행 |
-| Publish 패키징 | 완료 | 최상위 `Publish` 폴더에 self-contained 단일 exe 생성 |
+| `.sln` 편입 | 완료 | `RamosPartGenerator.sln`에 Core/Excel/Tests/Desktop 포함 |
+| Publish 패키징 | 완료 | 최상위 `Publish/{버전}/` 폴더에 self-contained 단일 exe 생성 |
 | 설치 프로그램 | 미완료 | MSI/Setup 등은 아직 없음 |
 | 전체 UI 수동 QA | 진행 필요 | Batch 탭 포함 긴 option text, 작은 창 크기, DPI 확대 확인 필요 |
 | Desktop UI 자동 테스트 | 미구현 | 현재 Core 단위 테스트 중심 |

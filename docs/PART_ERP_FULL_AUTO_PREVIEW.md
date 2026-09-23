@@ -29,11 +29,12 @@
 - C# WinForms 기반 단일 실행 프로그램이다.
 - Part 생성·파싱·검증 Core가 UI와 분리돼 있다.
 - `specs/shared.json`, `specs/rev30.json`에서 규칙 일부를 읽는다.
-- Incoming, Comp, Comp BIN, MDL, MDL BIN, Dummy/Repair 관련 Part를 생성한다.
+- Incoming, Comp, Comp BIN, MDL, MDL BIN, Dummy/Repair 관련 Part와 LPDDR 입고/Product Part를 생성한다.
 - 등록용 Excel Export 기능이 있다.
+- ERP 품목 Excel 업로드와 PGM Export 이력으로 생성 결과의 `등록됨`/`신규`를 판정하고, Export 시 등록 파트를 기본 제외한다 (단일·일괄 탭 공통, v1.5.1 기준).
 - 현재 생성 결과 모델은 품목코드, 품목명, 품목일반정보, 품목규격 중심이다.
 - MDL Export의 영업코드는 열만 존재하고 실제 계산 로직은 아직 없다.
-- 현재 테스트는 86개가 통과하는 상태다.
+- v1.5.1 기준 테스트는 121개가 통과하는 상태다.
 
 ### 2.2 ERP 등록 결과 Excel
 
