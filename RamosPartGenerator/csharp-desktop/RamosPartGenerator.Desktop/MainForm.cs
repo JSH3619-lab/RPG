@@ -1359,6 +1359,8 @@ public sealed partial class MainForm : Form
 
             var parsed = _services.Module.ParseModuleFullPart(Revision, partCode);
             ApplyModuleRequest(parsed);
+            // Parse 후에는 필드값이 기준. 창에 남기면 Generate 시 필드 수정값을 덮어쓴다.
+            _moduleFullPartText.Text = string.Empty;
             AppLog.Info(
                 "Module.ParseFull.Success",
                 ("mode", ModuleModeName()),
@@ -1632,7 +1634,24 @@ public sealed partial class MainForm : Form
 
             if (_moduleFields.TryGetValue("a100SpecialCode", out var specialCode1Combo))
             {
-                SetFieldOptions(specialCode1Combo, _services.Lookups.SpecialCode1Options(IsModuleSpecialCode1Table1()));
+                var isTable1 = IsModuleSpecialCode1Table1();
+                IReadOnlyList<string> specialCode1Options = _services.Lookups.SpecialCode1Options(isTable1);
+                // A100(Table 1)은 수기 선택, Table 2만 DIMM Type으로 거른다.
+                var allowedSpecialCode1 = isTable1 ? null : ModuleService.GetSpecialCode1Table2Codes(dimmTypeCode);
+                if (allowedSpecialCode1 is not null)
+                {
+                    specialCode1Options = specialCode1Options
+                        .Where(option => allowedSpecialCode1.Contains(DisplayHelpers.ExtractCode(option), StringComparer.OrdinalIgnoreCase))
+                        .ToArray();
+                }
+
+                SetFieldOptions(specialCode1Combo, specialCode1Options);
+                var isSpecialCode1Fixed = allowedSpecialCode1 is { Count: 1 } && specialCode1Options.Count == 1;
+                if (isSpecialCode1Fixed)
+                {
+                    specialCode1Combo.Text = specialCode1Options[0];
+                }
+                specialCode1Combo.Enabled = !isSpecialCode1Fixed;
             }
 
             if (dimmTypeCode == "C" &&

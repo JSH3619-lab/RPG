@@ -80,12 +80,12 @@
 ## Module 규칙
 - Module은 `Comp Full Part`를 해석해 공통 정보를 먼저 채울 수 있다.
 - 이후 사용자가 `DIMM Type`, `Module Density`, `PCB` 등 Module 전용 항목을 결정한다.
-- DDR4 Speed는 현재 `WE`만 허용한다.
-- DDR5 Speed는 `QK`, `WM`, `CM`, `CA`, `CQ`, `CR`, `CS`를 허용한다.
+- DDR4 Speed는 `TD`, `WE`를 허용한다.
+- DDR5 Speed는 `QK`, `WM`, `CM`, `CA`, `CP`, `CQ`, `CR`, `CS`를 허용한다.
 - Bank/VDD 매핑:
-  - DDR4 `WE` -> `16Bank / 1.2V`
+  - DDR4 `TD`, `WE` -> `16Bank / 1.2V`
   - DDR5 `QK`, `WM` -> `32Bank / 1.1V`
-  - DDR5 `CM`, `CQ` -> `32Bank / 1.35V`
+  - DDR5 `CM`, `CP`, `CQ` -> `32Bank / 1.35V`
   - DDR5 `CA` -> `32Bank / 1.25V`
   - DDR5 `CR`, `CS` -> `32Bank / 1.4V`
 - `CA`는 `DDR5-6000 (3000MHz @ 48/48/48)` 조건이다.
@@ -128,8 +128,13 @@
 - `Vendor = A(A100)` 그리고 `Purchaser = A(ADATA)`이면 Table 1을 적용한다.
   - `0(Blank) : MPS PMIC + Renesas SPD`, `1 : Richtek + Renesas`, `2 : Richtek + Montage`, `X : N/A`
 - 그 외 모든 경우 Table 2를 적용한다.
-  - `0(Blank) : anpec + anpec`, `A : Richtek / Montage / Montage Gen2 RCD / Montage TS`, `B : Rambus / Rambus / Rambus Gen2 RCD / Rambus TS`, `X : N/A`
+  - `0(Blank) : (DDR5) anpec + anpec / (DDR4) PMIC 없음 + Fudan SPD`, `A : Richtek / Montage / Montage Gen2 RCD / Montage TS`, `B : Rambus / Rambus / Rambus Gen2 RCD / Rambus TS`, `X : N/A`
 - Comp 판매용 MDL(DIMM Type `C`)은 SPD류 BOM이 없으므로 Special Code 1을 `X(N/A)`로 자동 입력한다.
+- Table 2는 DIMM Type별로 허용 코드를 제한한다 (화면 목록 거르기 + Core 검증, Batch 포함).
+  - `R`(RDIMM) -> `A`, `B` (RCD/TS 구성은 RDIMM 전용, 공백 불가)
+  - `D`, `S`, `G` -> `(None)` 자동 고정 (자사 UDIMM/SODIMM은 PMIC·SPD 고정)
+  - `C` -> `X` 자동 고정
+- Table 1(A100+ADATA)은 고객 BOM이 고정이 아니므로 DIMM Type 제한 없이 수기 선택한다.
 - Comp Test Site는 Table 판정에 사용하지 않는다.
 - 파싱 시 마지막 한 글자가 Special Code 1/2 양쪽에 존재하는 코드(예: `B`)면 기존 파트 호환을 위해 Special Code 2로 해석한다.
 
@@ -175,4 +180,5 @@
 
 ## 빠른 입력 규칙
 - `Comp Full Part`, `Module Full Part` 직접 입력은 필드 자동 채움 보조 기능이다.
+- `Module Full Part`는 Parse 성공 후 입력창을 비운다. 이후 생성은 필드값 기준이다 (창에 값이 남아 있으면 Generate 시 필드 수정값보다 우선하기 때문).
 - 직접 입력 후에도 길이, 구분자, 허용 코드, Rev별 필드 구조, Third-party 필수값을 검증한다.

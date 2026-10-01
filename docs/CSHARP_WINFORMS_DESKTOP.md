@@ -250,7 +250,7 @@ Module Full Part 파싱:
 ModuleService.ParseModuleFullPart(revision, partCode)
 ```
 
-Comp Full Part는 Module 기본값을 유도하는 용도로 사용한다. Module Full Part는 실제 Module 코드에서 필드값을 복원하는 용도로 사용한다. 두 번째 `-` 앞 구간이 `00` 또는 `0Y`로 끝나면 해당 2자리를 제외하고 필드를 파싱하며 `완제품 Retest (00/0Y)` 옵션을 자동으로 켠다.
+Comp Full Part는 Module 기본값을 유도하는 용도로 사용한다. Module Full Part는 실제 Module 코드에서 필드값을 복원하는 용도로 사용하며, Parse 성공 후 입력창을 비워 이후 생성이 필드값 기준이 되게 한다. 두 번째 `-` 앞 구간이 `00` 또는 `0Y`로 끝나면 해당 2자리를 제외하고 필드를 파싱하며 `완제품 Retest (00/0Y)` 옵션을 자동으로 켠다.
 
 ### 생성
 
@@ -281,6 +281,7 @@ Speed 제한:
 
 DDR4:
 
+- `TD - 2666 MT/s (1333MHz @ 19/19/19)`
 - `WE - 3200 MT/s (1600MHz @ 22/22/22)`
 
 DDR5:
@@ -289,19 +290,27 @@ DDR5:
 - `WM - 5600 MT/s (2800MHz @ 46/45/45)`
 - `CM - 6000 MT/s (3000MHz @ 34/44/44)`
 - `CA - 6000 MT/s (3000MHz @ 48/48/48)`
+- `CP - 6400 MT/s (3200MHz @ 52/52/52)`
 - `CQ - 6400 MT/s (3200MHz @ 36/44/44)`
 - `CR - 6800 MT/s (3400MHz @ 36/44/44)`
 - `CS - 7200 MT/s (3600MHz @ 38/46/46)`
 
 Bank/VDD 자동 계산:
 
-- DDR4 + `WE` -> `4`
+- DDR4 + `TD` or `WE` -> `4`
 - DDR5 + `QK` or `WM` -> `5`
-- DDR5 + `CM` or `CQ` -> `6`
+- DDR5 + `CM`, `CP` or `CQ` -> `6`
 - DDR5 + `CA` -> `8` (`32Bank / 1.25V`)
 - DDR5 + `CR` or `CS` -> `7`
 
 Third-party Module Source일 때만 Purchaser를 입력할 수 있다.
+
+Special Code 1 (Table 2, A100 제외) DIMM Type별 목록:
+
+- `R` -> `A`, `B`
+- `D`, `S`, `G` -> `(None)` 자동 고정(잠금)
+- `C` -> `X` 자동 고정(잠금)
+- DIMM Type 미선택 -> 전체 목록
 
 Third-party Module Source:
 

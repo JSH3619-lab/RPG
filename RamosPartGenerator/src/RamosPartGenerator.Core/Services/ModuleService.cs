@@ -1024,19 +1024,44 @@ public sealed class ModuleService
         };
     }
 
+    // Table 2 Special Code 1의 DIMM Type별 허용 코드. 빈 문자열은 (None).
+    // RCD/TS 구성(A/B)은 RDIMM 전용, 자사 UDIMM/SODIMM은 PMIC·SPD 고정(None), Comp MDL은 X(N/A).
+    // DIMM Type이 비었거나 미정의면 null(제한 없음).
+    public static IReadOnlyList<string>? GetSpecialCode1Table2Codes(string dimmTypeCode)
+    {
+        return NormalizeCode(dimmTypeCode) switch
+        {
+            "R" => new[] { "A", "B" },
+            "D" or "S" or "G" => new[] { string.Empty },
+            "C" => new[] { "X" },
+            _ => null
+        };
+    }
+
     private void ValidateSpecialCode1(ModuleRequest request)
     {
-        if (IsBlankCode(request.A100SpecialCode))
-        {
-            return;
-        }
-
-        if (!IsSpecialCode1(request, request.A100SpecialCode))
+        var isBlank = IsBlankCode(request.A100SpecialCode);
+        if (!isBlank && !IsSpecialCode1(request, request.A100SpecialCode))
         {
             var tableLabel = IsSpecialCode1Table1(request)
                 ? "Table 1 (Vendor A100 + Purchaser ADATA)"
                 : "Table 2 (일반)";
             throw new InvalidOperationException($"Special Code 1 '{request.A100SpecialCode}'은(는) {tableLabel} 허용 코드가 아닙니다.");
+        }
+
+        // A100(Table 1)은 고객 BOM이 고정이 아니라 수기 선택이므로 DIMM Type 제한을 두지 않는다.
+        if (IsSpecialCode1Table1(request))
+        {
+            return;
+        }
+
+        var allowedCodes = GetSpecialCode1Table2Codes(request.DimmTypeCode);
+        var code = isBlank ? string.Empty : NormalizeCode(request.A100SpecialCode);
+        if (allowedCodes is not null && !allowedCodes.Contains(code, StringComparer.OrdinalIgnoreCase))
+        {
+            var allowedLabel = string.Join(" / ", allowedCodes.Select(item => item.Length == 0 ? "(None)" : item));
+            var currentLabel = code.Length == 0 ? "(None)" : code;
+            throw new InvalidOperationException($"DIMM Type '{request.DimmTypeCode}'은(는) Special Code 1 {allowedLabel}만 허용됩니다. 현재: {currentLabel}");
         }
     }
 }

@@ -2,6 +2,9 @@
 
 ## 1.5.1 - 2026-09-23
 
+- (2026-10-01 추가) PDF Rev.31.0 재수령분 반영: Speed `TD`(DDR4-2666, Bank/VDD 4), `CP`(DDR5-6400 52/52/52, Bank/VDD 6) 추가, Special Code 1 Table 2 공백 설명에 DDR4(PMIC 없음 + Fudan SPD) 병기
+- (2026-10-01 추가) Special Code 1 Table 2를 DIMM Type별로 제한: R→A/B, D/S/G→(None) 고정, C→X 고정. 화면 목록 거르기 + Core 검증(Batch 포함). A100(Table 1)은 수기 선택 유지
+- (2026-10-01 추가) Module Full Part Parse 후 입력창 비움: 창에 값이 남아 필드 수정값이 생성에 반영되지 않던 문제 수정
 - Batch Generate(MDL 일괄·Comp 일괄) 결과 표에 ERP 등록 대조 `상태` 열(등록됨/신규) 추가: 단일 생성 탭과 동일하게 ERP 스냅샷 + PGM Export 이력 기준으로 `등록됨` 표시
 - Batch Generate에도 `중복 포함` 체크박스 추가: 미체크 시 Export에서 등록된 파트 자동 제외 (기존엔 Batch Export가 항상 전체 포함)
 - RDIMM 품목규격 IC 수를 ECC 포함 80-bit 기준으로 계산: x8 32GB 16→20, x4 64GB 32→40. UDIMM/SODIMM/Comp는 64-bit 유지, 용량 계산은 변경 없음

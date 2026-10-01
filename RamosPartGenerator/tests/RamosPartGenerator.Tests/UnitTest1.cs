@@ -1271,7 +1271,7 @@ public class UnitTest1
     }
 
     [Fact]
-    public void GeneratePreview_Module_SpecialCode1Table2_AllowsRambusCodeForNonA100()
+    public void GeneratePreview_Module_SpecialCode1Table2_AllowsRambusCodeForRdimm()
     {
         var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
         var provider = new SpecProvider(specDirectory);
@@ -1283,7 +1283,7 @@ public class UnitTest1
             Revision = "30",
             ModuleSourceCode = "RM",
             DramTypeCode = "R",
-            DimmTypeCode = "D",
+            DimmTypeCode = "R",
             ModuleDensityCode = "AG",
             DieDensityCode = "A",
             CompositionCode = "8",
@@ -1300,7 +1300,45 @@ public class UnitTest1
             A100SpecialCode = "B"
         });
 
-        Assert.Equal("RMRDAG58A1P-GPWRRWM7GB", rows[0].PartCode);
+        Assert.Equal("RMRRAG58A1P-GPWRRWM7GB", rows[0].PartCode);
+    }
+
+    [Theory]
+    [InlineData("D", "A")]
+    [InlineData("S", "B")]
+    [InlineData("R", "")]
+    [InlineData("C", "A")]
+    public void GeneratePreview_Module_SpecialCode1Table2_RejectsCodeNotAllowedForDimmType(string dimmTypeCode, string specialCode1)
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var ex = Assert.Throws<InvalidOperationException>(() => service.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            ModuleSourceCode = "RM",
+            DramTypeCode = "R",
+            DimmTypeCode = dimmTypeCode,
+            ModuleDensityCode = "AG",
+            DieDensityCode = "A",
+            CompositionCode = "8",
+            RankCode = "1",
+            GenerationCode = "P",
+            IcBrandCode = "G",
+            ModuleCompTypeCode = "P",
+            CompTestCode = "W",
+            ModuleSmtCode = "R",
+            ModuleTestCode = "R",
+            SpeedCode = "WM",
+            PcbCode = "7",
+            VendorCode = "G",
+            A100SpecialCode = specialCode1
+        }));
+
+        Assert.Contains("Special Code 1", ex.Message);
+        Assert.Contains("DIMM Type", ex.Message);
     }
 
     [Fact]
