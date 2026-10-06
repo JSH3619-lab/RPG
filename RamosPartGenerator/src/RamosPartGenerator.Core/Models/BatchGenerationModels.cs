@@ -14,6 +14,7 @@ public enum ModuleBatchInputKind
     FirstRepair,
     SecondRepair,
     ReballRepair,
+    Mining,
     SharedDummy,
     SecondRepairDummy,
     ReballRepairDummy,
@@ -28,9 +29,11 @@ public sealed class MdlBatchOptions
     public bool IncludeFirstRepair { get; set; }
     public bool IncludeSecondRepair { get; set; }
     public bool IncludeReballRepair { get; set; }
+    public bool IncludeMining { get; set; }
     public bool IncludeFinishedProductRetest { get; set; }
     public bool IncludeOriginalCompRelated { get; set; }
     public bool IncludeReballCompRelated { get; set; }
+    public bool IncludeMiningCompRelated { get; set; }
 }
 
 public sealed class CompBatchOptions

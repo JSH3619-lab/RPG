@@ -2,6 +2,9 @@
 
 ## 1.5.2 - 2026-10-06
 
+- (2026-10-06 추가) PDF Rev.32.1 반영 (Mining): Module Special Code 2와 Comp(DDD/DLK) Comp Type 2에 `M : Mining` 추가. Reball과 같은 프로세스로 처리(Dummy 없음, Module↔Comp 변환 시 `M` 유지). 끝자리 `M` 단독은 Mining, `MM`은 Mining + RMA(자산)로 파싱
+- (2026-10-06 추가) Batch Generate에 `Mining`(작업 Part), `Mining Comp 관련`(Comp 관련) 체크박스 추가, 입력 파트 감지 상태에 Mining 표시
+- (2026-10-06 추가) 화면 Spec 표시 Rev 31.0 → 32.1. MCP 등 Rev.32.1 기타 신규 항목은 미반영
 - 단일 생성 탭(Incoming/Module/LPDDR) Generate 반복 시 같은 파트가 결과 표에 계속 쌓이던 문제 수정: 표에 이미 있는 Part Code는 추가하지 않고 상태줄에 `목록 중복 N건 제외` 표시. 기등록 경고 팝업도 실제 추가된 행 기준
 - 팀 공용 운용 전환: 공유 폴더 `PGM\DRAMPartGenerator\`의 exe 하나를 함께 실행하고, ERP 업로드·PGM Export 이력(`erp-part-cache.json`, `pgm-exported-cache.json`)을 exe 폴더에 저장해 사용자 간 공유
 - Export 이력 저장 시 파일을 다시 읽어 합친 뒤 저장(다른 사용자 이력 보존), 임시 파일 저장 후 교체(저장 중 단절 시 손상 방지)

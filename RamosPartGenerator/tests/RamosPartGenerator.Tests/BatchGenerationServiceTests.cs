@@ -89,6 +89,21 @@ public sealed class BatchGenerationServiceTests
     }
 
     [Fact]
+    public void GenerateFromModuleParts_MiningCompRelated_UsesCompType2M()
+    {
+        var service = CreateService();
+
+        var result = service.GenerateFromModuleParts(
+            new[] { BaseModulePart },
+            new MdlBatchOptions { IncludeMiningCompRelated = true });
+
+        Assert.Equal(8, result.Rows.Count);
+        Assert.Equal("K4RAH086VA-PGGELM", result.Rows[0].PartCode);
+        Assert.Equal("RCRAH086VA-PBGWGM", result.Rows[1].PartCode);
+        Assert.Contains("Mining", result.Rows[1].Specification);
+    }
+
+    [Fact]
     public void GenerateFromModuleParts_FirstRepairOnly_DoesNotGenerateCompRows()
     {
         var service = CreateService();
@@ -128,6 +143,7 @@ public sealed class BatchGenerationServiceTests
     [InlineData("RMRDAG58A1A-GPWRRWM7GR", ModuleBatchInputKind.FirstRepair)]
     [InlineData("RMRDAG58A1A-GPWRRWM7GS", ModuleBatchInputKind.SecondRepair)]
     [InlineData("RMRDAG58A1A-GPWRRWM7GC", ModuleBatchInputKind.ReballRepair)]
+    [InlineData("RMRDAG58A1A-GPWRRWM7GM", ModuleBatchInputKind.Mining)]
     [InlineData("RMRDAG58A1A-GPWRRWM7G00", ModuleBatchInputKind.SharedDummy)]
     [InlineData("RMRDAG58A1A-GPWRRWM7GR0", ModuleBatchInputKind.SecondRepairDummy)]
     [InlineData("RMRDAG58A1A-GPWRRWM7GB0", ModuleBatchInputKind.ReballRepairDummy)]
@@ -206,6 +222,20 @@ public sealed class BatchGenerationServiceTests
         Assert.Equal(BatchItemStatus.Success, result.Items[0].Status);
         Assert.Contains(result.Rows, row => row.PartCode == "RMRC2G58A0A-GPW00WM0GXB");
         Assert.Contains(result.Rows, row => row.Kind == "Module BIN" && row.PartCode.Contains("WM0GXB-"));
+    }
+
+    [Fact]
+    public void GenerateFromCompParts_MiningComp_CreatesMiningCompMdl()
+    {
+        var service = CreateService();
+
+        var result = service.GenerateFromCompParts(
+            new[] { "RCRAH086VA-PBGWGM" },
+            new CompBatchOptions { IncludeCompMdl = true, SpeedCodes = new[] { "WM" } });
+
+        Assert.Equal(ModuleBatchInputKind.Mining, result.Items[0].DetectedInputKind);
+        Assert.Equal(BatchItemStatus.Success, result.Items[0].Status);
+        Assert.Contains(result.Rows, row => row.PartCode == "RMRC2G58A0A-GPW00WM0GXM");
     }
 
     [Fact]

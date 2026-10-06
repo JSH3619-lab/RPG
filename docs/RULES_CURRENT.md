@@ -2,12 +2,18 @@
 
 원본 문서는 아래 두 파일을 기준으로 한다.
 
-- `RAMOS_DRAM_PART (Rev.31.0).pdf` (LPDDR 파트 규칙 포함)
+- `RAMOS_DRAM_PART (Rev.32.1).pdf` (LPDDR 파트 규칙 포함)
 - `RAMOS_DRAM_TM_PART (Rev 2.1).pdf`
 
 ## 지원 Rev
 - 현재 운영 키: `30`
-- 표시 기준: DRAM PART `Rev.31.0`, TM PART `Rev 2.1`
+- 표시 기준: DRAM PART `Rev.32.1`, TM PART `Rev 2.1`
+
+## Rev.32.1 반영 차이 (Mining)
+- Module Special Code 2에 `M : Mining`, Comp(DDD/DLK) Comp Type 2에 `M : Mining`을 추가한다.
+- Mining은 Reball과 프로세스가 같고 코드(`B` → `M`)와 명칭만 다르다. Dummy 없이 Module/Module BIN만 생성하는 것도 Reball과 동일하다.
+- Special Code 2 `M`(Mining)과 Special Code 3 `M`(RMA 자산)은 별도 섹션이다. 파싱 시 Special Code 2를 먼저 해석하므로 끝자리 `M` 하나는 Mining, `MM`은 Mining + RMA(자산)이다.
+- MCP 등 Rev.32.1의 그 외 신규 항목은 아직 미반영이다.
 
 ## Rev.30.6 반영 차이
 - Comp Dram Type에 `S : DDR5 RDIMM`을 추가한다. 생성 규칙은 DDR5(`R`)와 동일하게 적용한다 (Density AH/HE/BH, Bank 6, Interface V, Comp BIN CA~CF).
@@ -102,10 +108,10 @@
 
 ## Module 일괄 생성 규칙
 - 기본 PID와 기본 MFGID는 각각 선택해서 생성한다.
-- Reball, 1차 Repair, 2차 Repair, Reball Repair, 완제품 Retest는 필요한 작업만 선택한다.
+- Reball, 1차 Repair, 2차 Repair, Reball Repair, Mining, 완제품 Retest는 필요한 작업만 선택한다.
 - Repair 작업 선택은 Incoming/Comp/Comp BIN 생성을 자동으로 포함하지 않는다.
-- Comp 관련은 `원본 Comp 관련`, `Reball Comp 관련` 두 종류를 별도로 선택한다.
-- 원본 Comp 관련은 Comp Type 2를 비우고, Reball Comp 관련은 Comp Type 2에 `B`를 사용한다.
+- Comp 관련은 `원본 Comp 관련`, `Reball Comp 관련`, `Mining Comp 관련` 세 종류를 별도로 선택한다.
+- 원본 Comp 관련은 Comp Type 2를 비우고, Reball Comp 관련은 `B`, Mining Comp 관련은 `M`을 사용한다.
 - 1차 Repair Dummy와 완제품 Retest Dummy의 `{기본 MDL}00`은 같은 Part다.
 - 1차 Repair와 완제품 Retest를 동시에 생성할 때 `{기본 MDL}00`은 한 번만 생성하고 품목규격 끝은 `Dummy`로 통일한다.
 - 2차 Repair Dummy `R0`와 Reball Repair Dummy `B0`는 기존 개별 규칙을 유지한다.
@@ -117,7 +123,7 @@
 - Comp_MDL은 `DIMM Type = C - Comp`를 사용한다.
 - Module Density는 Base Die Density 기준으로 `8Gb -> 1GB`, `16Gb -> 2GB`, `32Gb -> 4GB`를 적용한다.
 - `Rank`, `SMT Site`, `Module Test Site`, `PCB`는 `0`을 사용한다.
-- Comp Type 2가 `B - Reball`이면 Reball Comp_MDL로 생성한다.
+- Comp Type 2가 `B - Reball`이면 Reball Comp_MDL(Special Code 2 `B`), `M - Mining`이면 Mining Comp_MDL(Special Code 2 `M`)로 생성한다.
 - Comp_MDL Speed는 자동 선택하지 않고 사용자가 복수 선택한다.
 - 선택한 각 Speed마다 Comp_MDL과 MDL BIN 한 쌍을 생성한다.
 - Speed가 없거나 입력과 맞지 않거나 Module Density를 결정할 수 없으면 임의 값을 사용하지 않고 Comp_MDL만 실패 처리한다.

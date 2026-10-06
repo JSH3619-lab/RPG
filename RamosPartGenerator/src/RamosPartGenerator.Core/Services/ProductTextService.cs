@@ -356,6 +356,7 @@ public sealed class ProductTextService
             "S" => "2nd Repair",
             "B" => "Reball",
             "C" => "Reball Repair",
+            "M" => "Mining",
             _ => string.Empty
         };
         return !string.IsNullOrWhiteSpace(label);
@@ -445,6 +446,7 @@ public sealed class ProductTextService
         return normalizedCode switch
         {
             "B" => "Reball",
+            "M" => "Mining",
             "1" => "Reball/EMC",
             _ => string.Empty
         };

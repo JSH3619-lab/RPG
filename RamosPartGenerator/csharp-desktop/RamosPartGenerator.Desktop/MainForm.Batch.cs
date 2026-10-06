@@ -16,9 +16,11 @@ public sealed partial class MainForm
     private CheckBox _batchFirstRepair = null!;
     private CheckBox _batchSecondRepair = null!;
     private CheckBox _batchReballRepair = null!;
+    private CheckBox _batchMining = null!;
     private CheckBox _batchFinishedProductRetest = null!;
     private CheckBox _batchOriginalCompRelated = null!;
     private CheckBox _batchReballCompRelated = null!;
+    private CheckBox _batchMiningCompRelated = null!;
     private DataGridView _batchPreviewGrid = null!;
     private DataGridView _batchResultGrid = null!;
     private Label _batchStatusLabel = null!;
@@ -148,6 +150,7 @@ public sealed partial class MainForm
         _batchFirstRepair = BuildBatchCheckBox("1차 Repair");
         _batchSecondRepair = BuildBatchCheckBox("2차 Repair");
         _batchReballRepair = BuildBatchCheckBox("Reball Repair");
+        _batchMining = BuildBatchCheckBox("Mining");
         _batchFinishedProductRetest = BuildBatchCheckBox("완제품 Retest (00/0Y)");
         layout.Controls.Add(BuildBatchOptionGroup(
             "작업 Part",
@@ -155,14 +158,17 @@ public sealed partial class MainForm
             _batchFirstRepair,
             _batchSecondRepair,
             _batchReballRepair,
+            _batchMining,
             _batchFinishedProductRetest), 0, 1);
 
         _batchOriginalCompRelated = BuildBatchCheckBox("원본 Comp 관련");
         _batchReballCompRelated = BuildBatchCheckBox("Reball Comp 관련");
+        _batchMiningCompRelated = BuildBatchCheckBox("Mining Comp 관련");
         layout.Controls.Add(BuildBatchOptionGroup(
             "Comp 관련",
             _batchOriginalCompRelated,
-            _batchReballCompRelated), 0, 2);
+            _batchReballCompRelated,
+            _batchMiningCompRelated), 0, 2);
 
         return layout;
     }
@@ -317,9 +323,11 @@ public sealed partial class MainForm
             IncludeFirstRepair = _batchFirstRepair.Checked,
             IncludeSecondRepair = _batchSecondRepair.Checked,
             IncludeReballRepair = _batchReballRepair.Checked,
+            IncludeMining = _batchMining.Checked,
             IncludeFinishedProductRetest = _batchFinishedProductRetest.Checked,
             IncludeOriginalCompRelated = _batchOriginalCompRelated.Checked,
-            IncludeReballCompRelated = _batchReballCompRelated.Checked
+            IncludeReballCompRelated = _batchReballCompRelated.Checked,
+            IncludeMiningCompRelated = _batchMiningCompRelated.Checked
         };
     }
 
@@ -397,9 +405,11 @@ public sealed partial class MainForm
         yield return _batchFirstRepair;
         yield return _batchSecondRepair;
         yield return _batchReballRepair;
+        yield return _batchMining;
         yield return _batchFinishedProductRetest;
         yield return _batchOriginalCompRelated;
         yield return _batchReballCompRelated;
+        yield return _batchMiningCompRelated;
     }
 
     private void InvalidateBatchPreview()
@@ -424,6 +434,7 @@ public sealed partial class MainForm
             ModuleBatchInputKind.FirstRepair => "1차 Repair",
             ModuleBatchInputKind.SecondRepair => "2차 Repair",
             ModuleBatchInputKind.ReballRepair => "Reball Repair",
+            ModuleBatchInputKind.Mining => "Mining",
             ModuleBatchInputKind.SharedDummy => "공용 00 Dummy",
             ModuleBatchInputKind.SecondRepairDummy => "2차 Dummy",
             ModuleBatchInputKind.ReballRepairDummy => "Reball Repair Dummy",

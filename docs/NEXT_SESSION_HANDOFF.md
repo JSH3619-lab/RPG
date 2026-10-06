@@ -78,7 +78,7 @@ dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/Ramo
 - `Delete Selected`는 선택 셀이 포함된 결과 행만 삭제하고, 기존 `Reset`은 입력과 전체 결과를 초기화한다.
 - 로그 시간은 한국 로컬 사용 기준으로 timezone offset 없이 `[2026-05-10 10:25:16.536]` 형식으로 기록한다.
 - 프로그램 시작 로그에 Part Generator 버전을 기록한다.
-- 화면 제목과 헤더에는 `App Ver 1.5.2 | Spec Rev 31.0`를 표시한다.
+- 화면 제목과 헤더에는 `App Ver 1.5.2 | Spec Rev 32.1`를 표시한다.
 
 ### 공통 표시/Export
 

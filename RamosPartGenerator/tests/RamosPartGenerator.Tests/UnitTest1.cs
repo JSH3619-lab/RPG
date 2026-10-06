@@ -44,7 +44,7 @@ public class UnitTest1
 
         Assert.Contains("C - Comp", dimmTypeOptions);
         Assert.DoesNotContain("Comp - Comp", dimmTypeOptions);
-        Assert.Equal("31.0", revisionSpec.DisplayRevision);
+        Assert.Equal("32.1", revisionSpec.DisplayRevision);
     }
 
     [Fact]
@@ -1387,6 +1387,26 @@ public class UnitTest1
 
         Assert.Equal("B", request.A100SpecialCode);
         Assert.Equal("R", request.SpecialCode2Code);
+    }
+
+    [Theory]
+    [InlineData("RMRDAG58A1A-GPWRRWM7GM", "M", "")]
+    [InlineData("RMRDAG58A1A-GPWRRWM7GMM", "M", "M")]
+    public void ParseModuleFullPart_Mining_UsesSpecialCode2(
+        string partCode,
+        string expectedSpecialCode2,
+        string expectedSpecialCode3)
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        // 단독 M은 Special Code 2(Mining), MM은 Mining + RMA(자산)으로 해석한다.
+        var request = service.ParseModuleFullPart("30", partCode);
+
+        Assert.Equal(expectedSpecialCode2, request.SpecialCode2Code);
+        Assert.Equal(expectedSpecialCode3, request.SpecialCode3Code);
     }
 
     [Fact]

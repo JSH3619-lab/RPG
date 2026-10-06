@@ -131,9 +131,12 @@ public sealed class BatchGenerationService
             try
             {
                 var parsed = _incomingCompService.ParseCompPart("30", inputPartCode);
-                detectedInputKind = parsed.CompType2Code.Equals("B", StringComparison.OrdinalIgnoreCase)
-                    ? ModuleBatchInputKind.Reball
-                    : ModuleBatchInputKind.Normal;
+                detectedInputKind = parsed.CompType2Code.ToUpperInvariant() switch
+                {
+                    "B" => ModuleBatchInputKind.Reball,
+                    "M" => ModuleBatchInputKind.Mining,
+                    _ => ModuleBatchInputKind.Normal
+                };
                 AddRows(_incomingCompService.GeneratePreview(parsed), itemRows);
 
                 if (options.IncludeCompMdl)
@@ -224,6 +227,7 @@ public sealed class BatchGenerationService
                     "S" => ModuleBatchInputKind.SecondRepair,
                     "B" => ModuleBatchInputKind.Reball,
                     "C" => ModuleBatchInputKind.ReballRepair,
+                    "M" => ModuleBatchInputKind.Mining,
                     _ => ModuleBatchInputKind.Normal
                 };
         }
@@ -282,6 +286,11 @@ public sealed class BatchGenerationService
             GenerateSpecialCode2Rows("Reball Repair", baseRequest, "C", true, rows, messages);
         }
 
+        if (options.IncludeMining)
+        {
+            GenerateSpecialCode2Rows("Mining", baseRequest, "M", false, rows, messages);
+        }
+
         if (options.IncludeFinishedProductRetest)
         {
             var request = CloneRequest(baseRequest);
@@ -304,7 +313,7 @@ public sealed class BatchGenerationService
         {
             TryGenerate(
                 "원본 Comp 관련",
-                () => _incomingCompService.GeneratePreview(CreateIncomingCompRequest(baseRequest, false)),
+                () => _incomingCompService.GeneratePreview(CreateIncomingCompRequest(baseRequest, string.Empty)),
                 generatedRows => AddRows(generatedRows, rows),
                 messages);
         }
@@ -313,7 +322,16 @@ public sealed class BatchGenerationService
         {
             TryGenerate(
                 "Reball Comp 관련",
-                () => _incomingCompService.GeneratePreview(CreateIncomingCompRequest(baseRequest, true)),
+                () => _incomingCompService.GeneratePreview(CreateIncomingCompRequest(baseRequest, "B")),
+                generatedRows => AddRows(generatedRows, rows),
+                messages);
+        }
+
+        if (options.IncludeMiningCompRelated)
+        {
+            TryGenerate(
+                "Mining Comp 관련",
+                () => _incomingCompService.GeneratePreview(CreateIncomingCompRequest(baseRequest, "M")),
                 generatedRows => AddRows(generatedRows, rows),
                 messages);
         }
@@ -358,7 +376,7 @@ public sealed class BatchGenerationService
         }
     }
 
-    private static IncomingCompRequest CreateIncomingCompRequest(ModuleRequest request, bool isReball)
+    private static IncomingCompRequest CreateIncomingCompRequest(ModuleRequest request, string compType2Code)
     {
         var dramTypeCode = request.DramTypeCode switch
         {
@@ -381,7 +399,7 @@ public sealed class BatchGenerationService
             DieBrandCode = request.IcBrandCode,
             VendorCode = request.VendorCode,
             PurchaserCode = request.PurchaserCode,
-            CompType2Code = isReball ? "B" : string.Empty,
+            CompType2Code = compType2Code,
             PackageTypeCode = "B",
             TesterCode = request.CompTestCode
         };
@@ -394,7 +412,7 @@ public sealed class BatchGenerationService
             throw new InvalidOperationException("Comp_MDL Speed를 선택해 주세요.");
         }
 
-        if (request.CompType2Code is not ("0" or "B"))
+        if (request.CompType2Code is not ("0" or "B" or "M"))
         {
             throw new InvalidOperationException(
                 $"Comp_MDL로 변환할 수 없는 Comp Type 2입니다: {request.CompType2Code}");
@@ -430,7 +448,7 @@ public sealed class BatchGenerationService
             SpeedCode = speedCode,
             VendorCode = request.VendorCode,
             PurchaserCode = request.PurchaserCode,
-            SpecialCode2Code = request.CompType2Code == "B" ? "B" : string.Empty
+            SpecialCode2Code = request.CompType2Code is "B" or "M" ? request.CompType2Code : string.Empty
         };
     }
 
