@@ -269,6 +269,7 @@ public sealed partial class MainForm
     {
         RunGuarded(_batchStatusLabel, "BatchMdl.Generate", () =>
         {
+            RefreshErpIndex();
             var result = CreateBatchPreview();
             ShowBatchPreview(result);
             if (result.Rows.Count == 0)

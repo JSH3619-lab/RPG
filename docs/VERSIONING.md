@@ -9,7 +9,7 @@
 
 현재 기준:
 
-- Part Generator `v1.5.1`
+- Part Generator `v1.5.2`
 - Spec Rev `31.0`
 
 ## 프로그램 버전 규칙
@@ -21,10 +21,10 @@
 프로그램 버전은 `RamosPartGenerator.Desktop.csproj`에서 관리한다.
 
 ```xml
-<Version>1.5.1</Version>
-<AssemblyVersion>1.5.1.0</AssemblyVersion>
-<FileVersion>1.5.1.0</FileVersion>
-<InformationalVersion>1.5.1</InformationalVersion>
+<Version>1.5.2</Version>
+<AssemblyVersion>1.5.2.0</AssemblyVersion>
+<FileVersion>1.5.2.0</FileVersion>
+<InformationalVersion>1.5.2</InformationalVersion>
 ```
 
 변경 시 화면 제목, 헤더, EXE 파일 속성, 시작 로그에 같은 버전이 반영된다.
@@ -45,8 +45,9 @@ Rev 31.0은 `RAMOS_DRAM_PART (Rev.31.0).pdf` 원본 규격(LPDDR 파트 규칙 �
 4. 전체 테스트와 Desktop 빌드를 실행한다.
 5. 단일 EXE를 `Publish/X.Y.Z/`로 Publish하고 이전 버전 폴더를 삭제한다. (`-o Publish/X.Y.Z`, 명령은 `README.md` 참조)
 6. EXE 파일 버전과 화면 표시를 확인한다.
-7. 커밋 후 `git tag -a vX.Y.Z`로 릴리스를 태그한다.
-8. 커밋과 태그를 원격 저장소에 Push한다.
+7. 아무도 프로그램을 켜지 않은 상태에서 공유 폴더 `PGM\DRAMPartGenerator\`의 exe만 덮어쓴다. (`*.json` 데이터 파일 유지, `README.md`의 `팀 공용 배포` 참조)
+8. 커밋 후 `git tag -a vX.Y.Z`로 릴리스를 태그한다.
+9. 커밋과 태그를 원격 저장소에 Push한다.
 
 ## 빌드 아카이브 정책
 

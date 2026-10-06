@@ -740,6 +740,13 @@ public sealed partial class MainForm : Form
         _lpddrResultGrid.Invalidate();
     }
 
+    // 다른 사람이 Export·ERP 업로드한 내용을 판정 직전에 반영한다.
+    private void RefreshErpIndex()
+    {
+        _erpIndex.Refresh();
+        UpdateErpStatusLabels();
+    }
+
     private void UploadErpParts(Label statusLabel, string area)
     {
         RunGuarded(statusLabel, $"{area}.ErpUpload", () =>
@@ -1046,6 +1053,7 @@ public sealed partial class MainForm : Form
     {
         RunGuarded(_incomingStatusLabel, "Incoming.Generate", () =>
         {
+            RefreshErpIndex();
             var request = CreateIncomingRequest();
             AppLog.Info(
                 "Incoming.Generate.Start",
@@ -1054,22 +1062,30 @@ public sealed partial class MainForm : Form
                 ("compTypeCode", request.CompTypeCode));
 
             var generatedRows = _services.Incoming.GeneratePreview(request).ToArray();
-            foreach (var row in generatedRows)
-            {
-                _incomingRows.Add(row);
-            }
+            var addedRows = AddNewRows(_incomingRows, generatedRows);
+            var skippedCount = generatedRows.Length - addedRows.Length;
 
             AppLog.Info(
                 "Incoming.Generate.Success",
                 ("mode", IncomingModeName()),
                 ("generatedRows", generatedRows.Length.ToString()),
+                ("skippedRows", skippedCount.ToString()),
                 ("totalRows", _incomingRows.Count.ToString()),
                 ("firstPartCode", FirstPartCode(generatedRows)));
 
-            var registeredCount = NotifyRegisteredParts(generatedRows);
-            if (registeredCount > 0)
+            var registeredCount = NotifyRegisteredParts(addedRows);
+            var skippedSuffix = skippedCount > 0 ? $" · 목록 중복 {skippedCount}건 제외" : string.Empty;
+            if (addedRows.Length == 0)
             {
-                SetWarn(_incomingStatusLabel, $"생성 {_incomingRows.Count}건 · 이미 등록됨 {registeredCount}건 (품목규격 확인)");
+                SetWarn(_incomingStatusLabel, $"추가된 행 없음 · 이미 목록에 있는 파트 {skippedCount}건");
+            }
+            else if (registeredCount > 0)
+            {
+                SetWarn(_incomingStatusLabel, $"생성 {_incomingRows.Count}건 · 이미 등록됨 {registeredCount}건 (품목규격 확인){skippedSuffix}");
+            }
+            else if (skippedCount > 0)
+            {
+                SetWarn(_incomingStatusLabel, $"Generated {_incomingRows.Count} incoming/comp rows{skippedSuffix}");
             }
             else
             {
@@ -1375,6 +1391,7 @@ public sealed partial class MainForm : Form
     {
         RunGuarded(_moduleStatusLabel, "Module.Generate", () =>
         {
+            RefreshErpIndex();
             var request = CreateModuleRequest();
             AppLog.Info(
                 "Module.Generate.Start",
@@ -1383,22 +1400,30 @@ public sealed partial class MainForm : Form
                 ("moduleCompTypeCode", request.ModuleCompTypeCode));
 
             var generatedRows = _services.Module.GeneratePreview(request).ToArray();
-            foreach (var row in generatedRows)
-            {
-                _moduleRows.Add(row);
-            }
+            var addedRows = AddNewRows(_moduleRows, generatedRows);
+            var skippedCount = generatedRows.Length - addedRows.Length;
 
             AppLog.Info(
                 "Module.Generate.Success",
                 ("mode", ModuleModeName()),
                 ("generatedRows", generatedRows.Length.ToString()),
+                ("skippedRows", skippedCount.ToString()),
                 ("totalRows", _moduleRows.Count.ToString()),
                 ("firstPartCode", FirstPartCode(generatedRows)));
 
-            var registeredCount = NotifyRegisteredParts(generatedRows);
-            if (registeredCount > 0)
+            var registeredCount = NotifyRegisteredParts(addedRows);
+            var skippedSuffix = skippedCount > 0 ? $" · 목록 중복 {skippedCount}건 제외" : string.Empty;
+            if (addedRows.Length == 0)
             {
-                SetWarn(_moduleStatusLabel, $"생성 {_moduleRows.Count}건 · 이미 등록됨 {registeredCount}건 (품목규격 확인)");
+                SetWarn(_moduleStatusLabel, $"추가된 행 없음 · 이미 목록에 있는 파트 {skippedCount}건");
+            }
+            else if (registeredCount > 0)
+            {
+                SetWarn(_moduleStatusLabel, $"생성 {_moduleRows.Count}건 · 이미 등록됨 {registeredCount}건 (품목규격 확인){skippedSuffix}");
+            }
+            else if (skippedCount > 0)
+            {
+                SetWarn(_moduleStatusLabel, $"Generated {_moduleRows.Count} module rows{skippedSuffix}");
             }
             else
             {
@@ -1850,6 +1875,7 @@ public sealed partial class MainForm : Form
     {
         RunGuarded(statusLabel, $"{area}.Export", () =>
         {
+            RefreshErpIndex();
             var rows = exportRows.ToArray();
             var excludedCount = 0;
             if (!includeDuplicates && _erpIndex.HasData)
@@ -1965,6 +1991,19 @@ public sealed partial class MainForm : Form
     {
         statusLabel.ForeColor = RamosTheme.Warning;
         statusLabel.Text = message;
+    }
+
+    // 같은 결과 표에 이미 있는 Part Code는 다시 추가하지 않는다. 실제로 추가된 행만 반환.
+    private static GeneratedPartRow[] AddNewRows(BindingList<GeneratedPartRow> rows, IEnumerable<GeneratedPartRow> generatedRows)
+    {
+        var existing = new HashSet<string>(rows.Select(row => row.PartCode), StringComparer.OrdinalIgnoreCase);
+        var addedRows = generatedRows.Where(row => existing.Add(row.PartCode)).ToArray();
+        foreach (var row in addedRows)
+        {
+            rows.Add(row);
+        }
+
+        return addedRows;
     }
 
     private int NotifyRegisteredParts(IReadOnlyList<GeneratedPartRow> generatedRows)

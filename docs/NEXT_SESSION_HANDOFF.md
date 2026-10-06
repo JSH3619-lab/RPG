@@ -1,10 +1,10 @@
 # Ramos Part Generator 다음 세션 인수인계
 
-최종 정리일: 2026-09-23
+최종 정리일: 2026-10-06
 
 현재 버전:
 
-- Part Generator `v1.5.1`
+- Part Generator `v1.5.2`
 - Spec Rev `31.0`
 - 내부 규칙 키는 기존 호환을 위해 `30` 유지
 
@@ -45,13 +45,14 @@ dotnet build RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/RamosP
 단일 exe publish:
 
 ```powershell
-dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/RamosPartGenerator.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o Publish/1.5.1
+dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/RamosPartGenerator.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o Publish/1.5.2
 ```
 
 ## 현재 배포 구조
 
 - WinForms 프로젝트: `RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop`
-- 배포 산출물: `Publish/1.5.1/RamosPartGenerator.Desktop.exe` (`Publish/`에는 최신 버전 폴더 하나만 보관, `docs/VERSIONING.md` 참조)
+- 배포 산출물: `Publish/1.5.2/RamosPartGenerator.Desktop.exe` (`Publish/`에는 최신 버전 폴더 하나만 보관, `docs/VERSIONING.md` 참조)
+- 팀 공용 실행 위치: `Z:\연구소 DataBase\4. 팀별자료\4. DRAM 개발1팀\PGM\DRAMPartGenerator\` (v1.5.2~). 팀원이 이 exe 하나를 함께 실행하고, ERP cache·Export 이력도 같은 폴더에 둔다. 업데이트는 exe만 덮어쓴다 (`README.md`의 `팀 공용 배포`).
 - exe 하나만 배포 가능하도록 Core의 `specs/*.json`은 embedded resource로 포함한다.
 - 외부 `specs` 폴더가 있으면 우선 사용하고, 없으면 embedded specs로 fallback한다.
 - exe 아이콘은 `RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/Assets/RamosPartGenerator.ico`를 사용한다.
@@ -77,7 +78,7 @@ dotnet publish RamosPartGenerator/csharp-desktop/RamosPartGenerator.Desktop/Ramo
 - `Delete Selected`는 선택 셀이 포함된 결과 행만 삭제하고, 기존 `Reset`은 입력과 전체 결과를 초기화한다.
 - 로그 시간은 한국 로컬 사용 기준으로 timezone offset 없이 `[2026-05-10 10:25:16.536]` 형식으로 기록한다.
 - 프로그램 시작 로그에 Part Generator 버전을 기록한다.
-- 화면 제목과 헤더에는 `App Ver 1.5.1 | Spec Rev 31.0`를 표시한다.
+- 화면 제목과 헤더에는 `App Ver 1.5.2 | Spec Rev 31.0`를 표시한다.
 
 ### 공통 표시/Export
 
@@ -168,7 +169,8 @@ Module Full Part에서 Special Code 2가 특정 값이면 기본 MDL 행 뒤에 
 ### ERP 등록 파트 중복 체크 (v1.4.0~)
 
 - `ERP 품목 업로드`로 올린 ERP 품목코드와 PGM Export 이력을 합쳐 `등록됨`/`신규`를 판정한다.
-- 캐시는 `%LocalAppData%\RamosPartGenerator\`의 `erp-part-cache.json`, `pgm-exported-cache.json`.
+- 캐시는 exe 폴더의 `erp-part-cache.json`, `pgm-exported-cache.json` (v1.5.2~, 팀 공유). v1.5.1까지는 `%LocalAppData%\RamosPartGenerator\`였고 실행 시 자동 병합된다.
+- 단일 탭 Generate는 결과 표에 이미 있는 Part Code를 다시 추가하지 않는다(v1.5.2).
 - 결과 표 `상태` 열과 `중복 포함` 체크박스(미체크 시 Export에서 `등록됨` 제외)는 단일 탭(Incoming/Module/LPDDR)과 Batch 탭(MDL 일괄/Comp 일괄) 모두 적용된다(v1.5.1).
 - 상세 규칙은 `docs/RULES_CURRENT.md`의 `ERP 등록 파트 중복 체크 규칙`.
 

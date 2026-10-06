@@ -158,12 +158,15 @@
 ## ERP 등록 파트 중복 체크 규칙
 - ERP에서 다운로드한 `품목정보등록(Multi)(S).xlsx`를 `ERP 품목 업로드` 버튼으로 업로드한다.
 - A열 `품목코드`를 마지막 헤더 행 이후부터 전량 파싱하고, 생성 파트와 **완전 일치**로 비교한다.
-- 파싱 결과는 `%LocalAppData%\RamosPartGenerator\erp-part-cache.json`에 저장되어 재실행·새 버전 exe에서도 유지된다. 새 파트 등록 후에만 재업로드하면 된다. (구버전의 실행 폴더 cache는 첫 실행 시 자동 이전)
+- 파싱 결과는 exe 폴더의 `erp-part-cache.json`에 저장된다. 팀이 공유 폴더(`PGM\DRAMPartGenerator\`)의 exe 하나를 함께 쓰므로 한 사람이 업로드하면 모두 같은 기준으로 판정한다. exe만 덮어써 업데이트하면 유지되며, 새 파트 등록 후에만 재업로드하면 된다. (v1.5.1까지의 `%LocalAppData%\RamosPartGenerator\` cache는 exe 폴더에 없을 때 1회 복사)
 - 생성 그리드의 `상태` 컬럼에 `등록됨` / `신규`를 표시한다. 단일 탭(Incoming/Module/LPDDR)과 Batch Generate 탭(MDL 일괄/Comp 일괄) 모두 적용한다.
 - Export 시 `등록됨` 파트는 기본 제외하며, `중복 포함` 체크박스로 예외 진행할 수 있다. (단일/일괄 탭 공통)
 - Batch Generate의 `중복 제외 N` 표시는 한 번의 Generate 안에서 겹친 입력/Part Code 수이며, ERP 등록 여부와는 별개다.
 - 캐시가 없으면 중복 표시·필터링 없이 기존과 동일하게 동작한다.
-- PGM이 Export한 파트코드는 같은 폴더의 `pgm-exported-cache.json`에 누적되어, ERP 스냅샷과 합쳐서 `등록됨`으로 판정한다. ERP 재업로드 없이도 이미 내보낸 파트를 잡아낸다(같은/이전 세션 포함).
+- PGM이 Export한 파트코드는 같은 폴더의 `pgm-exported-cache.json`에 누적되어, ERP 스냅샷과 합쳐서 `등록됨`으로 판정한다. ERP 재업로드 없이도 이미 내보낸 파트를 잡아낸다(같은/이전 세션, 다른 사용자 포함).
+- Export 이력은 저장 직전에 파일을 다시 읽어 합친 뒤 저장한다. 두 사람이 앱을 동시에 켜 두어도 서로의 이력을 지우지 않는다. v1.5.1까지의 사용자별 `pgm-exported-cache.json`은 실행 시 자동 병합된다.
+- Generate·Export 직전에 두 cache 파일이 바뀌었으면 다시 읽어 다른 사용자의 업로드·Export를 반영한다.
+- 단일 탭 Generate는 결과 표에 이미 있는 Part Code를 다시 추가하지 않고, 상태줄에 `목록 중복 N건 제외`로 알린다.
 
 ## Excel Export 규칙
 - 등록용 Excel의 열 폭은 헤더와 데이터 중 가장 긴 텍스트를 기준으로 Export 시점에 자동 계산한다.

@@ -233,6 +233,7 @@ public sealed partial class MainForm
     {
         RunGuarded(_lpddrStatusLabel, "Lpddr.Generate", () =>
         {
+            RefreshErpIndex();
             var request = CreateLpddrRequest();
             AppLog.Info(
                 "Lpddr.Generate.Start",
@@ -241,22 +242,30 @@ public sealed partial class MainForm
                 ("dramTypeCode", request.DramTypeCode));
 
             var generatedRows = _services.Lpddr.GeneratePreview(request).ToArray();
-            foreach (var row in generatedRows)
-            {
-                _lpddrRows.Add(row);
-            }
+            var addedRows = AddNewRows(_lpddrRows, generatedRows);
+            var skippedCount = generatedRows.Length - addedRows.Length;
 
             AppLog.Info(
                 "Lpddr.Generate.Success",
                 ("mode", LpddrModeName()),
                 ("generatedRows", generatedRows.Length.ToString()),
+                ("skippedRows", skippedCount.ToString()),
                 ("totalRows", _lpddrRows.Count.ToString()),
                 ("firstPartCode", FirstPartCode(generatedRows)));
 
-            var registeredCount = NotifyRegisteredParts(generatedRows);
-            if (registeredCount > 0)
+            var registeredCount = NotifyRegisteredParts(addedRows);
+            var skippedSuffix = skippedCount > 0 ? $" · 목록 중복 {skippedCount}건 제외" : string.Empty;
+            if (addedRows.Length == 0)
             {
-                SetWarn(_lpddrStatusLabel, $"생성 {_lpddrRows.Count}건 · 이미 등록됨 {registeredCount}건 (품목규격 확인)");
+                SetWarn(_lpddrStatusLabel, $"추가된 행 없음 · 이미 목록에 있는 파트 {skippedCount}건");
+            }
+            else if (registeredCount > 0)
+            {
+                SetWarn(_lpddrStatusLabel, $"생성 {_lpddrRows.Count}건 · 이미 등록됨 {registeredCount}건 (품목규격 확인){skippedSuffix}");
+            }
+            else if (skippedCount > 0)
+            {
+                SetWarn(_lpddrStatusLabel, $"Generated {_lpddrRows.Count} LPDDR rows{skippedSuffix}");
             }
             else
             {

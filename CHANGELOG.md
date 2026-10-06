@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.5.2 - 2026-10-06
+
+- 단일 생성 탭(Incoming/Module/LPDDR) Generate 반복 시 같은 파트가 결과 표에 계속 쌓이던 문제 수정: 표에 이미 있는 Part Code는 추가하지 않고 상태줄에 `목록 중복 N건 제외` 표시. 기등록 경고 팝업도 실제 추가된 행 기준
+- 팀 공용 운용 전환: 공유 폴더 `PGM\DRAMPartGenerator\`의 exe 하나를 함께 실행하고, ERP 업로드·PGM Export 이력(`erp-part-cache.json`, `pgm-exported-cache.json`)을 exe 폴더에 저장해 사용자 간 공유
+- Export 이력 저장 시 파일을 다시 읽어 합친 뒤 저장(다른 사용자 이력 보존), 임시 파일 저장 후 교체(저장 중 단절 시 손상 방지)
+- Generate·Export 직전에 ERP 캐시·Export 이력 파일이 바뀌었으면 다시 읽어 다른 사용자의 Export 결과를 즉시 반영
+- 기존 사용자별 저장 위치(`%LocalAppData%\RamosPartGenerator\`)의 이력은 실행 시 exe 폴더로 자동 병합, ERP 캐시는 exe 폴더에 없을 때만 복사
+
 ## 1.5.1 - 2026-09-23
 
 - (2026-10-01 추가) PDF Rev.31.0 재수령분 반영: Speed `TD`(DDR4-2666, Bank/VDD 4), `CP`(DDR5-6400 52/52/52, Bank/VDD 6) 추가, Special Code 1 Table 2 공백 설명에 DDR4(PMIC 없음 + Fudan SPD) 병기

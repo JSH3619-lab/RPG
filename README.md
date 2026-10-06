@@ -4,7 +4,7 @@ RAMOS DRAM/Module Part Code를 규칙 기반으로 생성, 파싱, 검증하고 
 
 현재 관리 버전:
 
-- Part Generator: `v1.5.1`
+- Part Generator: `v1.5.2`
 - Spec: `Rev 31.0`
 
 ## 주요 기능
@@ -56,14 +56,30 @@ dotnet test RamosPartGenerator\RamosPartGenerator.sln
 
 ```powershell
 cd C:\RPG
-dotnet publish RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop\RamosPartGenerator.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o Publish\1.5.1
+dotnet publish RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop\RamosPartGenerator.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o Publish\1.5.2
 ```
 
 배포 산출물 (`Publish\` 아래에는 최신 버전 폴더 하나만 보관):
 
 ```text
-C:\RPG\Publish\1.5.1\RamosPartGenerator.Desktop.exe
+C:\RPG\Publish\1.5.2\RamosPartGenerator.Desktop.exe
 ```
+
+## 팀 공용 배포
+
+팀원은 공유 폴더의 exe 하나를 함께 실행합니다. 개인 PC로 복사해서 쓰지 않습니다.
+
+```text
+Z:\연구소 DataBase\4. 팀별자료\4. DRAM 개발1팀\PGM\DRAMPartGenerator\
+├─ RamosPartGenerator.Desktop.exe
+├─ erp-part-cache.json       ERP 품목 업로드 스냅샷 (누가 올려도 공용)
+├─ pgm-exported-cache.json   PGM Export 이력 (공용)
+└─ specs\                    Spec Editor로 수정한 경우에만 생성
+```
+
+- 업데이트는 아무도 프로그램을 켜지 않은 상태에서 exe 파일만 덮어씁니다. `*.json` 데이터 파일은 덮어쓰거나 지우지 않습니다.
+- `specs\` 폴더가 있으면 exe 내장 규칙보다 우선합니다. 규칙 변경이 담긴 새 버전을 배포할 때는 Spec Editor 수정분을 저장소에 먼저 반영하고 `specs\`를 정리합니다.
+- ERP 품목 업로드는 ERP에서 새로 내려받은 `품목정보등록(Multi)(S).xlsx`로 한 사람만 하면 됩니다.
 
 ## 선택 UI
 

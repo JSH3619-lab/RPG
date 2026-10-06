@@ -15,6 +15,8 @@ internal sealed class ErpPartIndex
 
     private HashSet<string> _codes = new(StringComparer.Ordinal);
     private HashSet<string> _exported = new(StringComparer.Ordinal);
+    private DateTime _erpCacheStamp;
+    private DateTime _exportedCacheStamp;
 
     public string? SourceFileName { get; private set; }
     public DateTime? UploadedAt { get; private set; }
@@ -25,12 +27,15 @@ internal sealed class ErpPartIndex
     private const string ErpCacheFile = "erp-part-cache.json";
     private const string ExportedCacheFile = "pgm-exported-cache.json";
 
-    // 실행 폴더가 아닌 사용자 고정 위치에 둔다. 버전(Publish 폴더)이 바뀌어도 등록 데이터가 유지된다.
-    private static string DataDirectory => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "RamosPartGenerator");
+    // 팀 공유 폴더의 exe 하나를 같이 실행하므로 exe 폴더에 두면 등록 데이터도 함께 공유된다.
+    private static string DataDirectory => AppContext.BaseDirectory;
     private static string CachePath => Path.Combine(DataDirectory, ErpCacheFile);
     private static string ExportedCachePath => Path.Combine(DataDirectory, ExportedCacheFile);
+
+    // v1.5.1까지의 사용자별 저장 위치. 실행 시 exe 폴더로 합쳐 준다.
+    private static string LegacyDirectory => Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "RamosPartGenerator");
 
     public bool Contains(string partCode)
     {
@@ -40,35 +45,49 @@ internal sealed class ErpPartIndex
 
     public void Load()
     {
-        MigrateLegacyCache(ErpCacheFile);
-        MigrateLegacyCache(ExportedCacheFile);
+        MigrateLegacyErpCache();
+        Refresh();
+        MigrateLegacyExportedCache();
+    }
+
+    /// <summary>다른 사람이 Export·ERP 업로드했을 수 있으므로 파일이 바뀐 경우에만 다시 읽는다.</summary>
+    public void Refresh()
+    {
         LoadErpCache();
         LoadExportedCache();
     }
 
-    // 구버전은 exe 폴더에 저장했다. 새 위치에 없고 실행 폴더에 있으면 1회 옮겨 준다.
-    private static void MigrateLegacyCache(string fileName)
+    // exe 폴더에 ERP 스냅샷이 없으면 사용자 폴더의 스냅샷으로 1회 채운다.
+    private static void MigrateLegacyErpCache()
     {
         try
         {
-            var newPath = Path.Combine(DataDirectory, fileName);
-            if (File.Exists(newPath))
+            var legacyPath = Path.Combine(LegacyDirectory, ErpCacheFile);
+            if (!File.Exists(CachePath) && File.Exists(legacyPath))
             {
-                return;
+                File.Copy(legacyPath, CachePath);
             }
-
-            var legacyPath = Path.Combine(AppContext.BaseDirectory, fileName);
-            if (!File.Exists(legacyPath))
-            {
-                return;
-            }
-
-            Directory.CreateDirectory(DataDirectory);
-            File.Copy(legacyPath, newPath);
         }
         catch (Exception exception)
         {
-            AppLog.Error("ErpPartIndex.MigrateFailed", exception, ("fileName", fileName));
+            AppLog.Error("ErpPartIndex.MigrateFailed", exception, ("fileName", ErpCacheFile));
+        }
+    }
+
+    // 사용자 폴더의 개인 Export 이력을 공용 이력에 합친다. 이미 있는 코드는 건너뛰므로 매번 실행해도 안전하다.
+    private void MigrateLegacyExportedCache()
+    {
+        try
+        {
+            var legacyPath = Path.Combine(LegacyDirectory, ExportedCacheFile);
+            if (File.Exists(legacyPath))
+            {
+                RecordExported(ReadCodes(legacyPath));
+            }
+        }
+        catch (Exception exception)
+        {
+            AppLog.Error("ErpPartIndex.MigrateFailed", exception, ("fileName", ExportedCacheFile));
         }
     }
 
@@ -77,36 +96,58 @@ internal sealed class ErpPartIndex
         _codes = new HashSet<string>(codes, StringComparer.Ordinal);
         SourceFileName = sourceFileName;
         UploadedAt = DateTime.Now;
-        Directory.CreateDirectory(DataDirectory);
-        File.WriteAllText(
+        WriteAtomically(
             CachePath,
             JsonSerializer.Serialize(new CacheModel(sourceFileName, UploadedAt, _codes.ToArray()), JsonOptions));
+        _erpCacheStamp = File.GetLastWriteTimeUtc(CachePath);
     }
 
     public void RecordExported(IEnumerable<string> partCodes)
     {
-        var added = false;
+        // 앱을 켜 둔 사이 다른 사람이 Export했을 수 있다. 파일을 다시 읽어 합친 뒤 저장해야 상대 이력이 지워지지 않는다.
+        var merged = File.Exists(ExportedCachePath)
+            ? new HashSet<string>(ReadCodes(ExportedCachePath), StringComparer.Ordinal)
+            : new HashSet<string>(StringComparer.Ordinal);
+        var countBefore = merged.Count;
         foreach (var raw in partCodes)
         {
             var code = (raw ?? string.Empty).Trim();
-            if (code.Length > 0 && _exported.Add(code))
+            if (code.Length > 0)
             {
-                added = true;
+                merged.Add(code);
             }
         }
 
-        if (added)
+        _exported.UnionWith(merged);
+        if (merged.Count == countBefore)
         {
-            Directory.CreateDirectory(DataDirectory);
-            File.WriteAllText(ExportedCachePath, JsonSerializer.Serialize(_exported.ToArray(), JsonOptions));
+            return;
         }
+
+        WriteAtomically(ExportedCachePath, JsonSerializer.Serialize(merged.ToArray(), JsonOptions));
+        _exportedCacheStamp = File.GetLastWriteTimeUtc(ExportedCachePath);
+    }
+
+    // 저장 도중 네트워크가 끊겨도 원본이 깨지지 않도록 임시 파일에 쓴 뒤 교체한다.
+    private static void WriteAtomically(string path, string content)
+    {
+        var tempPath = path + ".tmp";
+        File.WriteAllText(tempPath, content);
+        File.Move(tempPath, path, overwrite: true);
+    }
+
+    private static IEnumerable<string> ReadCodes(string path)
+    {
+        var codes = JsonSerializer.Deserialize<string[]>(File.ReadAllText(path), JsonOptions) ?? Array.Empty<string>();
+        return codes.Select(code => code.Trim()).Where(code => code.Length > 0);
     }
 
     private void LoadErpCache()
     {
         try
         {
-            if (!File.Exists(CachePath))
+            var stamp = File.GetLastWriteTimeUtc(CachePath);
+            if (!File.Exists(CachePath) || stamp == _erpCacheStamp)
             {
                 return;
             }
@@ -122,6 +163,7 @@ internal sealed class ErpPartIndex
                 StringComparer.Ordinal);
             SourceFileName = cache.SourceFileName;
             UploadedAt = cache.UploadedAt;
+            _erpCacheStamp = stamp;
         }
         catch (Exception exception)
         {
@@ -133,20 +175,14 @@ internal sealed class ErpPartIndex
     {
         try
         {
-            if (!File.Exists(ExportedCachePath))
+            var stamp = File.GetLastWriteTimeUtc(ExportedCachePath);
+            if (!File.Exists(ExportedCachePath) || stamp == _exportedCacheStamp)
             {
                 return;
             }
 
-            var codes = JsonSerializer.Deserialize<string[]>(File.ReadAllText(ExportedCachePath), JsonOptions);
-            if (codes is null)
-            {
-                return;
-            }
-
-            _exported = new HashSet<string>(
-                codes.Select(code => code.Trim()).Where(code => code.Length > 0),
-                StringComparer.Ordinal);
+            _exported.UnionWith(ReadCodes(ExportedCachePath));
+            _exportedCacheStamp = stamp;
         }
         catch (Exception exception)
         {

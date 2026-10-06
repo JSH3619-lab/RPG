@@ -213,6 +213,7 @@ public sealed partial class MainForm
     {
         RunGuarded(_batchCompStatusLabel, "BatchComp.Generate", () =>
         {
+            RefreshErpIndex();
             var result = CreateBatchCompResult();
             ShowBatchCompAnalysis(result);
             if (result.Rows.Count == 0)

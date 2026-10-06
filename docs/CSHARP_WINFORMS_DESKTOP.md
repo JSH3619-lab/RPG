@@ -32,7 +32,7 @@ C:\RPG\RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop
 
 현재 표시 버전:
 
-- Part Generator `v1.5.1`
+- Part Generator `v1.5.2`
 - Spec Rev `31.0`
 
 프로그램 제목, 상단 헤더, EXE 파일 속성, 시작 로그에 프로그램 버전을 표시한다. Spec Rev는 `rev30.json`의 `display_revision`을 사용한다.
@@ -117,7 +117,7 @@ Desktop 앱은 세 개의 탭으로 구성된다.
 - 그룹, 필드, 선택 옵션으로 구성된 3열 클릭 선택 방식
 - 필드 선택과 옵션 변경 시 현재 필드 목록의 스크롤 위치 유지
 - 표시값은 `코드 - 설명` 형태로 보여주고, Core 서비스 호출 시 실제 코드만 추출
-- `Generate` 결과를 하단 테이블에 누적
+- `Generate` 결과를 하단 테이블에 누적 (표에 이미 있는 Part Code는 추가하지 않고 상태줄에 `목록 중복 N건 제외` 표시)
 - 결과 테이블의 셀 단위 다중/드래그 선택과 헤더 없는 `Ctrl+C` 복사
 - `Delete Selected`로 선택 셀이 포함된 결과 행만 삭제
 - `Export Excel` 클릭 시 현재 결과 row를 Excel로 저장
@@ -404,7 +404,7 @@ Export 표시 기준:
 ERP 등록 대조:
 
 - `중복 포함`을 체크하지 않으면 `등록됨` 파트를 Export 대상에서 제외한다. 모두 제외되면 오류 메시지를 표시한다.
-- Export한 파트코드는 `%LocalAppData%\RamosPartGenerator\pgm-exported-cache.json`에 기록되어 이후 `등록됨`으로 판정된다.
+- Export한 파트코드는 exe 폴더의 `pgm-exported-cache.json`에 기록되어 이후 `등록됨`으로 판정된다. 공유 폴더 exe를 함께 쓰는 팀원 모두에게 적용된다.
 
 ## 구현 정도
 
