@@ -967,7 +967,7 @@ public class UnitTest1
         var rows = service.GeneratePreview(new ModuleRequest
         {
             Revision = "30",
-            ModuleFullPartCode = "RMRDAG58A1P-GPARRWM7AA"
+            ModuleFullPartCode = "RMRDAG58A1P-GPARRWM7A"
         });
 
         Assert.Contains("RAmos", rows[0].Specification);
@@ -1387,6 +1387,29 @@ public class UnitTest1
 
         Assert.Equal("B", request.A100SpecialCode);
         Assert.Equal("R", request.SpecialCode2Code);
+    }
+
+    [Theory]
+    [InlineData("RMRRBG58A2P-GEWRRWM6GA", "A", "")]
+    [InlineData("RMRRBG58A2P-GEWRRWM6GAB", "A", "B")]
+    [InlineData("RMRRBG58A2P-GEWRRWM6GB", "B", "")] // RDIMM은 SC1 필수 → 단독 B는 Rambus(SC1)
+    [InlineData("RMRRBG58A2P-GEWRRWM6GBB", "B", "B")]
+    public void ParseModuleFullPart_InternalRdimm_ParsesRequiredSpecialCode1(
+        string partCode,
+        string expectedSpecialCode1,
+        string expectedSpecialCode2)
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        // Purchaser는 Third-party 전용이므로 RM의 Vendor 뒤 A는 Special Code 1(Table 2)이다.
+        var request = service.ParseModuleFullPart("30", partCode);
+
+        Assert.Equal(string.Empty, request.PurchaserCode);
+        Assert.Equal(expectedSpecialCode1, request.A100SpecialCode);
+        Assert.Equal(expectedSpecialCode2, request.SpecialCode2Code);
     }
 
     [Theory]

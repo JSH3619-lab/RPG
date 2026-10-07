@@ -307,7 +307,10 @@ public sealed class ModuleService
         request.VendorCode = tailPart.Substring(8, 1);
 
         var trailingText = tailPart.Length > 9 ? tailPart[9..] : string.Empty;
-        if (!string.IsNullOrEmpty(trailingText) && IsPurchaserCode(trailingText[..1]))
+        // Purchaser는 Third-party(TM/BM) 전용. Internal family에서는 같은 글자(A 등)를 Special Code로 해석한다.
+        if (!string.IsNullOrEmpty(trailingText) &&
+            IsThirdPartyModule(request.ModuleSourceCode) &&
+            IsPurchaserCode(trailingText[..1]))
         {
             request.PurchaserCode = trailingText[..1];
             trailingText = trailingText[1..];
@@ -315,9 +318,10 @@ public sealed class ModuleService
 
         // Special Code 1은 Vendor/Purchaser에 따라 Table 1(A100+ADATA) 또는 Table 2(그 외)를 적용한다.
         // 마지막 한 글자가 Special Code 1/2 양쪽에 모두 있는 코드(예: B)면 기존 파트 호환을 위해 Special Code 2로 해석한다.
+        // 단, Special Code 1이 필수인 DIMM Type(RDIMM: RCD/TS 구성 A/B)은 Special Code 1을 우선한다.
         if (!string.IsNullOrEmpty(trailingText) &&
             IsSpecialCode1(request, trailingText[..1]) &&
-            !(trailingText.Length == 1 && IsSpecialCode2(trailingText[..1])))
+            (IsSpecialCode1Required(request) || !(trailingText.Length == 1 && IsSpecialCode2(trailingText[..1]))))
         {
             request.A100SpecialCode = trailingText[..1];
             trailingText = trailingText[1..];
@@ -423,6 +427,12 @@ public sealed class ModuleService
     private static bool IsA100Code(string code)
     {
         return code.Equals(A100Code, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsSpecialCode1Required(ModuleRequest request)
+    {
+        var allowedCodes = IsSpecialCode1Table1(request) ? null : GetSpecialCode1Table2Codes(request.DimmTypeCode);
+        return allowedCodes is not null && !allowedCodes.Contains(string.Empty);
     }
 
     private bool IsSpecialCode1(ModuleRequest request, string code)

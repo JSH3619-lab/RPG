@@ -2,6 +2,7 @@
 
 ## 1.5.2 - 2026-10-06
 
+- (2026-10-07 추가) Module Full Part 파싱 수정: Purchaser는 Third-party(`TM`/`BM`)에서만 해석. RM 등 Internal 파트의 Vendor 뒤 `A`가 Purchaser(ADATA)로 소비돼 Special Code 1이 선택되지 않던 문제 수정. RDIMM은 Special Code 1 필수이므로 끝자리 단독 `B`를 Reball이 아닌 Rambus(SC1)로 해석 (UDIMM/SODIMM은 기존대로 Reball)
 - (2026-10-06 추가) PDF Rev.32.1 반영 (Mining): Module Special Code 2와 Comp(DDD/DLK) Comp Type 2에 `M : Mining` 추가. Reball과 같은 프로세스로 처리(Dummy 없음, Module↔Comp 변환 시 `M` 유지). 끝자리 `M` 단독은 Mining, `MM`은 Mining + RMA(자산)로 파싱
 - (2026-10-06 추가) Batch Generate에 `Mining`(작업 Part), `Mining Comp 관련`(Comp 관련) 체크박스 추가, 입력 파트 감지 상태에 Mining 표시
 - (2026-10-06 추가) 화면 Spec 표시 Rev 31.0 → 32.1. MCP 등 Rev.32.1 기타 신규 항목은 미반영
