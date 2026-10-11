@@ -214,8 +214,8 @@ public sealed class ModuleService
 
         var moduleSourceCode = MapCompFamilyToModuleFamily(compFamilyCode);
         var moduleDramTypeCode = MapCompDramTypeToModuleDramType(compDramTypeCode);
-        var compositionCode = MapCompBitToModuleComposition(compBitCode);
-        var dieDensityCode = MapCompDensityToModuleDieDensity(compDensityCode);
+        var compositionCode = MapCompBitToModuleComposition(compBitCode, moduleSourceCode);
+        var dieDensityCode = MapCompDensityToModuleDieDensity(compDensityCode, tailPart.Substring(1, 1));
         if (string.IsNullOrWhiteSpace(moduleSourceCode) ||
             string.IsNullOrWhiteSpace(moduleDramTypeCode) ||
             string.IsNullOrWhiteSpace(compositionCode) ||
@@ -389,20 +389,32 @@ public sealed class ModuleService
         };
     }
 
-    private static string MapCompBitToModuleComposition(string compBitCode)
+    private static string MapCompBitToModuleComposition(string compBitCode, string moduleSourceCode)
     {
         return compBitCode switch
         {
             "04" => "4",
             "08" => "8",
             "16" => "6",
-            "48" => "9",
+            // DRAM PART Rev.32.1은 A, TM PART Rev 2.1은 9
+            "48" => IsManufacturingModule(moduleSourceCode) ? "9" : "A",
             _ => string.Empty
         };
     }
 
-    private static string MapCompDensityToModuleDieDensity(string compDensityCode)
+    private static string MapCompDensityToModuleDieDensity(string compDensityCode, string packageTypeCode)
     {
+        // DDP(M/N) Comp Density는 패키지 용량: 16Gb(8Gb+8Gb) = X, 32Gb(16Gb+16Gb) = Y
+        if (packageTypeCode is "M" or "N")
+        {
+            return compDensityCode switch
+            {
+                "AG" or "AH" => "X",
+                "BG" or "BH" => "Y",
+                _ => string.Empty
+            };
+        }
+
         return compDensityCode switch
         {
             "4G" => "4",
@@ -520,8 +532,8 @@ public sealed class ModuleService
         return NormalizeCode(dieDensityCode) switch
         {
             "8" => "1G",
-            "A" => "2G",
-            "B" => "4G",
+            "A" or "X" => "2G",
+            "B" or "Y" => "4G",
             "C" => "8G",
             _ => string.Empty
         };
@@ -755,6 +767,8 @@ public sealed class ModuleService
             "H" => "24Gb",
             "B" => "32Gb",
             "C" => "64Gb",
+            "X" => "16Gb (DDP)",
+            "Y" => "32Gb (DDP)",
             _ => densityCode
         };
     }
@@ -841,14 +855,13 @@ public sealed class ModuleService
 
     private IReadOnlyCollection<string> ModuleCompositionCodes(bool isManufacturing)
     {
-        var optionKeys = isManufacturing ? new[] { "bit", "bit_tm" } : new[] { "bit" };
-        return Codes(optionKeys)
+        return Codes("bit")
             .Select(code => code switch
             {
                 "04" => "4",
                 "08" => "8",
                 "16" => "6",
-                "48" => "9",
+                "48" => isManufacturing ? "9" : "A",
                 _ => code.TrimStart('0')
             })
             .ToArray();
@@ -896,6 +909,9 @@ public sealed class ModuleService
             "A" => 16d,
             "H" => 24d,
             "B" => 32d,
+            // DDP: X = 8Gb+8Gb, Y = 16Gb+16Gb 패키지 용량
+            "X" => 16d,
+            "Y" => 32d,
             _ => 0d
         };
 
@@ -907,7 +923,7 @@ public sealed class ModuleService
         width = compositionCode switch
         {
             "4" => 4,
-            "8" or "9" => 8,
+            "8" or "9" or "A" => 8,
             "6" => 16,
             _ => 0
         };
@@ -931,8 +947,8 @@ public sealed class ModuleService
     {
         var valid = request.DramTypeCode switch
         {
-            "4" => request.DieDensityCode is "4" or "8" or "A",
-            "R" => request.DieDensityCode is "A" or "H" or "B",
+            "4" => request.DieDensityCode is "4" or "8" or "A" or "X" or "Y",
+            "R" => request.DieDensityCode is "A" or "H" or "B" or "X" or "Y",
             _ => false
         };
 
@@ -940,8 +956,8 @@ public sealed class ModuleService
         {
             throw new InvalidOperationException(request.DramTypeCode switch
             {
-                "4" => "DDR4 Module은 Die Density 4Gb / 8Gb / 16Gb만 허용됩니다.",
-                "R" => "DDR5 Module은 Die Density 16Gb / 24Gb / 32Gb만 허용됩니다.",
+                "4" => "DDR4 Module은 Die Density 4Gb / 8Gb / 16Gb / 16Gb(DDP) / 32Gb(DDP)만 허용됩니다.",
+                "R" => "DDR5 Module은 Die Density 16Gb / 24Gb / 32Gb / 16Gb(DDP) / 32Gb(DDP)만 허용됩니다.",
                 _ => "지원하지 않는 Module DRAM Type입니다."
             });
         }

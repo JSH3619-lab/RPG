@@ -29,7 +29,7 @@ public class UnitTest1
         var dieDensityOptions = SharedOptions(provider, "module_die_density");
         var pcbOptions = SharedOptions(provider, "pcb");
 
-        Assert.Equal(new[] { "4 - 4Gb", "8 - 8Gb", "A - 16Gb", "H - 24Gb", "B - 32Gb" }, dieDensityOptions);
+        Assert.Equal(new[] { "4 - 4Gb", "8 - 8Gb", "A - 16Gb", "H - 24Gb", "B - 32Gb", "X - 16Gb (DDP)", "Y - 32Gb (DDP)" }, dieDensityOptions);
         Assert.Contains("B - AD5U8C0(ADATA/BP) PCB (Black)", pcbOptions);
     }
 
@@ -395,6 +395,92 @@ public class UnitTest1
         var parsedModule = moduleService.ParseCompPart("30", rows[1].PartCode);
 
         Assert.Equal("9", parsedModule.CompositionCode);
+    }
+
+    [Fact]
+    public void ParseCompPart_StandardBit48MapsToModuleCompositionA()
+    {
+        var provider = LoadProvider();
+        var incomingService = new IncomingCompService(provider, new ProductTextService(provider));
+        var moduleService = new ModuleService(provider, new ProductTextService(provider));
+
+        // Rev.32.1: Bit 48은 일반 모드에서도 허용, Module Composition은 A
+        var rows = incomingService.GeneratePreview(new IncomingCompRequest
+        {
+            Revision = "30",
+            SourceCode = "K",
+            DramTypeCode = "R",
+            DensityCode = "AH",
+            BitOrganizationCode = "48",
+            BankCode = "6",
+            InterfaceCode = "V",
+            RevisionCode = "A",
+            CompTypeCode = "P",
+            DieBrandCode = "S",
+            VendorCode = "S",
+            PackageTypeCode = "B",
+            TesterCode = "R"
+        });
+
+        Assert.Equal("RCRAH486VA-PBSRS", rows[1].PartCode);
+        Assert.Equal("A", moduleService.ParseCompPart("30", rows[1].PartCode).CompositionCode);
+
+        var moduleRows = moduleService.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            CompFullPartCode = rows[1].PartCode,
+            DimmTypeCode = "D",
+            ModuleDensityCode = "AG",
+            RankCode = "1",
+            ModuleSmtCode = "R",
+            ModuleTestCode = "R",
+            SpeedCode = "WM",
+            PcbCode = "7"
+        });
+
+        Assert.Equal("A", moduleRows[0].PartCode.Substring(7, 1));
+        Assert.Contains("16Gb x8 (x4 -> x8) *8", moduleRows[0].Specification);
+    }
+
+    [Fact]
+    public void GeneratePreview_Module_DdpDieDensityUsesPackageCapacity()
+    {
+        var provider = LoadProvider();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+        ModuleRequest Request(string dieDensityCode) => new()
+        {
+            Revision = "30",
+            ModuleSourceCode = "TM",
+            DramTypeCode = "4",
+            DimmTypeCode = "D",
+            ModuleDensityCode = "AG",
+            DieDensityCode = dieDensityCode,
+            CompositionCode = "8",
+            RankCode = "1",
+            GenerationCode = "A",
+            IcBrandCode = "G",
+            ModuleCompTypeCode = "P",
+            CompTestCode = "W",
+            ModuleSmtCode = "R",
+            ModuleTestCode = "R",
+            SpeedCode = "WE",
+            PcbCode = "7",
+            VendorCode = "G",
+            PurchaserCode = "H"
+        };
+
+        // Comp Full Part Package M(DDP)은 Density 패키지 용량 기준으로 X/Y 매핑
+        Assert.Equal("X", service.ParseCompPart("30", "RCRAH086VA-PMGWG").DieDensityCode);
+        Assert.Equal("Y", service.ParseCompPart("30", "RCRBH086VA-PNGWG").DieDensityCode);
+
+        // X = 8Gb+8Gb(16Gb) 패키지 x8 *8 = 16GB
+        var rows = service.GeneratePreview(Request("X"));
+        Assert.Equal("X", rows[0].PartCode.Substring(8, 1));
+        Assert.Contains("16Gb (DDP)", rows[0].Specification);
+
+        // Y = 16Gb+16Gb(32Gb) 패키지 x8 *8 = 32GB ≠ 16GB
+        var ex = Assert.Throws<InvalidOperationException>(() => service.GeneratePreview(Request("Y")));
+        Assert.Contains("계산값은 32GB", ex.Message);
     }
 
     [Fact]

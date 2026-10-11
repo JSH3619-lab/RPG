@@ -34,7 +34,7 @@ internal sealed class DesktopLookupCatalog
             new("sourceCode", "Comp Source", "common", true, true, CompSourceOptions()),
             new("dramTypeCode", "DRAM Type", "common", true, true, Options("dram_type", "dram_type_comp_extra")),
             new("densityCode", "Density", "common", true, true, Options("density_ddr4", "density_ddr5")),
-            new("bitOrganizationCode", "Bit Org", "common", true, true, Options("bit", "bit_tm")),
+            new("bitOrganizationCode", "Bit Org", "common", true, true, Options("bit")),
             new("bankCode", "Bank", "common", true, true, Options("bank_ddr4", "bank_ddr5")),
             new("interfaceCode", "Interface", "common", true, true, Options("interface_ddr4", "interface_ddr5")),
             new("revisionCode", "Part Revision", "common", true, true, AlphabetOptions()),
@@ -169,14 +169,15 @@ internal sealed class DesktopLookupCatalog
 
     private IReadOnlyList<string> ModuleCompositionOptions()
     {
-        return Options("bit", "bit_tm")
-            .Select(option => DisplayHelpers.ExtractCode(option) switch
+        // 48은 일반(DRAM PART Rev.32.1) A, TM(TM PART Rev 2.1) 9 두 코드로 노출 — MainForm이 모드별로 거른다.
+        return Options("bit")
+            .SelectMany(option => DisplayHelpers.ExtractCode(option) switch
             {
-                "04" => "4 - x4",
-                "08" => "8 - x8",
-                "16" => "6 - x16",
-                "48" => "9 - x8 (x4 -> x8)",
-                _ => option
+                "04" => new[] { "4 - x4" },
+                "08" => new[] { "8 - x8" },
+                "16" => new[] { "6 - x16" },
+                "48" => new[] { "A - x8 (x4 -> x8)", "9 - x8 (x4 -> x8)" },
+                _ => new[] { option }
             })
             .ToArray();
     }

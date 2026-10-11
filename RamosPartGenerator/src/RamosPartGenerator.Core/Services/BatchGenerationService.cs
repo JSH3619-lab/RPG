@@ -400,7 +400,7 @@ public sealed class BatchGenerationService
             VendorCode = request.VendorCode,
             PurchaserCode = request.PurchaserCode,
             CompType2Code = compType2Code,
-            PackageTypeCode = "B",
+            PackageTypeCode = request.DieDensityCode is "X" or "Y" ? "M" : "B",
             TesterCode = request.CompTestCode
         };
     }
@@ -418,7 +418,7 @@ public sealed class BatchGenerationService
                 $"Comp_MDL로 변환할 수 없는 Comp Type 2입니다: {request.CompType2Code}");
         }
 
-        var dieDensityCode = MapCompDensityToModuleDieDensity(request.DensityCode);
+        var dieDensityCode = MapCompDensityToModuleDieDensity(request.DensityCode, request.PackageTypeCode);
         var moduleDensityCode = ModuleService.GetCompSaleModuleDensityCode(dieDensityCode);
         if (string.IsNullOrEmpty(moduleDensityCode))
         {
@@ -440,7 +440,7 @@ public sealed class BatchGenerationService
             DimmTypeCode = "C",
             ModuleDensityCode = moduleDensityCode,
             DieDensityCode = dieDensityCode,
-            CompositionCode = MapCompBitToModuleComposition(request.BitOrganizationCode),
+            CompositionCode = MapCompBitToModuleComposition(request.BitOrganizationCode, request.SourceCode),
             GenerationCode = request.RevisionCode,
             IcBrandCode = request.DieBrandCode,
             ModuleCompTypeCode = request.CompTypeCode,
@@ -467,8 +467,20 @@ public sealed class BatchGenerationService
         };
     }
 
-    private static string MapCompDensityToModuleDieDensity(string densityCode)
+    private static string MapCompDensityToModuleDieDensity(string densityCode, string packageTypeCode)
     {
+        // DDP(M/N) Comp Density는 패키지 용량: 16Gb(8Gb+8Gb) = X, 32Gb(16Gb+16Gb) = Y
+        if (packageTypeCode is "M" or "N")
+        {
+            return densityCode switch
+            {
+                "AG" or "AH" => "X",
+                "BH" => "Y",
+                _ => throw new InvalidOperationException(
+                    $"Comp_MDL Base Die Density로 변환할 수 없는 DDP Comp Density입니다: {densityCode}")
+            };
+        }
+
         return densityCode switch
         {
             "4G" => "4",
@@ -481,14 +493,15 @@ public sealed class BatchGenerationService
         };
     }
 
-    private static string MapCompBitToModuleComposition(string bitOrganizationCode)
+    private static string MapCompBitToModuleComposition(string bitOrganizationCode, string incomingSourceCode)
     {
         return bitOrganizationCode switch
         {
             "04" => "4",
             "08" => "8",
             "16" => "6",
-            "48" => "9",
+            // DRAM PART Rev.32.1은 A, TM PART Rev 2.1은 9
+            "48" => incomingSourceCode is "X" or "Z" ? "9" : "A",
             _ => throw new InvalidOperationException(
                 $"Comp_MDL Composition으로 변환할 수 없는 Comp Bit입니다: {bitOrganizationCode}")
         };
@@ -518,6 +531,9 @@ public sealed class BatchGenerationService
             ("R", "A") => "AH",
             ("R", "H") => "HE",
             ("R", "B") => "BH",
+            ("A", "X") => "AG",
+            ("R", "X") => "AH",
+            ("R", "Y") => "BH",
             _ => throw new InvalidOperationException(
                 $"Comp Density로 변환할 수 없는 Base Die Density입니다: {dieDensityCode}")
         };
@@ -530,7 +546,7 @@ public sealed class BatchGenerationService
             "4" => "04",
             "8" => "08",
             "6" => "16",
-            "9" => "48",
+            "9" or "A" => "48",
             _ => throw new InvalidOperationException(
                 $"Comp Bit로 변환할 수 없는 Module Composition입니다: {compositionCode}")
         };

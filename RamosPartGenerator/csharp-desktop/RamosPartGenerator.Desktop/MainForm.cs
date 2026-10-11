@@ -19,12 +19,10 @@ public sealed partial class MainForm : Form
         typeof(MainForm).Assembly.GetName().Version?.ToString(3) ?? "1.0.0";
     private static readonly string[] IncomingDdr4DensityCodes = { "4G", "8G", "AG" };
     private static readonly string[] IncomingDdr5DensityCodes = { "AH", "HE", "BH" };
-    private static readonly string[] IncomingStandardBitCodes = { "04", "08", "16" };
-    private static readonly string[] IncomingManufacturingBitCodes = { "04", "08", "16", "48" };
     private static readonly string[] ModuleStandardDensityCodes = { "4G", "8G", "AG", "BG", "CG" };
-    private static readonly string[] ModuleDdr4DieDensityCodes = { "4", "8", "A" };
-    private static readonly string[] ModuleDdr5DieDensityCodes = { "A", "H", "B" };
-    private static readonly string[] ModuleStandardCompositionCodes = { "4", "8", "6" };
+    private static readonly string[] ModuleDdr4DieDensityCodes = { "4", "8", "A", "X", "Y" };
+    private static readonly string[] ModuleDdr5DieDensityCodes = { "A", "H", "B", "X", "Y" };
+    private static readonly string[] ModuleStandardCompositionCodes = { "4", "8", "6", "A" };
     private static readonly string[] ModuleManufacturingCompositionCodes = { "4", "8", "6", "9" };
     private static readonly string[] StandardVendorCodes = { "S", "G", "B", "A" };
     private static readonly string[] ManufacturingVendorCodes = { "X" };
@@ -1208,15 +1206,6 @@ public sealed partial class MainForm : Form
                     ? IncomingOptionsByCodes("compTypeCode", ManufacturingCompTypeCodes)
                     : OptionsExceptCodes(IncomingOptions("compTypeCode"), ManufacturingCompTypeCodes);
                 SetFieldOptions(compTypeCombo, compTypeOptions);
-            }
-
-            if (ShouldRefreshOptions(changedKey, "sourceCode") &&
-                _incomingFields.TryGetValue("bitOrganizationCode", out var bitCombo))
-            {
-                var bitOptions = isManufacturingMode
-                    ? IncomingOptionsByCodes("bitOrganizationCode", IncomingManufacturingBitCodes)
-                    : IncomingOptionsByCodes("bitOrganizationCode", IncomingStandardBitCodes);
-                SetFieldOptions(bitCombo, bitOptions);
             }
 
             if (ShouldRefreshOptions(changedKey, "dramTypeCode") &&

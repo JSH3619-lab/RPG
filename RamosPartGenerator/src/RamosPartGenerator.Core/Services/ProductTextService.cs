@@ -260,7 +260,7 @@ public sealed class ProductTextService
         {
             "4" => "x4",
             "8" => "x8",
-            "9" => "x8 (x4 -> x8)",
+            "9" or "A" => "x8 (x4 -> x8)",
             "6" => "x16",
             _ => compositionCode
         };

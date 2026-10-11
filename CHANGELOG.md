@@ -2,6 +2,8 @@
 
 ## 1.5.2 - 2026-10-06
 
+- (2026-10-12 추가) PDF Rev.32.1 재수령분 반영: Comp Bit `48 : x8 (x4 -> x8)`을 일반 모드에서도 허용(기존 TM 전용), Module Composition `A : X8 (x4 -> x8)` 추가(일반 모드 Comp 48 ↔ A, TM 모드는 기존 `9` 유지)
+- (2026-10-12 추가) Module Base Die Density `X : 16Gb(DDP)`(8Gb+8Gb), `Y : 32Gb(DDP)`(16Gb+16Gb) 추가, DDR4/DDR5 모두 허용. 용량 검증은 패키지 용량 기준. DDP Comp(Package `M`/`N`)는 Comp↔Module 변환 시 `AG`/`AH` ↔ `X`, `BH` ↔ `Y`, Comp_MDL Density `X`→2GB, `Y`→4GB
 - (2026-10-07 추가) Module Full Part 파싱 수정: Purchaser는 Third-party(`TM`/`BM`)에서만 해석. RM 등 Internal 파트의 Vendor 뒤 `A`가 Purchaser(ADATA)로 소비돼 Special Code 1이 선택되지 않던 문제 수정. RDIMM은 Special Code 1 필수이므로 끝자리 단독 `B`를 Reball이 아닌 Rambus(SC1)로 해석 (UDIMM/SODIMM은 기존대로 Reball)
 - (2026-10-06 추가) PDF Rev.32.1 반영 (Mining): Module Special Code 2와 Comp(DDD/DLK) Comp Type 2에 `M : Mining` 추가. Reball과 같은 프로세스로 처리(Dummy 없음, Module↔Comp 변환 시 `M` 유지). 끝자리 `M` 단독은 Mining, `MM`은 Mining + RMA(자산)로 파싱
 - (2026-10-06 추가) Batch Generate에 `Mining`(작업 Part), `Mining Comp 관련`(Comp 관련) 체크박스 추가, 입력 파트 감지 상태에 Mining 표시

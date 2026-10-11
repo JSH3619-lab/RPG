@@ -239,6 +239,25 @@ public sealed class BatchGenerationServiceTests
     }
 
     [Fact]
+    public void DdpDieDensity_ConvertsBetweenCompPackageMAndModuleX()
+    {
+        var service = CreateService();
+
+        // Module Die Density X(16Gb DDP) → Comp AH + Package M
+        var moduleResult = service.GenerateFromModuleParts(
+            new[] { "RMRDAG58X1A-GPWRRWM7G" },
+            new MdlBatchOptions { IncludeOriginalCompRelated = true });
+        Assert.Equal("RCRAH086VA-PMGWG", moduleResult.Rows[1].PartCode);
+
+        // Comp AH + Package M → Comp_MDL Die Density X, Comp Sale 2GB
+        var compResult = service.GenerateFromCompParts(
+            new[] { "RCRAH086VA-PMGWG" },
+            new CompBatchOptions { IncludeCompMdl = true, SpeedCodes = new[] { "WM" } });
+        Assert.Equal(BatchItemStatus.Success, compResult.Items[0].Status);
+        Assert.Contains(compResult.Rows, row => row.PartCode == "RMRC2G58X0A-GPW00WM0GX");
+    }
+
+    [Fact]
     public void GenerateFromCompParts_MissingCompMdlSpeed_KeepsCompRowsAndReportsError()
     {
         var service = CreateService();

@@ -53,7 +53,7 @@ public sealed class IncomingCompService
         ValidateAllowedCodes(
             ("Source", sourceCode, Codes("incoming_source", "manufacturing_incoming_source"), false),
             ("DRAM Type", dramTypeCode, Codes("dram_type", "dram_type_comp_extra"), false),
-            ("Bit", bitOrganizationCode, Codes(isManufacturing ? new[] { "bit", "bit_tm" } : new[] { "bit" }), false),
+            ("Bit", bitOrganizationCode, Codes("bit"), false),
             ("Bank", bankCode, Codes("bank_ddr4", "bank_ddr5"), false),
             ("Interface", interfaceCode, Codes("interface_ddr4", "interface_ddr5"), false),
             ("Part Revision", partRevisionCode, PartRevisionCodes, false),

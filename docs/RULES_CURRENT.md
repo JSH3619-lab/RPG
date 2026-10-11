@@ -15,6 +15,13 @@
 - Special Code 2 `M`(Mining)과 Special Code 3 `M`(RMA 자산)은 별도 섹션이다. 파싱 시 Special Code 2를 먼저 해석하므로 끝자리 `M` 하나는 Mining, `MM`은 Mining + RMA(자산)이다.
 - MCP 등 Rev.32.1의 그 외 신규 항목은 아직 미반영이다.
 
+## Rev.32.1 재수령분 반영 차이 (x4→x8, DDP)
+- Comp(DDD/DLK) Bit Organization `48 : x8 (x4 -> x8)`을 일반 모드에서도 허용한다 (기존 TM 전용).
+- Module Composition `A : X8 (x4 -> x8)`을 추가한다. Comp Bit `48`은 일반 모드에서 `A`, TM 모드에서 기존 TM PART Rev 2.1의 `9`로 변환한다.
+- Module Base Die Density에 `X : 16Gb(DDP)`, `Y : 32Gb(DDP)`를 추가한다. DDR4/DDR5 모두 허용한다. 용량 계산은 패키지 용량 기준이다 (`X` = 8Gb+8Gb = 16Gb, `Y` = 16Gb+16Gb = 32Gb).
+- DDP Comp는 Package Type `M`/`N`이고 Density는 패키지 용량이다. Comp → Module(Comp Full Part 파싱, Comp_MDL)은 `AG`/`AH` → `X`, `BH` → `Y`로 변환한다. Module → Comp는 `X` → `AG`(DDR4)/`AH`(DDR5), `Y` → `BH`(DDR5)에 Package `M`으로 생성한다. DDR4 `Y`는 대응 Comp Density(32Gb DDR4)가 없어 Comp 변환 시 오류가 난다.
+- Comp_MDL(Comp 판매) Module Density는 `X` → `2G`, `Y` → `4G`다.
+
 ## Rev.30.6 반영 차이
 - Comp Dram Type에 `S : DDR5 RDIMM`을 추가한다. 생성 규칙은 DDR5(`R`)와 동일하게 적용한다 (Density AH/HE/BH, Bank 6, Interface V, Comp BIN CA~CF).
 - Module DIMM Type에 `R : x80 288pin Registered DIMM`을 추가한다. RDIMM 전용 규칙은 품목일반정보 `RDIMM` 표기와 품목규격 IC 수 80-bit 계산(아래 품목 텍스트 규칙)이다.
