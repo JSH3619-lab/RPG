@@ -33,6 +33,7 @@ public sealed partial class MainForm
         tabs.ItemSize = new Size(130, 30);
         tabs.TabPages.Add(BuildBatchMdlPage());
         tabs.TabPages.Add(BuildBatchCompPage());
+        tabs.TabPages.Add(BuildLegacyConvertPage());
         tab.Controls.Add(tabs);
         return tab;
     }
