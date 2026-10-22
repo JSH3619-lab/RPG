@@ -28,6 +28,7 @@
 - Module Base Die Density에 `X : 16Gb(DDP)`, `Y : 32Gb(DDP)`를 추가한다. DDR4/DDR5 모두 허용한다. 용량 계산은 패키지 용량 기준이다 (`X` = 8Gb+8Gb = 16Gb, `Y` = 16Gb+16Gb = 32Gb).
 - DDP Comp는 Package Type `M`/`N`이고 Density는 패키지 용량이다. Comp → Module(Comp Full Part 파싱, Comp_MDL)은 `AG`/`AH` → `X`, `BH` → `Y`로 변환한다. Module → Comp는 `X` → `AG`(DDR4)/`AH`(DDR5), `Y` → `BH`(DDR5)에 Package `M`으로 생성한다. DDR4 `Y`는 대응 Comp Density(32Gb DDR4)가 없어 Comp 변환 시 오류가 난다.
 - Comp_MDL(Comp 판매) Module Density는 `X` → `2G`, `Y` → `4G`다.
+- DDP Comp(Package `M`/`N`)의 Comp/Comp BIN 품목규격은 Density 뒤에 `(DDP)`를 붙인다 (예: `DDR4 16Gb (DDP) x8 (x4 -> x8) B-die S1 Partial Comp`). 입고 파트는 코드에 Package 자리가 없어 일반 Package와 같은 코드가 되므로 표기하지 않는다.
 
 ## Rev.30.6 반영 차이
 - Comp Dram Type에 `S : DDR5 RDIMM`을 추가한다. 생성 규칙은 DDR5(`R`)와 동일하게 적용한다 (Density AH/HE/BH, Bank 6, Interface V, Comp BIN CA~CF).

@@ -93,12 +93,14 @@ public sealed class IncomingCompService
         };
         var incomingDramTypeLabel = incomingDramTypeCode == "R" ? "DDR5" : "DDR4";
         var densityLabel = GetDensityLabel(densityCode);
+        // DDP(M/N)는 Comp/Comp BIN 품목규격에만 표기한다. 입고 파트 코드에는 Package 자리가 없어 일반 Package와 구분되지 않는다.
+        var compDensityLabel = packageTypeCode is "M" or "N" ? $"{densityLabel} (DDP)" : densityLabel;
         var bitLabel = GetBitLabel(bitOrganizationCode);
         var dieRevisionLabel = $"{partRevisionCode}-die";
         var compTypeLabel = ProductTextService.GetCompTypeDescription(compTypeCode, isManufacturing);
 
         var compTexts = _productTextService.BuildIncomingCompTexts(
-            compPartCode, dramTypeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
+            compPartCode, dramTypeLabel, compDensityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
 
         var rows = new List<GeneratedPartRow>();
         var incomingPartCode = BuildIncomingPartCode(
@@ -124,7 +126,7 @@ public sealed class IncomingCompService
         {
             var code = $"{compPartCode}-{suffix}";
             var text = _productTextService.BuildIncomingCompTexts(
-                code, typeLabel, densityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, speedText: speed, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
+                code, typeLabel, compDensityLabel, bitLabel, dieRevisionLabel, compTypeLabel, isThirdParty, speedText: speed, compType2Code: compType2Code, icBrandCode: dieBrandCode, vendorCode: vendorCode, purchaserCode: purchaserCode);
             rows.Add(new("Comp BIN", code, text.Name, text.GeneralInfo, text.Specification));
         }
 

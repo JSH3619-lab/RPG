@@ -443,6 +443,36 @@ public class UnitTest1
     }
 
     [Fact]
+    public void GeneratePreview_DdpPackage_AddsDdpToCompSpecificationOnly()
+    {
+        var provider = LoadProvider();
+        var service = new IncomingCompService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(new IncomingCompRequest
+        {
+            Revision = "30",
+            SourceCode = "K",
+            DramTypeCode = "A",
+            DensityCode = "AG",
+            BitOrganizationCode = "48",
+            BankCode = "5",
+            InterfaceCode = "W",
+            RevisionCode = "B",
+            CompTypeCode = "P",
+            DieBrandCode = "S",
+            VendorCode = "S",
+            PackageTypeCode = "M",
+            TesterCode = "R"
+        });
+
+        // 입고 코드는 Package 구분이 없으므로 DDP 미표기, Comp/Comp BIN만 표기
+        Assert.Equal("DDR4 16Gb x8 (x4 -> x8) B-die S1 Partial Comp", rows[0].Specification);
+        Assert.Equal("RCAAG485WB-PMSRS", rows[1].PartCode);
+        Assert.Equal("DDR4 16Gb (DDP) x8 (x4 -> x8) B-die S1 Partial Comp", rows[1].Specification);
+        Assert.StartsWith("DDR4 16Gb (DDP) x8", rows[2].Specification);
+    }
+
+    [Fact]
     public void GeneratePreview_Module_DdpDieDensityUsesPackageCapacity()
     {
         var provider = LoadProvider();
