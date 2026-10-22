@@ -153,7 +153,7 @@ public sealed class RegistrationExcelExporter
         return columnName;
     }
 
-    private static string FormatKind(string kind)
+    public static string FormatKind(string kind)
     {
         return kind switch
         {
