@@ -4,7 +4,7 @@ RAMOS DRAM/Module Part Code를 규칙 기반으로 생성, 파싱, 검증하고 
 
 현재 관리 버전:
 
-- Part Generator: `v1.5.2`
+- Part Generator: `v1.6.0`
 - Spec: `Rev 32.2`
 
 ## 주요 기능
@@ -28,6 +28,8 @@ RAMOS DRAM/Module Part Code를 규칙 기반으로 생성, 파싱, 검증하고 
 - 생성 결과 미리보기
 - 결과 테이블 셀 단위 다중 선택, 복사, 선택 행 삭제
 - 등록용 Excel Export
+- 구형(Rev.27 이하) Part → 신형 Part 변환 (`Batch Generate > 구형→신형 변환`, I.C Brand S/G 선택)
+- 헤드리스 CLI(`RamosPartGenerator.Cli.exe`): generate / parse / validate / convert-legacy
 
 ## 실행
 
@@ -56,13 +58,15 @@ dotnet test RamosPartGenerator\RamosPartGenerator.sln
 
 ```powershell
 cd C:\RPG
-dotnet publish RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop\RamosPartGenerator.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o Publish\1.5.2
+dotnet publish RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop\RamosPartGenerator.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o Publish\1.6.0
+dotnet publish RamosPartGenerator\src\RamosPartGenerator.Cli\RamosPartGenerator.Cli.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o Publish\1.6.0
 ```
 
 배포 산출물 (`Publish\` 아래에는 최신 버전 폴더 하나만 보관):
 
 ```text
-C:\RPG\Publish\1.5.2\RamosPartGenerator.Desktop.exe
+C:\RPG\Publish\1.6.0\RamosPartGenerator.Desktop.exe
+C:\RPG\Publish\1.6.0\RamosPartGenerator.Cli.exe
 ```
 
 ## 팀 공용 배포
@@ -80,6 +84,24 @@ Z:\연구소 DataBase\4. 팀별자료\4. DRAM 개발1팀\PGM\DRAMPartGenerator\
 - 업데이트는 아무도 프로그램을 켜지 않은 상태에서 exe 파일만 덮어씁니다. `*.json` 데이터 파일은 덮어쓰거나 지우지 않습니다.
 - `specs\` 폴더가 있으면 exe 내장 규칙보다 우선합니다. 규칙 변경이 담긴 새 버전을 배포할 때는 Spec Editor 수정분을 저장소에 먼저 반영하고 `specs\`를 정리합니다.
 - ERP 품목 업로드는 ERP에서 새로 내려받은 `품목정보등록(Multi)(S).xlsx`로 한 사람만 하면 됩니다.
+
+## CLI
+
+GUI와 같은 Core 로직을 명령줄에서 호출합니다. 쓰기는 `--xlsx` 출력 파일뿐이며 ERP 캐시·PGM Export 이력(`pgm-exported-cache.json`)은 읽거나 쓰지 않습니다. Export 이력 기록은 GUI만 합니다.
+
+```powershell
+RamosPartGenerator.Cli.exe generate RMRDAG58A1A-NZWRRQKCG --xlsx out.xlsx --json
+RamosPartGenerator.Cli.exe generate --in parts.txt --xlsx out.xlsx
+RamosPartGenerator.Cli.exe parse RCAAG485WB-PMSRS --kind comp
+RamosPartGenerator.Cli.exe validate --in parts.txt --json
+RamosPartGenerator.Cli.exe convert-legacy RM4D8G4881E-PRRRWE1B --ic-brand S --json
+```
+
+- `--kind module|comp|lpddr` (기본 module), `--specs <dir>` (기본: exe 옆 `specs\`, 없는 파일은 내장 규칙), `--in` 목록 파일은 한 줄에 하나(`#` 주석)
+- `--xlsx`는 generate/validate에서만 쓰며, 같은 파트는 한 번만 넣고 기존 파일은 덮어쓰지 않습니다.
+- `convert-legacy`는 `--ic-brand S|G`가 필수입니다(기본값 없음).
+- 종료 코드: `0` 성공 / `1` 일부 실패(확인 필요 포함) / `2` 입력·실행 오류
+- `--json` 출력: `{"command":"generate","items":[{"input":"...","status":"ok|check|error","rows":[{"kind":"MDL","code":"...","name":"...","generalInfo":"...","spec":"..."}],"messages":[]}]}`
 
 ## 선택 UI
 
@@ -107,6 +129,7 @@ C:\RPG
 └─ RamosPartGenerator\
    ├─ src\RamosPartGenerator.Core\       Part 생성/파싱/검증 공통 로직
    ├─ src\RamosPartGenerator.Excel\      Excel Export
+   ├─ src\RamosPartGenerator.Cli\        헤드리스 CLI (Agent 호출용)
    ├─ csharp-desktop\RamosPartGenerator.Desktop\  WinForms UI
    └─ tests\RamosPartGenerator.Tests\    Core/Excel 테스트
 ```

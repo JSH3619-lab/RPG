@@ -9,8 +9,8 @@
 
 현재 기준:
 
-- Part Generator `v1.5.2`
-- Spec Rev `31.0`
+- Part Generator `v1.6.0`
+- Spec Rev `32.2`
 
 ## 프로그램 버전 규칙
 
@@ -18,13 +18,13 @@
 - MINOR: 새로운 생성 기능, 화면, Export 기능 추가
 - PATCH: 오류 수정, 문구, 화면 배치, 기존 규칙 보완
 
-프로그램 버전은 `RamosPartGenerator.Desktop.csproj`에서 관리한다.
+프로그램 버전은 `RamosPartGenerator.Desktop.csproj`에서 관리한다. CLI(`RamosPartGenerator.Cli.csproj`)도 같은 4개 값으로 맞춘다.
 
 ```xml
-<Version>1.5.2</Version>
-<AssemblyVersion>1.5.2.0</AssemblyVersion>
-<FileVersion>1.5.2.0</FileVersion>
-<InformationalVersion>1.5.2</InformationalVersion>
+<Version>1.6.0</Version>
+<AssemblyVersion>1.6.0.0</AssemblyVersion>
+<FileVersion>1.6.0.0</FileVersion>
+<InformationalVersion>1.6.0</InformationalVersion>
 ```
 
 변경 시 화면 제목, 헤더, EXE 파일 속성, 시작 로그에 같은 버전이 반영된다.
@@ -43,7 +43,7 @@ Rev 31.0은 `RAMOS_DRAM_PART (Rev.31.0).pdf` 원본 규격(LPDDR 파트 규칙 �
 2. Spec 변경이면 `display_revision`을 확인한다.
 3. `CHANGELOG.md`에 변경 내역을 기록한다.
 4. 전체 테스트와 Desktop 빌드를 실행한다.
-5. 단일 EXE를 `Publish/X.Y.Z/`로 Publish하고 이전 버전 폴더를 삭제한다. (`-o Publish/X.Y.Z`, 명령은 `README.md` 참조)
+5. Desktop·CLI 단일 EXE를 `Publish/X.Y.Z/`로 Publish하고 이전 버전 폴더를 삭제한다. (`-o Publish/X.Y.Z`, 명령은 `README.md` 참조)
 6. EXE 파일 버전과 화면 표시를 확인한다.
 7. 아무도 프로그램을 켜지 않은 상태에서 공유 폴더 `PGM\DRAMPartGenerator\`의 exe만 덮어쓴다. (`*.json` 데이터 파일 유지, `README.md`의 `팀 공용 배포` 참조)
 8. 커밋 후 `git tag -a vX.Y.Z`로 릴리스를 태그한다.

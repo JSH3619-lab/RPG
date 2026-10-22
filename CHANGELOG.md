@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.6.0 - 2026-10-22
+
+- 헤드리스 CLI `RamosPartGenerator.Cli.exe` 추가 (DRAM_Part_Agent 연동용, GUI 변경 없음): `generate`/`parse`/`validate`/`convert-legacy`, 공통 `--json`·`--xlsx`·`--kind module|comp|lpddr`·`--specs`, 종료 코드 0 성공/1 일부 실패/2 입력·실행 오류. 쓰기는 `--xlsx` 출력 파일뿐이며 ERP 캐시·PGM Export 이력은 쓰지 않음
+- `Batch Generate > 구형→신형 변환` 탭 추가: 구형(Rev.27 이하) Comp/Module Part를 신형으로 변환(Vendor 추가, HM→Speed 하향+TN, A01→A00, BIN 보정), Core 왕복 검증 후 `Send to Batch`
+- 구형 Module 변환 시 I.C Brand(= Vendor)를 사용자가 선택(`S` 삼성 직구매 PKG / `G` GIGA, 기본값 없음). α chip `H`는 `S` 선택 시 `SH`로 확정, Rev.27 2글자형(GOX 등)은 기존 I.C Brand 유지. Rev.27.2 기준으로 2글자형 끝 단독 `S`는 2nd Repair, `B`는 Reball로 읽음(예: `GGRRRWE2S` → `GGRRRWE2GS`)
+- 문서 기준 TM PART Rev 2.1 → 2.2 (Die Brand/I.C Brand `V`·`P` 추가분은 기존 공용 목록으로 이미 허용, 코드 변경 없음)
+
 ## 1.5.2 - 2026-10-06
 
 - (2026-10-21 추가) PDF Rev.32.2 반영: Module PCB `C : BrainPower(BP) PCB (Black, 10Layer)` 추가(품목규격 `BP PCB(Black, 10Layer)`), 화면 Spec 표시 Rev 32.1 → 32.2
