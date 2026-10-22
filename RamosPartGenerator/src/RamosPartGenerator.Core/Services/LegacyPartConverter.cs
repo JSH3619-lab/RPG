@@ -19,10 +19,17 @@ public static class LegacyPartConverter
     // Grade HM(Speed Down) 폐지: 한 단계 낮은 Speed + Grade TN
     private static readonly Dictionary<string, string> SpeedDown = new() { ["WE"] = "TD", ["WM"] = "QK" };
 
-    public static LegacyPartConversion Convert(string partCode)
+    // icBrand: 구형 Module(I.C Brand 없음)에 넣을 I.C Brand = Vendor. 원본 코드로 구분할 수 없어 사용자가 고른다.
+    // S = 삼성 직구매 PKG(S1), G = GIGA. Comp와 Rev.27 2글자형은 사용하지 않는다.
+    public static LegacyPartConversion Convert(string partCode, char icBrand)
     {
+        if (icBrand is not ('S' or 'G'))
+        {
+            throw new ArgumentException($"I.C Brand는 S 또는 G만 선택할 수 있습니다: {icBrand}", nameof(icBrand));
+        }
+
         var code = partCode.Trim().ToUpperInvariant();
-        return IsCompPart(code) ? ConvertComp(code) : ConvertModule(code);
+        return IsCompPart(code) ? ConvertComp(code) : ConvertModule(code, icBrand);
     }
 
     public static bool IsCompPart(string partCode)
@@ -71,7 +78,7 @@ public static class LegacyPartConverter
         return new LegacyPartConversion(code, $"{parts[0]}-{tail[..4]}{dieBrand}{tail[4..]}", notes, Array.Empty<string>());
     }
 
-    private static LegacyPartConversion ConvertModule(string code)
+    private static LegacyPartConversion ConvertModule(string code, char icBrand)
     {
         var parts = code.Split('-');
         if (parts.Length is < 2 or > 3 || parts[0].Length != 11)
@@ -93,19 +100,22 @@ public static class LegacyPartConverter
             // 구형: CompType CompTest SMT ModuleTest Speed(2) PCB [Special Code 2]
             var rest = tail[7..];
             ValidateSpecialCode2(rest);
-            newTail = "G" + tail[..7] + "G" + rest;
-            notes.Add($"Comp Type {tail[0]} -> I.C Brand G + {tail[0]} (GIGA)");
-            notes.Add("Vendor G 추가");
-            if (tail[0] == 'H')
+            newTail = icBrand + tail[..7] + icBrand + rest;
+            notes.Add($"Comp Type {tail[0]} -> I.C Brand {icBrand} + {tail[0]} ({(icBrand == 'S' ? "삼성 직구매" : "GIGA")})");
+            notes.Add($"Vendor {icBrand} 추가");
+            // α chip H는 삼성 직구매(SH)만 확정이다. GH는 아직 확정되지 않았다.
+            if (tail[0] == 'H' && icBrand == 'G')
             {
-                warnings.Add("구형 Comp Type H(α chip) -> GH 적용, 확인 필요");
+                warnings.Add("구형 Comp Type H(α chip) -> GH 적용, 확인 필요 (확정은 SH)");
             }
         }
         else if (tail.Length >= 8 && SpeedCodes.Contains(tail.Substring(5, 2)))
         {
             // Rev.27~29: I.C Brand + CompType 2글자
             var rest = tail[8..];
-            if (rest.Length > 0 && VendorCodes.Contains(rest[0]))
+            // Rev.27.2에는 Internal 파트의 Vendor 자리가 없고 PCB 뒤는 Special Code 1(R/S/B/C)이다.
+            // 끝 단독 S는 신형 Vendor S가 아니라 2nd Repair로 읽는다(2026-10-22 사용자 확정).
+            if (rest.Length > 0 && VendorCodes.Contains(rest[0]) && rest != "S")
             {
                 newTail = tail;
                 notes.Add("Tail 신형 구조(변경 없음)");

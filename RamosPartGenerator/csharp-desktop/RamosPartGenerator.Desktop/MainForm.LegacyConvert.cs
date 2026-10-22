@@ -12,6 +12,7 @@ public sealed partial class MainForm
     private readonly BindingList<LegacyConvertRow> _legacyRows = new();
 
     private TextBox _legacyInputText = null!;
+    private ComboBox _legacyIcBrandCombo = null!;
     private DataGridView _legacyResultGrid = null!;
     private Label _legacyStatusLabel = null!;
 
@@ -69,7 +70,18 @@ public sealed partial class MainForm
             Font = new Font("Consolas", 10F, FontStyle.Regular, GraphicsUnit.Point)
         };
 
+        // 구형 Module에 넣을 I.C Brand(= Vendor). 원본 코드로 구분할 수 없어 매번 사용자가 고른다(기본값 없음).
+        _legacyIcBrandCombo = new ComboBox
+        {
+            DropDownStyle = ComboBoxStyle.DropDownList,
+            Width = 190,
+            Margin = new Padding(4, 8, 4, 4)
+        };
+        _legacyIcBrandCombo.Items.AddRange(new object[] { "S - 삼성 직구매 PKG (S1)", "G - GIGA S1" });
+
         var buttons = BuildButtonFlow();
+        buttons.Controls.Add(new Label { Text = "I.C Brand", AutoSize = true, Margin = new Padding(4, 12, 0, 0), ForeColor = RamosTheme.Text });
+        buttons.Controls.Add(_legacyIcBrandCombo);
         buttons.Controls.Add(BuildButton("Convert", ConvertLegacyParts));
         buttons.Controls.Add(BuildButton("Send to Batch", SendLegacyToBatch));
         buttons.Controls.Add(BuildButton("Reset", ResetLegacyConvert));
@@ -127,11 +139,18 @@ public sealed partial class MainForm
                 throw new InvalidOperationException("구형 Part를 한 줄에 하나씩 입력해 주세요.");
             }
 
+            if (_legacyIcBrandCombo.SelectedItem is not string icBrandItem)
+            {
+                throw new InvalidOperationException("I.C Brand(S: 삼성 직구매 PKG / G: GIGA)를 선택해 주세요.");
+            }
+
+            var icBrand = icBrandItem[0];
+
             RefreshErpIndex();
             _legacyRows.Clear();
             foreach (var partCode in partCodes)
             {
-                _legacyRows.Add(ConvertLegacyPart(partCode));
+                _legacyRows.Add(ConvertLegacyPart(partCode, icBrand));
             }
 
             var errorCount = _legacyRows.Count(row => row.Error.Length > 0);
@@ -140,6 +159,7 @@ public sealed partial class MainForm
             AppLog.Info(
                 "LegacyConvert.Convert.Success",
                 ("inputCount", partCodes.Length.ToString()),
+                ("icBrand", icBrand.ToString()),
                 ("changedCount", changedCount.ToString()),
                 ("checkCount", checkCount.ToString()),
                 ("errorCount", errorCount.ToString()));
@@ -149,12 +169,12 @@ public sealed partial class MainForm
         });
     }
 
-    private LegacyConvertRow ConvertLegacyPart(string partCode)
+    private LegacyConvertRow ConvertLegacyPart(string partCode, char icBrand)
     {
         LegacyPartConversion? result = null;
         try
         {
-            result = LegacyPartConverter.Convert(partCode);
+            result = LegacyPartConverter.Convert(partCode, icBrand);
             var converted = result.ConvertedCode;
 
             // 신형 코드는 Core 파서 -> 생성기 왕복으로 같은 코드가 나와야 사용할 수 있다.

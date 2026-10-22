@@ -149,16 +149,17 @@
 - Comp(RC/TC/CC/BC) 구형 tail은 `CompType + Package + Die Brand + Tester [+B]`이다.
 - 신형은 Tester 뒤에 Vendor를 넣는다. Vendor = Die Brand(S→S, G→G). 끝 `B`는 Comp Type 2 Reball로 유지한다.
 - Comp tail 5번째 글자가 S/G/A이면 이미 신형으로 보고 변경하지 않는다.
-- Module 구형 tail(`CompType + CompTest + SMT + ModuleTest + Speed + PCB [+Special Code 2]`)은 앞에 I.C Brand `G`, PCB 뒤에 Vendor `G`를 넣는다.
-- Module Rev.27 2글자형(`I.C Brand + CompType ...`)은 PCB 뒤에 Vendor(= I.C Brand)만 넣는다. PCB 뒤가 이미 Vendor(S/G/A)이면 tail을 유지한다.
+- Module 구형 tail(`CompType + CompTest + SMT + ModuleTest + Speed + PCB [+Special Code 2]`)은 앞에 I.C Brand, PCB 뒤에 Vendor(= I.C Brand)를 넣는다.
+- I.C Brand는 원본 코드로 구분할 수 없으므로 변환할 때 사용자가 고른다(기본값 없음): `S` = 삼성 직구매 PKG로 만든 제품(규격 `S1`), `G` = GIGA. 예: `RM4D8G4881E-PRRRWE1B` → `S` 선택 시 `RM4D8G4881E-SPRRRWE1SB`, `G` 선택 시 `RM4D8G4881E-GPRRRWE1GB`. (2026-10-21 사용자 확정)
+- Module Rev.27 2글자형(`I.C Brand + CompType ...`)은 I.C Brand를 그대로 두고(사용자 선택 미적용) PCB 뒤에 Vendor(= I.C Brand)만 넣는다. 예: `RM4S8G4881D-GGRRRWE2`(GOX) → `RM4S8G4881D-GGRRRWE2G`. PCB 뒤가 이미 Vendor(S/G/A)이면 tail을 유지한다. 단, Rev.27.2는 Internal 파트에 Vendor 자리가 없고 PCB 뒤가 Special Code 1(`R` 1st Repair, `S` 2nd Repair, `B` Reball, `C` Reball Repair)이므로 끝 단독 `S`는 2nd Repair로 읽는다(예: `GGRRRWE2S` → `GGRRRWE2GS`, 2026-10-22 사용자 확정).
 - 끝 `B`(Reball)·`R`(1st Repair) 등 Special Code 2는 그대로 유지한다.
 - Grade `HM`(Speed Down)은 쓰지 않는다. Speed를 한 단계 낮추고(WE→TD, WM→QK) Grade는 `TN`으로 한다.
 - Product Bin `A01`은 `A00`으로 바꾼다.
 - BIN이 `-TN`/`-HM`만 있거나 없으면 `-TN{Module Density}A00`으로 만든다.
-- 구형 Comp Type `H`(α chip)는 규칙대로 `GH`로 변환하되 확인 필요로 표시한다. (사용자 확정 대기)
+- 구형 Comp Type `H`(α chip)는 삼성 직구매(`S`)이면 `SH`로 변환한다(2026-10-21 사용자 확정). `G` 선택 시 `GH`는 확정되지 않았으므로 확인 필요로 표시한다.
 - 규칙에 없는 코드(Die Brand/I.C Brand 미대응, 끝 코드·Product Bin 미확인, 하향 규칙 없는 Speed의 HM)는 임의 변환하지 않고 실패 처리한다.
 - 변환한 신형 Part는 Core 파서 → 생성기 왕복으로 같은 코드가 나와야 사용한다.
-- `Batch Generate > 구형→신형 변환` 탭의 `Send to Batch`는 오류·확인 필요 행을 빼고 신형 Part를 MDL 일괄/Comp 일괄 입력 끝에 추가한다.
+- `Batch Generate > 구형→신형 변환` 탭은 I.C Brand(S/G)를 고른 뒤 Convert한다. CLI는 `convert-legacy --ic-brand S|G`. `Send to Batch`는 오류·확인 필요 행을 빼고 신형 Part를 MDL 일괄/Comp 일괄 입력 끝에 추가한다.
 
 ## Special Code 1 규칙 (구 A100 Special)
 - Rev.30.6부터 `Only A100` 게이팅을 폐지하고 조건부 테이블을 적용한다.
