@@ -158,6 +158,7 @@ public class UnitTest1
         Assert.Contains("X - RAmos TM", incomingSourceOptions);
         Assert.Contains("0 - Only Test", incomingCompTypeOptions);
         Assert.Contains("X - RAMBO", incomingVendorOptions);
+        Assert.Contains("U - Auton", incomingVendorOptions);
         Assert.Contains("V - GIGA S1 (SV)", SharedOptions(provider, "die_brand"));
         Assert.Contains("P - GIGA S1 (SP)", SharedOptions(provider, "die_brand"));
 
