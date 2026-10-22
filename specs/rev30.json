@@ -1,7 +1,7 @@
 {
   "revision": "30",
-  "source_pdf": "docs/RAMOS_DRAM_PART (Rev.32.1).pdf",
-  "display_revision": "32.1",
+  "source_pdf": "docs/RAMOS_DRAM_PART (Rev.32.2).pdf",
+  "display_revision": "32.2",
   "incoming_comp": {
     "tail_model": {
       "vendor_field_label": "Vendor",

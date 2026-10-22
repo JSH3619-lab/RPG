@@ -2,12 +2,18 @@
 
 원본 문서는 아래 두 파일을 기준으로 한다.
 
-- `RAMOS_DRAM_PART (Rev.32.1).pdf` (LPDDR 파트 규칙 포함)
-- `RAMOS_DRAM_TM_PART (Rev 2.1).pdf`
+- `RAMOS_DRAM_PART (Rev.32.2).pdf` (LPDDR 파트 규칙 포함)
+- `RAMOS_DRAM_TM_PART (Rev 2.2).pdf`
 
 ## 지원 Rev
 - 현재 운영 키: `30`
-- 표시 기준: DRAM PART `Rev.32.1`, TM PART `Rev 2.1`
+- 표시 기준: DRAM PART `Rev.32.2`, TM PART `Rev 2.2`
+
+## Rev.32.2 반영 차이
+- Module PCB에 `C : BrainPower(BP) PCB (Black, 10Layer)`를 추가한다. 품목규격 표기는 `BP PCB(Black, 10Layer)`다.
+
+## TM Rev 2.2 반영 차이
+- 입고 Die Brand와 Module I.C Brand에 `V : GIGA S1(SV)`, `P : GIGA S1(SP)`가 추가됐다. TM 모드도 일반 모드와 같은 코드 목록(`die_brand`, `module_ic_brand`)을 쓰므로 이미 허용된다.
 
 ## Rev.32.1 반영 차이 (Mining)
 - Module Special Code 2에 `M : Mining`, Comp(DDD/DLK) Comp Type 2에 `M : Mining`을 추가한다.

@@ -5,7 +5,7 @@ RAMOS DRAM/Module Part Code를 규칙 기반으로 생성, 파싱, 검증하고 
 현재 관리 버전:
 
 - Part Generator: `v1.5.2`
-- Spec: `Rev 32.1`
+- Spec: `Rev 32.2`
 
 ## 주요 기능
 
