@@ -6,10 +6,13 @@ namespace RamosPartGenerator.Tests;
 public sealed class LpddrServiceTests
 {
     // ERP에 실제 등록된 LPDDR4 입고 Comp 파트 3건 (B5 = CTST Third Party, Purchaser H)
+    // 품목규격은 2026-10-20 규칙 변경 반영: "Comp" 제거, B(CTST 외주)는 "CTST TP" 표기
     [Theory]
-    [InlineData("A", "G", "B5F1G324H1M-PAGGEBH", "LPDDR4 1GB Comp X32 M-die GIGA S1 Partial 1.0T / 10x15")]
-    [InlineData("G", "G", "B5F1G324H1M-PGGGEBH", "LPDDR4 1GB Comp X32 M-die GIGA S1 Partial 1.14T / 10x15")]
-    [InlineData("F", "M", "B5F1G324H1M-PFMGEBH", "LPDDR4 1GB Comp X32 M-die GIGA S3 Partial 1.05T / 10x14.5")]
+    [InlineData("A", "G", "B5F1G324H1M-PAGGEBH", "LPDDR4 1GB X32 M-die GIGA S1 Partial 1.0T / 10x15 CTST TP")]
+    [InlineData("G", "G", "B5F1G324H1M-PGGGEBH", "LPDDR4 1GB X32 M-die GIGA S1 Partial 1.14T / 10x15 CTST TP")]
+    [InlineData("F", "M", "B5F1G324H1M-PFMGEBH", "LPDDR4 1GB X32 M-die GIGA S3 Partial 1.05T / 10x14.5 CTST TP")]
+    // Package H (315 FBGA 1.0T / 12.4x15) 신규 추가분
+    [InlineData("H", "G", "B5F1G324H1M-PHGGEBH", "LPDDR4 1GB X32 M-die GIGA S1 Partial 1.0T / 12.4x15 CTST TP")]
     public void GeneratePreview_PkgIncoming_ReproducesRegisteredErpParts(
         string packageTypeCode, string dieBrandCode, string expectedCode, string expectedSpec)
     {
@@ -73,15 +76,15 @@ public sealed class LpddrServiceTests
         Assert.Equal(3, rows.Count);
         Assert.Equal("Product", rows[1].Kind);
         Assert.Equal("BPF1G324H1M-PA0RCP1GGH", rows[1].PartCode);
-        Assert.Equal("LPDDR4 1GB Comp X32 M-die GIGA S1 Partial 1.0T / 10x15 6400 Mbps", rows[1].Specification);
+        Assert.Equal("LPDDR4 1GB X32 M-die GIGA S1 Partial 1.0T / 10x15 CTST TP 6400 Mbps", rows[1].Specification);
         Assert.Equal("Product BIN", rows[2].Kind);
         Assert.Equal("BPF1G324H1M-PA0RCP1GGH-TN1GA00", rows[2].PartCode);
         Assert.Equal(rows[1].Specification, rows[2].Specification);
 
-        // 입고는 일반정보 공란, Product/Product BIN은 MDL 파트라 일반정보 생성 (Comp 판매용 MDL 패턴)
+        // 입고는 일반정보 공란, Product/Product BIN은 MDL 파트라 일반정보 생성 (LPDDR은 "Comp" 표기 없음)
         Assert.Equal(string.Empty, rows[0].GeneralInfo);
-        Assert.Equal("LPDDR4 Comp 1GB COO : KR", rows[1].GeneralInfo);
-        Assert.Equal("LPDDR4 Comp 1GB COO : KR", rows[2].GeneralInfo);
+        Assert.Equal("LPDDR4 1GB COO : KR", rows[1].GeneralInfo);
+        Assert.Equal("LPDDR4 1GB COO : KR", rows[2].GeneralInfo);
     }
 
     [Fact]
@@ -117,6 +120,46 @@ public sealed class LpddrServiceTests
         Assert.Equal("LPDDR4 4Gb Die x16 M-die GIGA S1 Whole", rows[0].Specification);
         Assert.Equal("RPF1G324H1M-WARRCH1GG", rows[1].PartCode);
         Assert.Equal("RPF1G324H1M-WARRCH1GG-TN1GA00", rows[2].PartCode);
+    }
+
+    // Source별 품목규격 소유 표기: K 없음, T TP, C CTST, B CTST TP
+    [Theory]
+    [InlineData("K", "", "K5K4G325Y1C-PHGGEB", "RPK4G325Y1C-PH0WCT1GG", "")]
+    [InlineData("T", "H", "T5K4G325Y1C-PHGGEBH", "TPK4G325Y1C-PH0WCT1GGH", " TP")]
+    [InlineData("C", "", "C5K4G325Y1C-PHGGEB", "CPK4G325Y1C-PH0WCT1GG", " CTST")]
+    [InlineData("B", "H", "B5K4G325Y1C-PHGGEBH", "BPK4G325Y1C-PH0WCT1GGH", " CTST TP")]
+    public void GeneratePreview_Lpddr5x_AddsOwnerLabelBySource(
+        string sourceCode, string purchaserCode, string expectedIncoming, string expectedProduct, string ownerSuffix)
+    {
+        var rows = CreateService().GeneratePreview(new LpddrRequest
+        {
+            SourceCode = sourceCode,
+            IsDieIncoming = false,
+            DramTypeCode = "K",
+            DensityCode = "4G",
+            BitCode = "32",
+            BankCode = "5",
+            InterfaceCode = "Y",
+            StackCode = "1",
+            RevisionCode = "C",
+            DieTypeCode = "P",
+            PackageTypeCode = "H",
+            DieBrandCode = "G",
+            AssemblyCode = "0",
+            TesterCode = "W",
+            SpeedCode = "CT",
+            PcbRevisionCode = "1",
+            VendorCode = "G",
+            PurchaserCode = purchaserCode
+        });
+
+        var baseSpec = "LPDDR5X 4GB X32 C-die GIGA S1 Partial 1.0T / 12.4x15";
+        Assert.Equal(expectedIncoming, rows[0].PartCode);
+        Assert.Equal(baseSpec + ownerSuffix, rows[0].Specification);
+        Assert.Equal(expectedProduct, rows[1].PartCode);
+        Assert.Equal(baseSpec + ownerSuffix + " 7500 Mbps", rows[1].Specification);
+        Assert.Equal(rows[1].Specification, rows[2].Specification);
+        Assert.Equal("LPDDR5X 4GB COO : KR", rows[1].GeneralInfo);
     }
 
     [Fact]

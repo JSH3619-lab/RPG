@@ -105,6 +105,7 @@ public sealed class LpddrService
         var dieTypeLabel = GetDieTypeLabel(dieTypeCode);
         var packageLabel = GetPackageLabel(packageTypeCode);
         var speedLabel = GetSpeedLabel(speedCode);
+        var ownerLabel = GetOwnerSpecLabel(sourceCode);
 
         var rows = new List<GeneratedPartRow>();
 
@@ -121,7 +122,8 @@ public sealed class LpddrService
                 GetBitLabel(dieBitCode),
                 dieRevisionLabel,
                 dieBrandLabel,
-                dieTypeLabel);
+                dieTypeLabel,
+                ownerLabel);
         }
         else
         {
@@ -130,12 +132,12 @@ public sealed class LpddrService
             incomingSpec = JoinSpec(
                 dramTypeLabel,
                 densityLabel,
-                "Comp",
                 bitLabel,
                 dieRevisionLabel,
                 dieBrandLabel,
                 dieTypeLabel,
-                packageLabel);
+                packageLabel,
+                ownerLabel);
         }
 
         rows.Add(new("Incoming", incomingCode, incomingCode, string.Empty, incomingSpec));
@@ -146,17 +148,17 @@ public sealed class LpddrService
         var productSpec = JoinSpec(
             dramTypeLabel,
             densityLabel,
-            "Comp",
             bitLabel,
             dieRevisionLabel,
             dieBrandLabel,
             dieTypeLabel,
             packageLabel,
+            ownerLabel,
             speedLabel);
 
         // DRAM Module과 동일하게 베이스 파트 + BIN 파트를 함께 생성한다. BIN은 Normal(TN/A00) 1종만.
-        // Product는 MDL 파트라 일반정보도 생성한다 (Comp 판매용 MDL 패턴).
-        var productGeneralInfo = $"{dramTypeLabel} Comp {densityLabel} COO : {_specProvider.SharedSpec.ItemTextRules.CooDefault}";
+        // Product는 MDL 파트라 일반정보도 생성한다. LPDDR 품목에는 "Comp" 표기를 쓰지 않는다.
+        var productGeneralInfo = $"{dramTypeLabel} {densityLabel} COO : {_specProvider.SharedSpec.ItemTextRules.CooDefault}";
         var productCode = $"{MapSourceToFamilyPrefix(sourceCode)}P{productBody}";
         rows.Add(new("Product", productCode, productCode, productGeneralInfo, productSpec));
 
@@ -330,6 +332,18 @@ public sealed class LpddrService
         };
     }
 
+    // 품목규격 소유 표기: T(라모스 외주) TP, C(CTST) CTST, B(CTST 외주) CTST TP. K(라모스)는 표기 없음.
+    private static string GetOwnerSpecLabel(string sourceCode)
+    {
+        return sourceCode switch
+        {
+            "T" => "TP",
+            "C" => "CTST",
+            "B" => "CTST TP",
+            _ => string.Empty
+        };
+    }
+
     private static string GetDramTypeLabel(string dramTypeCode)
     {
         return dramTypeCode switch
@@ -415,6 +429,7 @@ public sealed class LpddrService
             "E" => "496 FBGA",
             "F" => "1.05T / 10x14.5",
             "G" => "1.14T / 10x15",
+            "H" => "1.0T / 12.4x15",
             _ => packageTypeCode
         };
     }

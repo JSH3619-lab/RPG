@@ -107,7 +107,7 @@
     "lpddr_interface": ["H - LVSTL (1.8V, 1.1V, 1.1V)", "A - LVSTLE_06 (1.8V, 1.1V, 0.6V)", "Y - LVSTLE_05 (1.8V, 1.05V/0.9V, 0.5V)"],
     "lpddr_stack": ["0 - SDP", "1 - DDP", "2 - QDP"],
     "lpddr_die_type": ["P - Partial (NoTested)", "T - Tested", "W - Whole", "A - A-Grade"],
-    "lpddr_package_type": ["A - 200 FBGA (1.0T / 10x15)", "B - 315 FBGA (1.1T / 12.4x15)", "C - 315 FBGA (1.2T / 12.4x15)", "D - 441 FBGA", "E - 496 FBGA", "F - 200 FBGA (1.05T / 10x14.5)", "G - 200 FBGA (1.14T / 10x15)"],
+    "lpddr_package_type": ["A - 200 FBGA (1.0T / 10x15)", "B - 315 FBGA (1.1T / 12.4x15)", "C - 315 FBGA (1.2T / 12.4x15)", "D - 441 FBGA", "E - 496 FBGA", "F - 200 FBGA (1.05T / 10x14.5)", "G - 200 FBGA (1.14T / 10x15)", "H - 315 FBGA (1.0T / 12.4x15)"],
     "lpddr_die_brand": ["S - S1 (SS)", "G - GIGA S1 (SS)", "H - GIGA S2 (Hynix)", "M - GIGA S3 (Micron)", "C - GIGA S6 (CXMT)"],
     "lpddr_vendor": ["S - SS", "G - GIGA", "B - BY20"],
     "lpddr_purchaser": ["(None)", "V - VM", "H - RMHK"],

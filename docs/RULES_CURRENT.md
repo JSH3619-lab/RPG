@@ -10,6 +10,7 @@
 - 표시 기준: DRAM PART `Rev.32.2`, TM PART `Rev 2.2`
 
 ## Rev.32.2 반영 차이
+- LPDDR Package Type에 `H : 315 FBGA (1.0T / 12.4x15)`를 추가한다.
 - Module PCB에 `C : BrainPower(BP) PCB (Black, 10Layer)`를 추가한다. 품목규격 표기는 `BP PCB(Black, 10Layer)`다.
 
 ## TM Rev 2.2 반영 차이
@@ -48,8 +49,9 @@
 - PKG 입고 시 Comp 조립 업체 기본값은 `0 : No Ass'y` (이미 패키지 상태로 입고). 특수 케이스만 수동 변경.
 - Third-party(T/B)는 Purchaser 필수. Purchaser `0`(Non-TP)은 코드에서 생략한다.
 - Vendor는 `S/G/B`만, Purchaser는 `V/H`만 (A100/ADATA 규칙 없음).
-- 품목규격 예: 입고 PKG `LPDDR4 1GB Comp X32 M-die GIGA S1 Partial 1.0T / 10x15`, 입고 Die `LPDDR4 4Gb Die x16 M-die GIGA S1 Whole`, Product는 PKG 형식 + Speed(`6400 Mbps` 등).
-- 품목일반정보: 입고는 공란, Product/Product BIN은 MDL 파트라 Comp 판매용 MDL 패턴으로 생성 (`LPDDR4 Comp 2GB COO : KR`).
+- 품목규격 예: 입고 PKG `LPDDR4 1GB X32 M-die GIGA S1 Partial 1.0T / 10x15`, 입고 Die `LPDDR4 4Gb Die x16 M-die GIGA S1 Whole`, Product는 PKG 형식 + Speed(`6400 Mbps` 등). LPDDR 규격·일반정보에는 `Comp`를 표기하지 않는다.
+- 품목규격 소유 표기(Speed 앞): Source `K` 없음, `T` `TP`, `C` `CTST`, `B` `CTST TP` (예: `LPDDR5X 4GB X32 C-die GIGA S1 Partial 1.0T / 12.4x15 CTST TP 7500 Mbps`).
+- 품목일반정보: 입고는 공란, Product/Product BIN은 MDL 파트라 생성 (`LPDDR4 2GB COO : KR`).
 - ERP 기등록 3건(B5F1G324H1M-P*)의 품목명 `W`(Whole) 표기는 코드 `P`(Partial)와 불일치 — 등록 오류로 확인되어, 프로그램은 품목명=품목코드 원칙을 유지한다.
 
 ## 입고/Comp 규칙
