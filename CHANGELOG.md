@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.6.1 - 2026-10-29
+
+- 문서 기준 TM PART Rev 2.2 → 2.4 반영: TM(X/Z·XC/ZC·XM/ZM) Vendor `A : A100`·`U : AUTON` 추가(`vendor_tm` = X/A/U), TM Purchaser는 별도 목록 `purchaser_tm` = 0/H(RMHK)/A(ADATA)/U(AUTON) (TM에는 `V : VM` 없음, 일반 Third-party는 기존 V/H/A 유지)
+- Comp Full Part 파싱 시 끝자리 `U`를 Purchaser(AUTON)로 해석 (예: `ZCSAH046VH-0BMRUU`)
+- 화면 선택 목록에서 일반+TM 목록을 합칠 때 같은 항목(A100, RMHK, ADATA)이 중복 표시되던 문제 수정
+
 ## 1.6.0 - 2026-10-22
 
 - 헤드리스 CLI `RamosPartGenerator.Cli.exe` 추가 (DRAM_Part_Agent 연동용, GUI 변경 없음): `generate`/`parse`/`validate`/`convert-legacy`, 공통 `--json`·`--xlsx`·`--kind module|comp|lpddr`·`--specs`, 종료 코드 0 성공/1 일부 실패/2 입력·실행 오류. 쓰기는 `--xlsx` 출력 파일뿐이며 ERP 캐시·PGM Export 이력은 쓰지 않음

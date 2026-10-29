@@ -4,7 +4,7 @@ RAMOS DRAM/Module Part Code를 규칙 기반으로 생성, 파싱, 검증하고 
 
 현재 관리 버전:
 
-- Part Generator: `v1.6.0`
+- Part Generator: `v1.6.1`
 - Spec: `Rev 32.2`
 
 ## 주요 기능
@@ -58,15 +58,15 @@ dotnet test RamosPartGenerator\RamosPartGenerator.sln
 
 ```powershell
 cd C:\RPG
-dotnet publish RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop\RamosPartGenerator.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o Publish\1.6.0
-dotnet publish RamosPartGenerator\src\RamosPartGenerator.Cli\RamosPartGenerator.Cli.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o Publish\1.6.0
+dotnet publish RamosPartGenerator\csharp-desktop\RamosPartGenerator.Desktop\RamosPartGenerator.Desktop.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o Publish\1.6.1
+dotnet publish RamosPartGenerator\src\RamosPartGenerator.Cli\RamosPartGenerator.Cli.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o Publish\1.6.1
 ```
 
 배포 산출물 (`Publish\` 아래에는 최신 버전 폴더 하나만 보관):
 
 ```text
-C:\RPG\Publish\1.6.0\RamosPartGenerator.Desktop.exe
-C:\RPG\Publish\1.6.0\RamosPartGenerator.Cli.exe
+C:\RPG\Publish\1.6.1\RamosPartGenerator.Desktop.exe
+C:\RPG\Publish\1.6.1\RamosPartGenerator.Cli.exe
 ```
 
 ## 팀 공용 배포
