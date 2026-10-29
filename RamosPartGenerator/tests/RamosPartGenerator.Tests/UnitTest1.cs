@@ -206,6 +206,27 @@ public class UnitTest1
     }
 
     [Fact]
+    public void GeneratePreview_ManufacturingComp_UsesTmPurchaserAuton()
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new IncomingCompService(provider, new ProductTextService(provider));
+
+        // TM Rev 2.4: Purchaser U(AUTON) 추가, V(VM)는 TM 목록에 없음
+        var parsed = service.ParseCompPart("30", "ZCSAH046VH-0BMRUU");
+        Assert.Equal("U", parsed.VendorCode);
+        Assert.Equal("U", parsed.PurchaserCode);
+
+        var rows = service.GeneratePreview(parsed);
+        Assert.Equal("Z4RAH046VH-0MUELU", rows[0].PartCode);
+        Assert.Equal("ZCSAH046VH-0BMRUU", rows[1].PartCode);
+
+        parsed.PurchaserCode = "V";
+        Assert.Throws<InvalidOperationException>(() => service.GeneratePreview(parsed));
+    }
+
+    [Fact]
     public void ParseCompPart_ManufacturingCompMapsToModuleManufacturingSource()
     {
         var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));

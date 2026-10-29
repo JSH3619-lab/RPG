@@ -70,7 +70,7 @@ public sealed class ModuleService
             ("Speed", effectiveRequest.SpeedCode, Codes("speed_ddr4", "speed_ddr5"), false),
             ("PCB", effectiveRequest.PcbCode, Codes("pcb"), false),
             ("Vendor", effectiveRequest.VendorCode, Codes(isManufacturing ? "vendor_tm" : "vendor"), false),
-            ("Purchaser", effectiveRequest.PurchaserCode, Codes("purchaser"), true),
+            ("Purchaser", effectiveRequest.PurchaserCode, Codes(isManufacturing ? "purchaser_tm" : "purchaser"), true),
             ("Special Code 1", effectiveRequest.A100SpecialCode, Codes("special_code1_table1", "special_code1_table2"), true),
             ("Special Code 2", effectiveRequest.SpecialCode2Code, Codes("module_special_code2"), true),
             ("Special Code 3", effectiveRequest.SpecialCode3Code, Codes("module_special_code3"), true),

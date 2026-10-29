@@ -79,6 +79,7 @@
     "vendor": ["S - S1 (SS)", "G - GIGA", "B - BY20", "A - A100"],
     "vendor_tm": ["X - RAMBO", "U - Auton"],
     "purchaser": ["(None)", "V - VM", "H - RMHK", "A - ADATA"],
+    "purchaser_tm": ["(None)", "H - RMHK", "A - ADATA", "U - Auton"],
     "comp_type2": ["(None)", "B - Reball", "M - Mining", "1 - Reball / EMC"],
     "package_type": ["B - FBGA (Flip Chip)", "M - FBGA (DDP)", "R - FBGA (Flip Chip - ReMarking)", "N - FBGA (DDP - ReMarking)"],
     "tester": ["R - Ramos", "S - No-Test", "A - ADATA", "W - Winpac", "T - DynaCard (Tiwan)", "G - GoldKey (Tiwan)", "K - CKMT (China)", "Y - Yueyin (Tiwan)", "D - OM (India)", "L - SemiconTest (China)", "1 - HTSI (Taiwan)", "2 - DLI (Taiwan)", "3 - Rayson (China)", "4 - Ramsun System (Taiwan)", "5 - Powev (China)"],

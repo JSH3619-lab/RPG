@@ -60,7 +60,7 @@ public sealed class IncomingCompService
             ("Comp Type", compTypeCode, Codes(isManufacturing ? "manufacturing_comp_type" : "comp_type"), false),
             ("Die Brand", dieBrandCode, Codes("die_brand"), false),
             ("Vendor", vendorCode, Codes(isManufacturing ? "vendor_tm" : "vendor"), false),
-            ("Purchaser", purchaserCode, Codes("purchaser"), true),
+            ("Purchaser", purchaserCode, Codes(isManufacturing ? "purchaser_tm" : "purchaser"), true),
             ("Comp Type 2", compType2Code, Codes("comp_type2"), true),
             ("Package", packageTypeCode, Codes("package_type"), false),
             ("Tester", testerCode, Codes("tester"), false));
@@ -486,7 +486,7 @@ public sealed class IncomingCompService
 
     private static bool IsPurchaserCode(string code)
     {
-        return code is "V" or "H" or "A" or "0";
+        return code is "V" or "H" or "A" or "U" or "0";
     }
 
     private static string GetDensityLabel(string densityCode)

@@ -83,7 +83,7 @@ internal static class Cli
             ["SpeedCode"] = new[] { "speed_ddr4", "speed_ddr5" },
             ["PcbCode"] = new[] { "pcb" },
             ["VendorCode"] = new[] { "vendor", "vendor_tm" },
-            ["PurchaserCode"] = new[] { "purchaser" },
+            ["PurchaserCode"] = new[] { "purchaser", "purchaser_tm" },
             ["A100SpecialCode"] = new[] { "special_code1_table1", "special_code1_table2" },
             ["SpecialCode2Code"] = new[] { "module_special_code2" },
             ["SpecialCode3Code"] = new[] { "module_special_code3" },
@@ -102,7 +102,7 @@ internal static class Cli
             ["DieBrandCode"] = new[] { "die_brand" },
             ["TesterCode"] = new[] { "tester" },
             ["VendorCode"] = new[] { "vendor", "vendor_tm" },
-            ["PurchaserCode"] = new[] { "purchaser" },
+            ["PurchaserCode"] = new[] { "purchaser", "purchaser_tm" },
             ["CompType2Code"] = new[] { "comp_type2" }
         },
         ["lpddr"] = new()

@@ -43,7 +43,7 @@ internal sealed class DesktopLookupCatalog
             new("dieBrandCode", "Die Brand", "comp", true, true, Options("die_brand")),
             new("testerCode", "Test Site", "comp", true, true, Options("tester")),
             new("vendorCode", tail.VendorFieldLabel, "comp", true, true, Options("vendor", "vendor_tm")),
-            new("purchaserCode", tail.PurchaserFieldLabel ?? "Purchaser", "comp", tail.PurchaserFieldPresent, true, Options("purchaser")),
+            new("purchaserCode", tail.PurchaserFieldLabel ?? "Purchaser", "comp", tail.PurchaserFieldPresent, true, Options("purchaser", "purchaser_tm")),
             new("compType2Code", "Comp Type 2", "comp", true, true, Options("comp_type2"))
         };
 
@@ -79,7 +79,7 @@ internal sealed class DesktopLookupCatalog
             new("speedCode", "Speed", "structure", true, true, Options("speed_ddr4", "speed_ddr5")),
             new("pcbCode", "PCB", "structure", true, true, Options("pcb")),
             new("vendorCode", spec.Module.VendorFieldLabel, "output", true, true, Options("vendor", "vendor_tm")),
-            new("purchaserCode", spec.Module.PurchaserFieldLabel ?? "Purchaser", "output", spec.Module.PurchaserFieldPresent, true, Options("purchaser")),
+            new("purchaserCode", spec.Module.PurchaserFieldLabel ?? "Purchaser", "output", spec.Module.PurchaserFieldPresent, true, Options("purchaser", "purchaser_tm")),
             new("a100SpecialCode", "Special Code 1", "output", true, true, Options("special_code1_table1", "special_code1_table2")),
             new("specialCode2Code", "Special Code 2", "output", true, true, Options("module_special_code2")),
             new("specialCode3Code", "Special Code 3", "output", true, true, Options("module_special_code3")),
