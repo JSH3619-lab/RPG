@@ -224,6 +224,11 @@ public class UnitTest1
 
         parsed.PurchaserCode = "V";
         Assert.Throws<InvalidOperationException>(() => service.GeneratePreview(parsed));
+
+        // TM Rev 2.4: Vendor A(A100) 추가
+        var a100Rows = service.GeneratePreview(service.ParseCompPart("30", "ZCSAH046VH-0BMRAU"));
+        Assert.Equal("Z4RAH046VH-0MAELU", a100Rows[0].PartCode);
+        Assert.Equal("ZCSAH046VH-0BMRAU", a100Rows[1].PartCode);
     }
 
     [Fact]

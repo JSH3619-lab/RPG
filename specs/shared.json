@@ -77,7 +77,7 @@
     "manufacturing_comp_type": ["0 - Only Test", "1 - Reball", "2 - EMC", "3 - Laser-Marking", "4 - Reball/EMC", "5 - Reball/EMC/Laser-Marking", "6 - Reball/Laser-Marking", "7 - EMC/Laser-Marking"],
     "die_brand": ["S - S1 (SS)", "G - GIGA S1 (SS)", "V - GIGA S1 (SV)", "P - GIGA S1 (SP)", "H - GIGA S2 (Hynix)", "M - GIGA S3 (Micron)", "C - GIGA S6 (CXMT)", "N - GIGA S9 (NANYA)"],
     "vendor": ["S - S1 (SS)", "G - GIGA", "B - BY20", "A - A100"],
-    "vendor_tm": ["X - RAMBO", "U - Auton"],
+    "vendor_tm": ["X - RAMBO", "A - A100", "U - Auton"],
     "purchaser": ["(None)", "V - VM", "H - RMHK", "A - ADATA"],
     "purchaser_tm": ["(None)", "H - RMHK", "A - ADATA", "U - Auton"],
     "comp_type2": ["(None)", "B - Reball", "M - Mining", "1 - Reball / EMC"],

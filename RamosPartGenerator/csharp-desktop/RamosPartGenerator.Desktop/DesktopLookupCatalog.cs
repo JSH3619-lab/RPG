@@ -164,6 +164,7 @@ internal sealed class DesktopLookupCatalog
             .SelectMany(key => _specProvider.SharedSpec.CodeOptions.TryGetValue(key, out var options)
                 ? options
                 : throw new KeyNotFoundException($"Lookup option set '{key}' was not found."))
+            .Distinct() // vendor+vendor_tm, purchaser+purchaser_tm 합칠 때 겹치는 항목 제거
             .ToArray();
     }
 
