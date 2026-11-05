@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.6.2 - 2026-11-05
 
 - LPDDR Package Type `I : 200 FBGA (0.8T / 10x14.5)` 추가 (F와 두께만 다름, Micron MT53B512M32D2NP-053 WT:C 대응, PDF 미수록)
 
