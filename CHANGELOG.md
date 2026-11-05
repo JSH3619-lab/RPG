@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- LPDDR Package Type `I : 200 FBGA (0.8T / 10x14.5)` 추가 (F와 두께만 다름, Micron MT53B512M32D2NP-053 WT:C 대응, PDF 미수록)
+
 ## 1.6.1 - 2026-10-29
 
 - 문서 기준 TM PART Rev 2.2 → 2.4 반영: TM(X/Z·XC/ZC·XM/ZM) Vendor `A : A100`·`U : AUTON` 추가(`vendor_tm` = X/A/U), TM Purchaser는 별도 목록 `purchaser_tm` = 0/H(RMHK)/A(ADATA)/U(AUTON) (TM에는 `V : VM` 없음, 일반 Third-party는 기존 V/H/A 유지)

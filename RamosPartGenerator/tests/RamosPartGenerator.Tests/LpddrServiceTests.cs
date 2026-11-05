@@ -13,6 +13,8 @@ public sealed class LpddrServiceTests
     [InlineData("F", "M", "B5F1G324H1M-PFMGEBH", "LPDDR4 1GB X32 M-die GIGA S3 Partial 1.05T / 10x14.5 CTST TP")]
     // Package H (315 FBGA 1.0T / 12.4x15) 신규 추가분
     [InlineData("H", "G", "B5F1G324H1M-PHGGEBH", "LPDDR4 1GB X32 M-die GIGA S1 Partial 1.0T / 12.4x15 CTST TP")]
+    // Package I (200 FBGA 0.8T / 10x14.5, F와 두께만 다름) 신규 추가분
+    [InlineData("I", "M", "B5F1G324H1M-PIMGEBH", "LPDDR4 1GB X32 M-die GIGA S3 Partial 0.8T / 10x14.5 CTST TP")]
     public void GeneratePreview_PkgIncoming_ReproducesRegisteredErpParts(
         string packageTypeCode, string dieBrandCode, string expectedCode, string expectedSpec)
     {

@@ -430,6 +430,7 @@ public sealed class LpddrService
             "F" => "1.05T / 10x14.5",
             "G" => "1.14T / 10x15",
             "H" => "1.0T / 12.4x15",
+            "I" => "0.8T / 10x14.5",
             _ => packageTypeCode
         };
     }

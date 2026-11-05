@@ -11,6 +11,7 @@
 
 ## Rev.32.2 반영 차이
 - LPDDR Package Type에 `H : 315 FBGA (1.0T / 12.4x15)`를 추가한다.
+- LPDDR Package Type에 `I : 200 FBGA (0.8T / 10x14.5)`를 추가한다. PDF 미수록 자사 추가분(Micron MT53B512M32D2NP 대응, PDF 정정 대기).
 - Module PCB에 `C : BrainPower(BP) PCB (Black, 10Layer)`를 추가한다. 품목규격 표기는 `BP PCB(Black, 10Layer)`다.
 
 ## TM Rev 2.2 반영 차이
