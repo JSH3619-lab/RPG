@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.6 - 2026-11-10
+
+- Module 탭 Comp Full Part 파싱: Comp DRAM Type `S`(DDR5 RDIMM Comp, 예: `TCSAH046VH-WBMRGH`)를 Module 값으로 바꾸지 못해 "Module 기본값을 자동 매핑할 수 없습니다" 오류가 나던 문제 수정 — `S`는 DRAM Type `R`(DDR5)·DIMM Type `R`(RDIMM)로 채움
+
 ## 1.6.5 - 2026-11-09
 
 - 화면 Part Mode 이름 변경: `Standard` → `Standard / TP`, `TM` → `Toll Mfg`(임가공) — `TM…`으로 시작하는 외주 모듈 파트와 혼동 방지

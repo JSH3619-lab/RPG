@@ -453,6 +453,25 @@ public class UnitTest1
     }
 
     [Fact]
+    public void ParseCompPart_RdimmCompMapsToDdr5Rdimm()
+    {
+        var provider = LoadProvider();
+        var moduleService = new ModuleService(provider, new ProductTextService(provider));
+
+        // Comp DRAM Type S(DDR5 RDIMM) → Module DRAM R + DIMM R
+        var parsed = moduleService.ParseCompPart("30", "TCSAH046VH-WBMRGH");
+
+        Assert.Equal("TM", parsed.ModuleSourceCode);
+        Assert.Equal("R", parsed.DramTypeCode);
+        Assert.Equal("R", parsed.DimmTypeCode);
+        Assert.Equal("4", parsed.CompositionCode);
+        Assert.Equal("A", parsed.DieDensityCode);
+        Assert.Equal("W", parsed.ModuleCompTypeCode);
+        Assert.Equal("R", parsed.CompTestCode);
+        Assert.Equal("H", parsed.PurchaserCode);
+    }
+
+    [Fact]
     public void ParseCompPart_StandardBit48MapsToModuleCompositionA()
     {
         var provider = LoadProvider();

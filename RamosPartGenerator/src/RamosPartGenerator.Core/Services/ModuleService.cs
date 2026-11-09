@@ -231,6 +231,7 @@ public sealed class ModuleService
             CompFullPartCode = normalizedPartCode,
             ModuleSourceCode = moduleSourceCode,
             DramTypeCode = moduleDramTypeCode,
+            DimmTypeCode = compDramTypeCode == "S" ? "R" : string.Empty, // RDIMM Comp면 DIMM Type도 RDIMM
             CompositionCode = compositionCode,
             DieDensityCode = dieDensityCode,
             GenerationCode = compRevisionCode,
@@ -389,6 +390,7 @@ public sealed class ModuleService
         {
             "A" => "4",
             "R" => "R",
+            "S" => "R", // Comp S = DDR5 RDIMM 전용 Comp
             _ => string.Empty
         };
     }
