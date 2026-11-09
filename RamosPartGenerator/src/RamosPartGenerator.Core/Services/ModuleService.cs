@@ -47,9 +47,10 @@ public sealed class ModuleService
             throw new InvalidOperationException("Rev 30 Module은 I.C Brand가 반드시 필요합니다.");
         }
 
-        if (isThirdParty && IsBlankCode(effectiveRequest.PurchaserCode))
+        // 임가공(TM)도 Purchaser 필수 (2026-11-09 사용자 확정, Vendor X 포함)
+        if ((isThirdParty || isManufacturing) && IsBlankCode(effectiveRequest.PurchaserCode))
         {
-            throw new InvalidOperationException("Third-Party Module은 Purchaser가 반드시 필요합니다.");
+            throw new InvalidOperationException("Third-Party/TM Module은 Purchaser가 반드시 필요합니다.");
         }
 
         ValidateAllowedCodes(

@@ -193,14 +193,15 @@ public class UnitTest1
             CompTypeCode = "0",
             DieBrandCode = "G",
             VendorCode = "X",
+            PurchaserCode = "H",
             PackageTypeCode = "B",
             TesterCode = "W"
         });
 
         Assert.Equal("Incoming", rows[0].Kind);
-        Assert.Equal("X4RAH086VA-0GXEL", rows[0].PartCode);
+        Assert.Equal("X4RAH086VA-0GXELH", rows[0].PartCode);
         Assert.Equal("Comp", rows[1].Kind);
-        Assert.Equal("XCRAH086VA-0BGWX", rows[1].PartCode);
+        Assert.Equal("XCRAH086VA-0BGWXH", rows[1].PartCode);
         Assert.Equal(8, rows.Count);
         Assert.Contains("Only Test Comp", rows[1].Specification);
         Assert.DoesNotContain("TP", rows[1].Specification);
@@ -225,6 +226,23 @@ public class UnitTest1
 
         parsed.PurchaserCode = "V";
         Assert.Throws<InvalidOperationException>(() => service.GeneratePreview(parsed));
+
+        // 임가공(TM)은 Purchaser 필수 (Vendor X 포함)
+        parsed.PurchaserCode = string.Empty;
+        Assert.Throws<InvalidOperationException>(() => service.GeneratePreview(parsed));
+        var moduleService = new ModuleService(provider, new ProductTextService(provider));
+        Assert.Throws<InvalidOperationException>(() => moduleService.GeneratePreview(new ModuleRequest
+        {
+            Revision = "30",
+            CompFullPartCode = "XCRAH486VA-3BGWX",
+            DimmTypeCode = "D",
+            ModuleDensityCode = "AG",
+            RankCode = "1",
+            ModuleSmtCode = "R",
+            ModuleTestCode = "R",
+            SpeedCode = "WM",
+            PcbCode = "7"
+        }));
 
         // TM Rev 2.4: Vendor A(A100) 추가
         var a100Rows = service.GeneratePreview(service.ParseCompPart("30", "ZCSAH046VH-0BMRAU"));
@@ -281,11 +299,12 @@ public class UnitTest1
             ModuleTestCode = "R",
             SpeedCode = "WM",
             PcbCode = "7",
-            VendorCode = "X"
+            VendorCode = "X",
+            PurchaserCode = "H"
         });
 
-        Assert.Equal("XMRDAG58A1A-G0WRRWM7X", rows[0].PartCode);
-        Assert.Equal("XMRDAG58A1A-G0WRRWM7X-TNAGA00", rows[1].PartCode);
+        Assert.Equal("XMRDAG58A1A-G0WRRWM7XH", rows[0].PartCode);
+        Assert.Equal("XMRDAG58A1A-G0WRRWM7XH-TNAGA00", rows[1].PartCode);
         Assert.Contains("RAmos", rows[0].Specification);
         Assert.DoesNotContain("TP", rows[0].Specification);
     }
@@ -315,6 +334,7 @@ public class UnitTest1
             CompTypeCode = "0",
             DieBrandCode = dieBrandCode,
             VendorCode = "X",
+            PurchaserCode = "H",
             PackageTypeCode = "B",
             TesterCode = "W"
         });
@@ -354,7 +374,8 @@ public class UnitTest1
             ModuleTestCode = "R",
             SpeedCode = "WM",
             PcbCode = "7",
-            VendorCode = "X"
+            VendorCode = "X",
+            PurchaserCode = "H"
         });
 
         Assert.Contains(expectedBrandLabel, rows[0].Specification);
@@ -418,11 +439,12 @@ public class UnitTest1
             CompTypeCode = "3",
             DieBrandCode = "G",
             VendorCode = "X",
+            PurchaserCode = "H",
             PackageTypeCode = "B",
             TesterCode = "W"
         });
 
-        Assert.Equal("XCRAH486VA-3BGWX", rows[1].PartCode);
+        Assert.Equal("XCRAH486VA-3BGWXH", rows[1].PartCode);
         Assert.Contains("DDR5 16Gb x8 (x4 -> x8) A-die GIGA S1 Laser-Marking Comp", rows[1].Specification);
 
         var parsedModule = moduleService.ParseCompPart("30", rows[1].PartCode);
@@ -557,7 +579,7 @@ public class UnitTest1
         var rows = service.GeneratePreview(new ModuleRequest
         {
             Revision = "30",
-            CompFullPartCode = "XCRAH486VA-3BGWX",
+            CompFullPartCode = "XCRAH486VA-3BGWXH",
             DimmTypeCode = "D",
             ModuleDensityCode = "AG",
             RankCode = "1",

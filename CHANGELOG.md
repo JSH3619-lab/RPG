@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- 임가공(TM) Purchaser 필수: TM 모드에서 화면 Purchaser 칸이 꺼지고 값이 지워져 Purchaser 없는 코드(예: `ZCSAH046VM-0BHREE` 파싱 → `ZCSAH046VM-0BHRE` 생성)가 나오던 문제 수정. Core도 TM Comp·Module Purchaser 누락 시 오류(Vendor X 포함 — ERP의 Purchaser 없는 RAMBO Comp 14종은 이제 검증 오류)
+- 화면 Purchaser 선택지를 모드별(일반 `purchaser` / TM `purchaser_tm`)로, `(None)` 제외
+
 ## 1.6.4 - 2026-11-09
 
 - Module 파싱: TM 모듈(`XM`/`ZM`)도 Purchaser(`purchaser_tm`)를 Special Code보다 먼저 읽음(예: `XMRRCG54A2H-G0WRRWM6XEA`) — 이전엔 TM 모듈 Purchaser를 읽지 못해 파싱 오류. Special Code 1 Table 2의 `A`/`B`는 RDIMM일 때만 Special Code 1로 읽음(UDIMM 등 끝 `B`는 Special Code 2 Reball)

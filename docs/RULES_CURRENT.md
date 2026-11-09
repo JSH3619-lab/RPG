@@ -15,6 +15,7 @@
 - Module PCB에 `C : BrainPower(BP) PCB (Black, 10Layer)`를 추가한다. 품목규격 표기는 `BP PCB(Black, 10Layer)`다.
 
 ## TM Rev 2.2 반영 차이
+- 임가공(TM, 입고·Comp `X`/`Z`, Module `XM`/`ZM`)은 Purchaser 필수다(Vendor `X` 포함, 2026-11-09 사용자 확정). Purchaser 없이 등록된 기존 RAMBO(Vendor `X`) 파트는 잘못 만들어진 것으로 보고 예외를 두지 않는다. 화면 Purchaser 칸도 TM 모드에서 켜고 `purchaser_tm` 목록만 보여준다.
 - TM Vendor(`vendor_tm`)·TM Purchaser(`purchaser_tm`)에 `E : EBYTE`를 추가한다. TM PART PDF(Rev 2.4) 미수록, 공용 폴더 스펙편집 추가분(2026-11-09)을 저장소에 반영.
 - 입고 Die Brand와 Module I.C Brand에 `V : GIGA S1(SV)`, `P : GIGA S1(SP)`가 추가됐다. TM 모드도 일반 모드와 같은 코드 목록(`die_brand`, `module_ic_brand`)을 쓰므로 이미 허용된다.
 

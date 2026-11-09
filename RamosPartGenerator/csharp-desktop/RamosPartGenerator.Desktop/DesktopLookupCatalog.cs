@@ -130,6 +130,15 @@ internal sealed class DesktopLookupCatalog
         return Options(isManufacturing ? "vendor_tm" : "vendor").Select(DisplayHelpers.ExtractCode).ToArray();
     }
 
+    // Purchaser는 필수 칸이라 (None)은 빼고 모드별(일반 purchaser / TM purchaser_tm) 코드만 보여준다.
+    public string[] PurchaserCodes(bool isManufacturing)
+    {
+        return Options(isManufacturing ? "purchaser_tm" : "purchaser")
+            .Select(DisplayHelpers.ExtractCode)
+            .Where(code => code.Length > 0)
+            .ToArray();
+    }
+
     public IReadOnlyList<string> ModuleSpeedCodes(string dramTypeCode)
     {
         return TryGetModuleSpeedRule(dramTypeCode, out var rule)

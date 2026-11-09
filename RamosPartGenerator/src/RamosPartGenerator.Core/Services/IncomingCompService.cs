@@ -65,7 +65,8 @@ public sealed class IncomingCompService
             ("Package", packageTypeCode, Codes("package_type"), false),
             ("Tester", testerCode, Codes("tester"), false));
         ValidateDramDefaults(dramTypeCode, bankCode, interfaceCode);
-        ValidateRev30Fields(isThirdParty, vendorCode, purchaserCode);
+        // 임가공(TM)도 Purchaser 필수 (2026-11-09 사용자 확정, Vendor X 포함)
+        ValidateRev30Fields(isThirdParty || isManufacturing, vendorCode, purchaserCode);
 
         var compPartCode = BuildCompPartCode(
             dramTypeCode,
@@ -312,16 +313,16 @@ public sealed class IncomingCompService
         }
     }
 
-    private static void ValidateRev30Fields(bool isThirdParty, string vendorCode, string purchaserCode)
+    private static void ValidateRev30Fields(bool requiresPurchaser, string vendorCode, string purchaserCode)
     {
         if (IsBlankCode(vendorCode))
         {
             throw new InvalidOperationException("Rev 30 requires Vendor.");
         }
 
-        if (isThirdParty && IsBlankCode(purchaserCode))
+        if (requiresPurchaser && IsBlankCode(purchaserCode))
         {
-            throw new InvalidOperationException("Third-Party Comp requires Purchaser.");
+            throw new InvalidOperationException("Third-Party/TM Comp requires Purchaser.");
         }
     }
 

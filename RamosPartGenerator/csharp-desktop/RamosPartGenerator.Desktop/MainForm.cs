@@ -1260,7 +1260,8 @@ public sealed partial class MainForm : Form
                 }
             }
 
-            var isThirdParty = !isManufacturingMode && (sourceCode is "T" or "B");
+            // Third-party와 임가공(TM)은 Purchaser 필수 → 칸을 켜고 모드별 목록만 보여준다.
+            var requiresPurchaser = isManufacturingMode || sourceCode is "T" or "B";
             if (_incomingFields.TryGetValue("vendorCode", out var vendorCombo))
             {
                 var vendorOptions = IncomingOptionsByCodes("vendorCode", _services.Lookups.VendorCodes(isManufacturingMode));
@@ -1269,8 +1270,9 @@ public sealed partial class MainForm : Form
 
             if (_incomingFields.TryGetValue("purchaserCode", out var purchaserCombo))
             {
-                purchaserCombo.Enabled = isThirdParty;
-                if (!isThirdParty)
+                SetFieldOptions(purchaserCombo, IncomingOptionsByCodes("purchaserCode", _services.Lookups.PurchaserCodes(isManufacturingMode)));
+                purchaserCombo.Enabled = requiresPurchaser;
+                if (!requiresPurchaser)
                 {
                     purchaserCombo.Text = string.Empty;
                 }
@@ -1540,7 +1542,8 @@ public sealed partial class MainForm : Form
             var dimmTypeCode = ReadModuleCode("dimmTypeCode");
             var speedCode = ReadModuleCode("speedCode");
             var isManufacturingMode = IsModuleManufacturingMode();
-            var isThirdParty = !isManufacturingMode && (sourceCode is "TM" or "BM");
+            // Third-party와 임가공(TM)은 Purchaser 필수 → 칸을 켜고 모드별 목록만 보여준다.
+            var requiresPurchaser = isManufacturingMode || sourceCode is "TM" or "BM";
 
             if (ShouldRefreshOptions(changedKey, "moduleSourceCode") &&
                 _moduleFields.TryGetValue("moduleSourceCode", out var sourceCombo))
@@ -1633,8 +1636,9 @@ public sealed partial class MainForm : Form
                     SetFieldOptions(vendorCombo, vendorOptions);
                 }
 
-                purchaserCombo.Enabled = isThirdParty;
-                if (!isThirdParty)
+                SetFieldOptions(purchaserCombo, ModuleOptionsByCodes("purchaserCode", _services.Lookups.PurchaserCodes(isManufacturingMode)));
+                purchaserCombo.Enabled = requiresPurchaser;
+                if (!requiresPurchaser)
                 {
                     purchaserCombo.Text = string.Empty;
                 }
