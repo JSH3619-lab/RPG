@@ -174,7 +174,7 @@
   - `R`(RDIMM) -> `A`, `B` (RCD/TS 구성은 RDIMM 전용, 공백 불가)
   - `D`, `S`, `G` -> `(None)` 자동 고정 (자사 UDIMM/SODIMM은 PMIC·SPD 고정)
   - `C` -> `X` 자동 고정
-- Full Part 파싱: Purchaser는 Third-party(`TM`/`BM`)에서만 해석한다. RDIMM(Table 2)은 Special Code 1이 필수이므로 끝의 단독 `B`도 Special Code 2(Reball)가 아니라 Special Code 1(Rambus)로 해석한다.
+- Full Part 파싱: Purchaser는 Third-party(`TM`/`BM`, `purchaser` 목록)와 TM 모듈(`XM`/`ZM`, `purchaser_tm` 목록)에서 Special Code보다 먼저 해석한다. Internal(`RM` 등)은 Purchaser를 읽지 않는다. TM 모듈 끝의 `A`는 Purchaser(ADATA)가 우선이다(2026-11-09 사용자 확정). Table 2의 `A`/`B`는 RDIMM일 때만 Special Code 1로 읽고, 그 외 DIMM Type의 끝 `B`는 Special Code 2(Reball)로 읽는다(2026-11-09 사용자 확정). RDIMM(Table 2)은 Special Code 1이 필수이므로 끝의 단독 `B`도 Special Code 2(Reball)가 아니라 Special Code 1(Rambus)로 해석한다.
 - Table 1(A100+ADATA)은 고객 BOM이 고정이 아니므로 DIMM Type 제한 없이 수기 선택한다.
 - Comp Test Site는 Table 판정에 사용하지 않는다.
 - 파싱 시 마지막 한 글자가 Special Code 1/2 양쪽에 존재하는 코드(예: `B`)면 기존 파트 호환을 위해 Special Code 2로 해석한다.

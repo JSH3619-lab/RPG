@@ -1525,17 +1525,39 @@ public class UnitTest1
     }
 
     [Fact]
-    public void ParseModuleFullPart_SpecialCode1Table2_RoundTripsRambusCode()
+    public void ParseModuleFullPart_SpecialCode1Table2AB_OnlyForRdimm()
     {
         var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
         var provider = new SpecProvider(specDirectory);
         provider.Load();
         var service = new ModuleService(provider, new ProductTextService(provider));
 
+        // Table 2의 A/B는 RDIMM 전용 → UDIMM 끝자리 B는 Special Code 2(Reball), R은 Special Code 3(RMA)
         var request = service.ParseModuleFullPart("30", "RMRDAG58A1P-GPWRRWM7GBR");
 
-        Assert.Equal("B", request.A100SpecialCode);
-        Assert.Equal("R", request.SpecialCode2Code);
+        Assert.Equal(string.Empty, request.A100SpecialCode);
+        Assert.Equal("B", request.SpecialCode2Code);
+        Assert.Equal("R", request.SpecialCode3Code);
+    }
+
+    [Theory]
+    [InlineData("XMRRCG54A2H-G0WRRWM6XUA", "U", "A")]
+    [InlineData("XMRRCG54A2H-G0WRRWM6XEA", "E", "A")]
+    [InlineData("XMRRCG54A2H-G0WRRWM6XAA", "A", "A")] // TM은 Purchaser를 먼저 읽는다
+    [InlineData("XMRDAG58A1A-G0WRRWM7XU", "U", "")]
+    public void ParseModuleFullPart_ManufacturingModule_ReadsTmPurchaserFirst(
+        string partCode, string expectedPurchaser, string expectedSpecialCode1)
+    {
+        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
+        var provider = new SpecProvider(specDirectory);
+        provider.Load();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var request = service.ParseModuleFullPart("30", partCode);
+
+        Assert.Equal(expectedPurchaser, request.PurchaserCode);
+        Assert.Equal(expectedSpecialCode1, request.A100SpecialCode);
+        Assert.Equal(partCode, service.GeneratePreview(request)[0].PartCode);
     }
 
     [Theory]

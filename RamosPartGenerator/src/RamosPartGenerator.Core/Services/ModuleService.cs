@@ -307,10 +307,11 @@ public sealed class ModuleService
         request.VendorCode = tailPart.Substring(8, 1);
 
         var trailingText = tailPart.Length > 9 ? tailPart[9..] : string.Empty;
-        // Purchaser는 Third-party(TM/BM) 전용. Internal family에서는 같은 글자(A 등)를 Special Code로 해석한다.
+        // Purchaser는 Third-party(TM/BM)와 TM 모듈(XM/ZM)만 먼저 읽는다. Internal family에서는 같은 글자(A 등)를 Special Code로 해석한다.
+        var isManufacturing = IsManufacturingModule(request.ModuleSourceCode);
         if (!string.IsNullOrEmpty(trailingText) &&
-            IsThirdPartyModule(request.ModuleSourceCode) &&
-            IsPurchaserCode(trailingText[..1]))
+            (IsThirdPartyModule(request.ModuleSourceCode) || isManufacturing) &&
+            IsPurchaserCode(trailingText[..1], isManufacturing))
         {
             request.PurchaserCode = trailingText[..1];
             trailingText = trailingText[1..];
@@ -319,8 +320,10 @@ public sealed class ModuleService
         // Special Code 1은 Vendor/Purchaser에 따라 Table 1(A100+ADATA) 또는 Table 2(그 외)를 적용한다.
         // 마지막 한 글자가 Special Code 1/2 양쪽에 모두 있는 코드(예: B)면 기존 파트 호환을 위해 Special Code 2로 해석한다.
         // 단, Special Code 1이 필수인 DIMM Type(RDIMM: RCD/TS 구성 A/B)은 Special Code 1을 우선한다.
+        // Table 2의 A/B는 RDIMM 전용이므로 DIMM Type에 허용된 코드만 Special Code 1로 읽는다.
         if (!string.IsNullOrEmpty(trailingText) &&
             IsSpecialCode1(request, trailingText[..1]) &&
+            IsSpecialCode1AllowedForDimm(request, trailingText[..1]) &&
             (IsSpecialCode1Required(request) || !(trailingText.Length == 1 && IsSpecialCode2(trailingText[..1]))))
         {
             request.A100SpecialCode = trailingText[..1];
@@ -426,10 +429,16 @@ public sealed class ModuleService
         };
     }
 
-    // Third-party(TM/BM) Purchaser 목록을 spec에서 읽는다 (스펙편집 추가분 반영).
-    private bool IsPurchaserCode(string code)
+    // Purchaser 목록을 spec에서 읽는다 (스펙편집 추가분 반영). TM 모듈(XM/ZM)은 purchaser_tm.
+    private bool IsPurchaserCode(string code, bool isManufacturing)
     {
-        return code == "0" || Codes("purchaser").Contains(code, StringComparer.OrdinalIgnoreCase);
+        return code == "0" || Codes(isManufacturing ? "purchaser_tm" : "purchaser").Contains(code, StringComparer.OrdinalIgnoreCase);
+    }
+
+    private static bool IsSpecialCode1AllowedForDimm(ModuleRequest request, string code)
+    {
+        var allowedCodes = IsSpecialCode1Table1(request) ? null : GetSpecialCode1Table2Codes(request.DimmTypeCode);
+        return allowedCodes is null || allowedCodes.Contains(code, StringComparer.OrdinalIgnoreCase);
     }
 
     private static bool IsSpecialCode1Table1(ModuleRequest request)
