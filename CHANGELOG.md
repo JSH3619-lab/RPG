@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.3 - 2026-11-09
+
+- 화면 Vendor 선택지를 코드 고정 목록(일반 S/G/B/A, TM X) 대신 spec `vendor`/`vendor_tm`에서 읽도록 수정 — 스펙편집으로 추가한 Vendor(예: TM `E - EBYTE`)와 1.6.1의 TM `A`/`U`가 화면에 나오지 않던 문제
+
 ## 1.6.2 - 2026-11-05
 
 - LPDDR Package Type `I : 200 FBGA (0.8T / 10x14.5)` 추가 (F와 두께만 다름, Micron MT53B512M32D2NP-053 WT:C 대응, PDF 미수록)

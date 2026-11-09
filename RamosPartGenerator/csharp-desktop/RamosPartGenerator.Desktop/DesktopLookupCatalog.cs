@@ -124,6 +124,12 @@ internal sealed class DesktopLookupCatalog
         return Options(isTable1 ? "special_code1_table1" : "special_code1_table2");
     }
 
+    // 화면 Vendor 선택지: 스펙편집으로 추가한 코드도 바로 나오도록 spec 목록에서 코드를 뽑는다.
+    public string[] VendorCodes(bool isManufacturing)
+    {
+        return Options(isManufacturing ? "vendor_tm" : "vendor").Select(DisplayHelpers.ExtractCode).ToArray();
+    }
+
     public IReadOnlyList<string> ModuleSpeedCodes(string dramTypeCode)
     {
         return TryGetModuleSpeedRule(dramTypeCode, out var rule)

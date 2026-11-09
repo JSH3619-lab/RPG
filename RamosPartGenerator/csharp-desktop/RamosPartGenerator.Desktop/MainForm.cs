@@ -24,8 +24,6 @@ public sealed partial class MainForm : Form
     private static readonly string[] ModuleDdr5DieDensityCodes = { "A", "H", "B", "X", "Y" };
     private static readonly string[] ModuleStandardCompositionCodes = { "4", "8", "6", "A" };
     private static readonly string[] ModuleManufacturingCompositionCodes = { "4", "8", "6", "9" };
-    private static readonly string[] StandardVendorCodes = { "S", "G", "B", "A" };
-    private static readonly string[] ManufacturingVendorCodes = { "X" };
     private static readonly string[] ManufacturingCompSourceCodes = { "XC", "ZC" };
     private static readonly string[] ManufacturingIncomingSourceCodes = { "X", "Z" };
     private static readonly string[] ManufacturingModuleSourceCodes = { "XM", "ZM" };
@@ -1265,9 +1263,7 @@ public sealed partial class MainForm : Form
             var isThirdParty = !isManufacturingMode && (sourceCode is "T" or "B");
             if (_incomingFields.TryGetValue("vendorCode", out var vendorCombo))
             {
-                var vendorOptions = isManufacturingMode
-                    ? IncomingOptionsByCodes("vendorCode", ManufacturingVendorCodes)
-                    : IncomingOptionsByCodes("vendorCode", StandardVendorCodes);
+                var vendorOptions = IncomingOptionsByCodes("vendorCode", _services.Lookups.VendorCodes(isManufacturingMode));
                 SetFieldOptions(vendorCombo, vendorOptions);
             }
 
@@ -1633,9 +1629,7 @@ public sealed partial class MainForm : Form
             {
                 if (_moduleFields.TryGetValue("vendorCode", out var vendorCombo))
                 {
-                    var vendorOptions = isManufacturingMode
-                        ? ModuleOptionsByCodes("vendorCode", ManufacturingVendorCodes)
-                        : ModuleOptionsByCodes("vendorCode", StandardVendorCodes);
+                    var vendorOptions = ModuleOptionsByCodes("vendorCode", _services.Lookups.VendorCodes(isManufacturingMode));
                     SetFieldOptions(vendorCombo, vendorOptions);
                 }
 
