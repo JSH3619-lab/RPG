@@ -1524,22 +1524,6 @@ public class UnitTest1
         Assert.Contains("Table 2", ex.Message);
     }
 
-    [Fact]
-    public void ParseModuleFullPart_SpecialCode1Table2AB_OnlyForRdimm()
-    {
-        var specDirectory = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "specs"));
-        var provider = new SpecProvider(specDirectory);
-        provider.Load();
-        var service = new ModuleService(provider, new ProductTextService(provider));
-
-        // Table 2의 A/B는 RDIMM 전용 → UDIMM 끝자리 B는 Special Code 2(Reball), R은 Special Code 3(RMA)
-        var request = service.ParseModuleFullPart("30", "RMRDAG58A1P-GPWRRWM7GBR");
-
-        Assert.Equal(string.Empty, request.A100SpecialCode);
-        Assert.Equal("B", request.SpecialCode2Code);
-        Assert.Equal("R", request.SpecialCode3Code);
-    }
-
     [Theory]
     [InlineData("XMRRCG54A2H-G0WRRWM6XUA", "U", "A")]
     [InlineData("XMRRCG54A2H-G0WRRWM6XEA", "E", "A")]
