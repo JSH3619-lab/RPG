@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.6.4 - 2026-11-09
 
 - Module 파싱: TM 모듈(`XM`/`ZM`)도 Purchaser(`purchaser_tm`)를 Special Code보다 먼저 읽음(예: `XMRRCG54A2H-G0WRRWM6XEA`) — 이전엔 TM 모듈 Purchaser를 읽지 못해 파싱 오류. Special Code 1 Table 2의 `A`/`B`는 RDIMM일 때만 Special Code 1로 읽음(UDIMM 등 끝 `B`는 Special Code 2 Reball)
 - 파트 파싱 Purchaser 판별을 코드 고정 목록 대신 spec에서 읽도록 수정: Comp(`purchaser`+`purchaser_tm`, 끝자리 `E` 등 스펙편집 추가분 인식), Module Third-party(`purchaser`)

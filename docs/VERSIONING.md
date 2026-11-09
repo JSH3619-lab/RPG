@@ -9,7 +9,7 @@
 
 현재 기준:
 
-- Part Generator `v1.6.3`
+- Part Generator `v1.6.4`
 - Spec Rev `32.2`
 
 ## 프로그램 버전 규칙
@@ -21,10 +21,10 @@
 프로그램 버전은 `RamosPartGenerator.Desktop.csproj`에서 관리한다. CLI(`RamosPartGenerator.Cli.csproj`)도 같은 4개 값으로 맞춘다.
 
 ```xml
-<Version>1.6.3</Version>
-<AssemblyVersion>1.6.3.0</AssemblyVersion>
-<FileVersion>1.6.3.0</FileVersion>
-<InformationalVersion>1.6.3</InformationalVersion>
+<Version>1.6.4</Version>
+<AssemblyVersion>1.6.4.0</AssemblyVersion>
+<FileVersion>1.6.4.0</FileVersion>
+<InformationalVersion>1.6.4</InformationalVersion>
 ```
 
 변경 시 화면 제목, 헤더, EXE 파일 속성, 시작 로그에 같은 버전이 반영된다.
