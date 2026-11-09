@@ -426,9 +426,10 @@ public sealed class ModuleService
         };
     }
 
-    private static bool IsPurchaserCode(string code)
+    // Third-party(TM/BM) Purchaser 목록을 spec에서 읽는다 (스펙편집 추가분 반영).
+    private bool IsPurchaserCode(string code)
     {
-        return code is "V" or "H" or "A" or "0";
+        return code == "0" || Codes("purchaser").Contains(code, StringComparer.OrdinalIgnoreCase);
     }
 
     private static bool IsSpecialCode1Table1(ModuleRequest request)

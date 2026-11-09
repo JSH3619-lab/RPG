@@ -230,6 +230,11 @@ public class UnitTest1
         var a100Rows = service.GeneratePreview(service.ParseCompPart("30", "ZCSAH046VH-0BMRAU"));
         Assert.Equal("Z4RAH046VH-0MAELU", a100Rows[0].PartCode);
         Assert.Equal("ZCSAH046VH-0BMRAU", a100Rows[1].PartCode);
+
+        // 스펙편집 추가분 Purchaser E(EBYTE)도 파싱 시 Purchaser로 읽는다
+        var ebyte = service.ParseCompPart("30", "ZCSAH046VH-0BMRUE");
+        Assert.Equal("E", ebyte.PurchaserCode);
+        Assert.Equal("ZCSAH046VH-0BMRUE", service.GeneratePreview(ebyte)[1].PartCode);
     }
 
     [Fact]

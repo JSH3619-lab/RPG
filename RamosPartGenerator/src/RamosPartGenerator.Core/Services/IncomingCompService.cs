@@ -484,9 +484,10 @@ public sealed class IncomingCompService
         };
     }
 
-    private static bool IsPurchaserCode(string code)
+    // 스펙편집으로 추가한 Purchaser도 파싱되도록 spec 목록(일반+TM)에서 읽는다. 끝 한 글자의 다른 후보는 Comp Type 2(B/M/1)뿐이라 겹치지 않는다.
+    private bool IsPurchaserCode(string code)
     {
-        return code is "V" or "H" or "A" or "U" or "0";
+        return code == "0" || Codes("purchaser", "purchaser_tm").Contains(code, StringComparer.OrdinalIgnoreCase);
     }
 
     private static string GetDensityLabel(string densityCode)

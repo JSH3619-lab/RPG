@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- 파트 파싱 Purchaser 판별을 코드 고정 목록 대신 spec에서 읽도록 수정: Comp(`purchaser`+`purchaser_tm`, 끝자리 `E` 등 스펙편집 추가분 인식), Module Third-party(`purchaser`)
 - TM Vendor·Purchaser `E : EBYTE` 추가 (공용 폴더 스펙편집 추가분을 저장소 spec에 반영, TM PART PDF 미수록)
 
 ## 1.6.3 - 2026-11-09
