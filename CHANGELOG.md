@@ -1,7 +1,8 @@
 # Changelog
 
-## Unreleased
+## 1.6.5 - 2026-11-09
 
+- 화면 Part Mode 이름 변경: `Standard` → `Standard / TP`, `TM` → `Toll Mfg`(임가공) — `TM…`으로 시작하는 외주 모듈 파트와 혼동 방지
 - 임가공(TM) Purchaser 필수: TM 모드에서 화면 Purchaser 칸이 꺼지고 값이 지워져 Purchaser 없는 코드(예: `ZCSAH046VM-0BHREE` 파싱 → `ZCSAH046VM-0BHRE` 생성)가 나오던 문제 수정. Core도 TM Comp·Module Purchaser 누락 시 오류(Vendor X 포함 — ERP의 Purchaser 없는 RAMBO Comp 14종은 이제 검증 오류)
 - 화면 Purchaser 선택지를 모드별(일반 `purchaser` / TM `purchaser_tm`)로, `(None)` 제외
 

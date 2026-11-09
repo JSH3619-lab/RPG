@@ -473,8 +473,8 @@ public sealed partial class MainForm : Form
                     SetIncomingManufacturingMode(isManufacturing, clearFields: true);
                 }
             },
-            "Standard",
-            "TM");
+            "Standard / TP",
+            "Toll Mfg");
         return BuildModeRow(_incomingStandardMode, _incomingManufacturingMode);
     }
 
@@ -488,8 +488,8 @@ public sealed partial class MainForm : Form
                     SetModuleManufacturingMode(isManufacturing, clearFields: true);
                 }
             },
-            "Standard",
-            "TM");
+            "Standard / TP",
+            "Toll Mfg");
         _moduleFinishedProductRetest = new CheckBox
         {
             Text = "완제품 Retest (00/0Y)",
@@ -508,7 +508,7 @@ public sealed partial class MainForm : Form
         {
             Text = standardText,
             AutoSize = false,
-            Size = new Size(104, 28),
+            Size = new Size(120, 28),
             Checked = true,
             Appearance = Appearance.Button,
             FlatStyle = FlatStyle.Flat,
@@ -520,7 +520,7 @@ public sealed partial class MainForm : Form
         {
             Text = manufacturingText,
             AutoSize = false,
-            Size = new Size(58, 28),
+            Size = new Size(84, 28),
             Appearance = Appearance.Button,
             FlatStyle = FlatStyle.Flat,
             TextAlign = ContentAlignment.MiddleCenter,
