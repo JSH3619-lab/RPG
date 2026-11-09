@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- TM Vendor·Purchaser `E : EBYTE` 추가 (공용 폴더 스펙편집 추가분을 저장소 spec에 반영, TM PART PDF 미수록)
+
 ## 1.6.3 - 2026-11-09
 
 - 화면 Vendor 선택지를 코드 고정 목록(일반 S/G/B/A, TM X) 대신 spec `vendor`/`vendor_tm`에서 읽도록 수정 — 스펙편집으로 추가한 Vendor(예: TM `E - EBYTE`)와 1.6.1의 TM `A`/`U`가 화면에 나오지 않던 문제
