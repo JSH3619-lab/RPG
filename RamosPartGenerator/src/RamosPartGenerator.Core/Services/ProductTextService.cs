@@ -300,6 +300,7 @@ public sealed class ProductTextService
             "A" => "AXA5UR02 PCB(Black)",
             "B" => "BP PCB(Black)",
             "C" => "BP PCB(Black, 10Layer)",
+            "D" => "BP PCB(Black, x4 7.5x11.5)",
             "G" => "Hammer Pass",
             "K" => "Hammer Fail",
             _ => pcbCode

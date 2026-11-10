@@ -452,6 +452,21 @@ public class UnitTest1
         Assert.Equal("9", parsedModule.CompositionCode);
     }
 
+    [Theory]
+    // WP = 5600 Premium (Bank/VDD는 WM과 같은 5), PCB D = BP Black x4 7.5x11.5
+    [InlineData("RMRDAG58A1A-CPRRRWP7G", "DDR5 UDIMM 16GB (16Gb x8 *8) S6 RAmos BP PCB(Black) 5600 MT/s Premium (2800MHz @ 46/45/45)")]
+    [InlineData("ZMRRCG54B1B-M0RRRWMDUUA", "DDR5 RDIMM 64GB (32Gb x4 *20) S3 CT BP PCB(Black, x4 7.5x11.5) 5600 MT/s (2800MHz @ 46/45/45)")]
+    public void GeneratePreview_PremiumSpeedAndPcbD(string partCode, string binSpec)
+    {
+        var provider = LoadProvider();
+        var service = new ModuleService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(service.ParseModuleFullPart("30", partCode));
+
+        Assert.Equal(partCode, rows[0].PartCode);
+        Assert.Equal(binSpec, rows[1].Specification);
+    }
+
     [Fact]
     public void ParseCompPart_RdimmCompMapsToDdr5Rdimm()
     {

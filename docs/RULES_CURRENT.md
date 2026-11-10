@@ -106,7 +106,9 @@
 - Module은 `Comp Full Part`를 해석해 공통 정보를 먼저 채울 수 있다.
 - 이후 사용자가 `DIMM Type`, `Module Density`, `PCB` 등 Module 전용 항목을 결정한다.
 - DDR4 Speed는 `TD`, `WE`를 허용한다.
-- DDR5 Speed는 `QK`, `WM`, `CM`, `CA`, `CP`, `CQ`, `CR`, `CS`를 허용한다.
+- DDR5 Speed는 `QK`, `WM`, `WP`, `CM`, `CA`, `CP`, `CQ`, `CR`, `CS`를 허용한다.
+- `WP : 5600 MT/s Premium (2800MHz @ 46/45/45)` — S6 HS2 강화 Comp Test 프리미엄 라인용(2026-11-10 사용자 확정, PDF 미수록). Bank/VDD는 WM과 같은 `5`, MDL BIN은 `TN` 그대로. 프리미엄 Comp BIN(`CA CB CC PD CE CF`, CD 대신 PD)은 단발성일 수 있어 생성기 미반영 — 수기 작성.
+- PCB `D : BrainPower(BP) PCB (Black, x4 7.5x11.5)` — Auton RDIMM 32Gb x4 7.5x11.5 PKG용(2026-11-10, PDF 미수록). 품목규격 표기 `BP PCB(Black, x4 7.5x11.5)`.
 - Bank/VDD 매핑:
   - DDR4 `TD`, `WE` -> `16Bank / 1.2V`
   - DDR5 `QK`, `WM` -> `32Bank / 1.1V`

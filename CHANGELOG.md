@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.7 - 2026-11-10
+
+- DDR5 Module Speed `WP : 5600 MT/s Premium (2800MHz @ 46/45/45)` 추가 (S6 프리미엄 라인, Bank/VDD `5`)
+- Module PCB `D : BrainPower(BP) PCB (Black, x4 7.5x11.5)` 추가 (품목규격 `BP PCB(Black, x4 7.5x11.5)`)
+
 ## 1.6.6 - 2026-11-10
 
 - Module 탭 Comp Full Part 파싱: Comp DRAM Type `S`(DDR5 RDIMM Comp, 예: `TCSAH046VH-WBMRGH`)를 Module 값으로 바꾸지 못해 "Module 기본값을 자동 매핑할 수 없습니다" 오류가 나던 문제 수정 — `S`는 DRAM Type `R`(DDR5)·DIMM Type `R`(RDIMM)로 채움
