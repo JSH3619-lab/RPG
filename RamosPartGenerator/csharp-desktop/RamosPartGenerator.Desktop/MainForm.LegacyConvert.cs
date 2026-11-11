@@ -186,7 +186,7 @@ public sealed partial class MainForm
                 throw new InvalidOperationException("신형 Part를 다시 생성한 결과가 일치하지 않습니다.");
             }
 
-            var erpStatus = _erpIndex.HasData ? (_erpIndex.Contains(converted) ? "등록됨" : "신규") : string.Empty;
+            var erpStatus = _erpIndex.HasData ? ErpRegistrationRules.Label(_erpIndex.GetStatus(converted)) : string.Empty;
             return new LegacyConvertRow(
                 result.SourceCode,
                 converted,

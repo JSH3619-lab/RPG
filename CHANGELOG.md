@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.6.8 - 2026-11-12
+
+- Export 이력 ↔ ERP 양방향 대조: Export만 되고 ERP 등록이 빠진 파트(`RCRAH086VP-GBGWG` 사례)를 `등록됨`으로 보아 Export에서 빠지던 문제 수정. 상태를 `등록됨`/`ERP 반영 대기`/`누락 의심`/`신규`로 나누고, 누락 의심은 Export에 다시 포함·알림
+- Export 시각·PC·파일명을 `pgm-export-log.json`에 기록 (`pgm-exported-cache.json` 형식은 유지)
+- ERP 업로드 직후 누락 의심 목록 표시·CSV 저장, 상태줄에 누락 의심 건수·오래된 ERP 스냅샷(7일 초과) 경고
+- Export 이력 파일에서 지운 코드가 실행 중인 PGM에 재시작 전까지 남던 문제 수정
+
 ## 1.6.7 - 2026-11-10
 
 - DDR5 Module Speed `WP : 5600 MT/s Premium (2800MHz @ 46/45/45)` 추가 (S6 프리미엄 라인, Bank/VDD `5`)

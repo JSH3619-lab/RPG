@@ -724,13 +724,33 @@ public sealed partial class MainForm : Form
     {
         var exportedSuffix = _erpIndex.ExportedCount > 0 ? $" + 생성 {_erpIndex.ExportedCount:n0}건" : string.Empty;
         var text = _erpIndex.UploadedAt is not null
-            ? $"등록 파트 기준: {_erpIndex.UploadedAt:yyyy-MM-dd} (ERP {_erpIndex.Count:n0}건{exportedSuffix})"
+            ? $"등록 파트 기준: {_erpIndex.SnapshotAt:yyyy-MM-dd} (ERP {_erpIndex.Count:n0}건{exportedSuffix})"
             : _erpIndex.ExportedCount > 0
                 ? $"ERP 미업로드 (생성 {_erpIndex.ExportedCount:n0}건)"
                 : "ERP 품목 미업로드";
-        _incomingErpStatusLabel.Text = text;
-        _moduleErpStatusLabel.Text = text;
-        _lpddrErpStatusLabel.Text = text;
+        // 양방향 대조 경고: 생성했는데 ERP에 없는 파트(누락 의심) / 오래된 ERP 스냅샷(이미 등록된 파트를 신규로 볼 위험)
+        var suspectedCount = _erpIndex.SuspectedMissing().Count;
+        var warnings = new List<string>();
+        if (suspectedCount > 0)
+        {
+            warnings.Add($"ERP 누락 의심 {suspectedCount:n0}건");
+        }
+
+        if (_erpIndex.IsStale)
+        {
+            warnings.Add($"ERP 기준 {(DateTime.Now - _erpIndex.SnapshotAt!.Value).Days}일 경과 — 최신 ERP 품목 업로드 필요");
+        }
+
+        if (warnings.Count > 0)
+        {
+            text += " ⚠ " + string.Join(" · ", warnings);
+        }
+
+        foreach (var label in new[] { _incomingErpStatusLabel, _moduleErpStatusLabel, _lpddrErpStatusLabel })
+        {
+            label.Text = text;
+            label.ForeColor = warnings.Count > 0 ? RamosTheme.Warning : RamosTheme.Gray;
+        }
         _incomingResultGrid.Invalidate();
         _moduleResultGrid.Invalidate();
         _lpddrResultGrid.Invalidate();
@@ -760,15 +780,67 @@ public sealed partial class MainForm : Form
             }
 
             var codes = new ErpRegisteredPartsReader().Read(dialog.FileName);
-            _erpIndex.Update(Path.GetFileName(dialog.FileName), codes);
+            // ERP에서 받은 시각을 스냅샷 기준으로 쓴다 — 받은 뒤 등록된 파트를 누락으로 오판하지 않도록.
+            // Excel로 열어 다시 저장하면 수정 시각이 늦어지므로 생성 시각과 수정 시각 중 이른 쪽을 쓴다.
+            var snapshotAt = new[] { File.GetCreationTime(dialog.FileName), File.GetLastWriteTime(dialog.FileName) }.Min();
+            _erpIndex.Refresh();
+            _erpIndex.Update(Path.GetFileName(dialog.FileName), codes, snapshotAt);
             UpdateErpStatusLabels();
+            var suspected = _erpIndex.SuspectedMissing();
             AppLog.Info(
                 "ErpUpload.Success",
                 ("area", area),
                 ("fileName", Path.GetFileName(dialog.FileName)),
-                ("codeCount", codes.Count.ToString()));
-            SetInfo(statusLabel, $"ERP 품목 업로드 완료: {codes.Count:n0}건");
+                ("codeCount", codes.Count.ToString()),
+                ("suspectedMissing", suspected.Count.ToString()));
+            SetInfo(statusLabel, $"ERP 품목 업로드 완료: {codes.Count:n0}건" +
+                (suspected.Count > 0 ? $" | ERP 누락 의심 {suspected.Count:n0}건" : string.Empty));
+            ShowSuspectedMissing(suspected);
         });
+    }
+
+    // PGM에서 생성(Export)했는데 ERP에 없는 파트를 알리고, 원하면 목록을 CSV로 저장한다.
+    private void ShowSuspectedMissing(IReadOnlyList<(string Code, ErpPartIndex.ExportLogEntry? Entry)> suspected)
+    {
+        if (suspected.Count == 0)
+        {
+            return;
+        }
+
+        const int previewCount = 25;
+        var preview = string.Join(Environment.NewLine, suspected.Take(previewCount).Select(item =>
+            $"  · {item.Code}  ({(item.Entry is null ? "Export 시각 미상" : $"{item.Entry.ExportedAt:yyyy-MM-dd HH:mm} {item.Entry.By}")})"));
+        var more = suspected.Count > previewCount ? $"{Environment.NewLine}  … 외 {suspected.Count - previewCount:n0}건" : string.Empty;
+        var answer = MessageBox.Show(
+            this,
+            $"PGM에서 생성(Export)했지만 ERP에 없는 파트가 {suspected.Count:n0}건 있습니다." + Environment.NewLine +
+            "ERP 등록이 빠졌을 수 있습니다. 이 파트들은 '누락 의심'으로 표시되고 다음 Export에 다시 포함됩니다." +
+            Environment.NewLine + Environment.NewLine + preview + more + Environment.NewLine + Environment.NewLine +
+            "목록을 CSV로 저장할까요?",
+            "ERP 누락 의심",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Warning);
+        if (answer != DialogResult.Yes)
+        {
+            return;
+        }
+
+        using var dialog = new SaveFileDialog
+        {
+            AddExtension = true,
+            DefaultExt = "csv",
+            FileName = $"ERP 누락 의심({DateTime.Now:yyMMdd}).csv",
+            Filter = "CSV (*.csv)|*.csv"
+        };
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+        {
+            return;
+        }
+
+        var lines = new[] { "품목코드,Export 시각,PC,Export 파일" }.Concat(suspected.Select(item =>
+            $"{item.Code},{item.Entry?.ExportedAt:yyyy-MM-dd HH:mm},{item.Entry?.By},\"{item.Entry?.File}\""));
+        File.WriteAllLines(dialog.FileName, lines, new System.Text.UTF8Encoding(true)); // BOM: Excel 한글 깨짐 방지
+        TryOpenExportedFile(dialog.FileName, "SuspectedMissing");
     }
 
     private void AddErpStatusColumn(DataGridView grid)
@@ -789,20 +861,26 @@ public sealed partial class MainForm : Form
                 return;
             }
 
-            var isRegistered = _erpIndex.HasData && _erpIndex.Contains(row.PartCode);
+            var status = _erpIndex.HasData ? _erpIndex.GetStatus(row.PartCode) : ErpRegistration.New;
 
             if (args.ColumnIndex >= 0 && grid.Columns[args.ColumnIndex].Name == "ErpStatus")
             {
-                args.Value = isRegistered ? "등록됨" : "신규";
+                args.Value = ErpRegistrationRules.Label(status);
                 args.FormattingApplied = true;
             }
 
-            if (isRegistered)
+            if (ErpRegistrationRules.TreatAsRegistered(status))
             {
                 args.CellStyle.BackColor = RamosTheme.WarningBack;
                 args.CellStyle.ForeColor = RamosTheme.Warning;
                 args.CellStyle.SelectionBackColor = RamosTheme.WarningSelect;
                 args.CellStyle.SelectionForeColor = RamosTheme.Warning;
+            }
+            else if (status == ErpRegistration.SuspectedMissing)
+            {
+                // 누락 의심은 Export에 포함되는 행이라 등록됨(주황)과 다르게 빨간 글씨로만 표시한다.
+                args.CellStyle.ForeColor = RamosTheme.Danger;
+                args.CellStyle.SelectionForeColor = RamosTheme.Danger;
             }
         };
     }
@@ -1872,6 +1950,9 @@ public sealed partial class MainForm : Form
                 rows = filtered;
             }
 
+            // 누락 의심(생성했는데 ERP에 없음)은 등록됨으로 보지 않고 다시 내보낸다.
+            var suspectedCount = rows.Count(row => _erpIndex.GetStatus(row.PartCode) == ErpRegistration.SuspectedMissing);
+
             AppLog.Info(
                 "Export.Start",
                 ("area", area),
@@ -1901,16 +1982,18 @@ public sealed partial class MainForm : Form
             }
 
             File.WriteAllBytes(dialog.FileName, _services.Exporter.Export(rows));
-            _erpIndex.RecordExported(rows.Select(row => row.PartCode));
+            _erpIndex.RecordExported(rows.Select(row => row.PartCode), dialog.FileName);
             UpdateErpStatusLabels();
             var opened = TryOpenExportedFile(dialog.FileName, area);
             AppLog.Info(
                 "Export.Success",
                 ("area", area),
                 ("rowCount", rows.Length.ToString()),
+                ("suspectedIncluded", suspectedCount.ToString()),
                 ("opened", opened.ToString()),
                 ("filePath", dialog.FileName));
-            var excludedSuffix = excludedCount > 0 ? $" | 등록됨 {excludedCount:n0}건 제외" : string.Empty;
+            var excludedSuffix = (excludedCount > 0 ? $" | 등록됨 {excludedCount:n0}건 제외" : string.Empty) +
+                (suspectedCount > 0 ? $" | ERP 누락 의심 {suspectedCount:n0}건 포함" : string.Empty);
             SetInfo(statusLabel, (opened
                 ? $"Excel 내보내기 완료 및 열기: {dialog.FileName}"
                 : $"Excel 내보내기 완료(파일 열기 실패): {dialog.FileName}") + excludedSuffix);
@@ -2001,18 +2084,41 @@ public sealed partial class MainForm : Form
         }
 
         var registered = generatedRows.Where(row => _erpIndex.Contains(row.PartCode)).ToArray();
-        if (registered.Length == 0)
+        var suspected = generatedRows.Where(row => _erpIndex.GetStatus(row.PartCode) == ErpRegistration.SuspectedMissing).ToArray();
+        if (registered.Length == 0 && suspected.Length == 0)
         {
             return 0;
         }
 
-        var list = string.Join(Environment.NewLine, registered.Select(row => $"  · {row.PartCode}"));
+        var message = new System.Text.StringBuilder();
+        if (registered.Length > 0)
+        {
+            message.AppendLine($"생성한 {generatedRows.Count}건 중 {registered.Length}건은 이미 ERP에 등록됐거나 ERP 반영 대기 중인 파트입니다.");
+            message.AppendLine();
+            message.AppendLine(string.Join(Environment.NewLine, registered.Select(row =>
+                $"  · {row.PartCode} ({ErpRegistrationRules.Label(_erpIndex.GetStatus(row.PartCode))})")));
+            message.AppendLine();
+            message.AppendLine("결과 표에 주황색으로 표시됩니다. '중복 포함'을 체크하지 않으면 Export에서 자동 제외됩니다.");
+        }
+
+        if (suspected.Length > 0)
+        {
+            if (message.Length > 0)
+            {
+                message.AppendLine();
+            }
+
+            message.AppendLine($"{suspected.Length}건은 예전에 생성(Export)했지만 ERP에 없습니다 (누락 의심).");
+            message.AppendLine();
+            message.AppendLine(string.Join(Environment.NewLine, suspected.Select(row => $"  · {row.PartCode}")));
+            message.AppendLine();
+            message.AppendLine("누락 의심 파트는 빨간 글씨로 표시되고 Export에 다시 포함됩니다. ERP 등록 여부를 확인해 주세요.");
+        }
+
         MessageBox.Show(
             this,
-            $"생성한 {generatedRows.Count}건 중 {registered.Length}건은 이미 ERP에 등록된 파트입니다." +
-            Environment.NewLine + Environment.NewLine + list + Environment.NewLine + Environment.NewLine +
-            "이미 등록된 파트는 결과 표에 주황색으로 표시됩니다. '중복 포함'을 체크하지 않으면 Export에서 자동 제외됩니다.",
-            "이미 등록된 파트",
+            message.ToString(),
+            registered.Length > 0 ? "이미 등록된 파트" : "ERP 누락 의심",
             MessageBoxButtons.OK,
             MessageBoxIcon.Warning);
         return registered.Length;
