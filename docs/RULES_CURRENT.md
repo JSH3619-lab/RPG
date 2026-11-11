@@ -32,6 +32,7 @@
 - DDP Comp는 Package Type `M`/`N`이고 Density는 패키지 용량이다. Comp → Module(Comp Full Part 파싱, Comp_MDL)은 `AG`/`AH` → `X`, `BH` → `Y`로 변환한다. Module → Comp는 `X` → `AG`(DDR4)/`AH`(DDR5), `Y` → `BH`(DDR5)에 Package `M`으로 생성한다. DDR4 `Y`는 대응 Comp Density(32Gb DDR4)가 없어 Comp 변환 시 오류가 난다.
 - Comp_MDL(Comp 판매) Module Density는 `X` → `2G`, `Y` → `4G`다.
 - DDP Comp(Package `M`/`N`)의 Comp/Comp BIN 품목규격은 Density 뒤에 `(DDP)`를 붙인다 (예: `DDR4 16Gb (DDP) x8 (x4 -> x8) B-die S1 Partial Comp`). 입고 파트는 코드에 Package 자리가 없어 일반 Package와 같은 코드가 되므로 표기하지 않는다.
+- **★중요 — 입고 파트는 DDP 여부를 구분하지 못한다 (2026-11-11 사용자 확정).** 기존 DDP 입고 파트(`K4AAG085WB-PGGEL`·`K4AAG085WC-PGGEL`·`K4AAG085WD-PGGEL`·`K4AAG485WB-EGGEL`·`K4AAG485WB-ESSEL`·`K4AAG485WC-GGGEL`, Comp는 각각 `RCAAG085WB-PMGRG`·`RCAAG085WC-PMGRG`·`RCAAG085WD-PMGRG`·`RCAAG485WB-EMGRG`·`RCAAG485WB-EMSRS`·`RCAAG485WC-GMGRG`)는 코드만으로는 같은 Density의 일반(Mono) 입고와 구분되지 않는다. 이미 만든 파트는 바꾸지 않는다. Comp(Package `M`/`N`)와 Module(Die Density `X`/`Y`)에서는 DDP가 구분되고, 입고 단계는 영업 인보이스로 관리한다. 이후 새 DDP 입고가 들어오면 입고 Density에 DDP 전용 코드(예: `8Gb/DDP`)를 새로 추가해 구분할 예정이다(코드 미정).
 
 ## Rev.30.6 반영 차이
 - Comp Dram Type에 `S : DDR5 RDIMM`을 추가한다. 생성 규칙은 DDR5(`R`)와 동일하게 적용한다 (Density AH/HE/BH, Bank 6, Interface V, Comp BIN CA~CF).
