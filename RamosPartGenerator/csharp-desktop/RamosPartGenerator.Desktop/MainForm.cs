@@ -780,9 +780,9 @@ public sealed partial class MainForm : Form
             }
 
             var codes = new ErpRegisteredPartsReader().Read(dialog.FileName);
-            // ERP에서 받은 시각을 스냅샷 기준으로 쓴다 — 받은 뒤 등록된 파트를 누락으로 오판하지 않도록.
-            // Excel로 열어 다시 저장하면 수정 시각이 늦어지므로 생성 시각과 수정 시각 중 이른 쪽을 쓴다.
-            var snapshotAt = new[] { File.GetCreationTime(dialog.FileName), File.GetLastWriteTime(dialog.FileName) }.Min();
+            // ERP에서 받은(저장한) 시각을 스냅샷 기준으로 쓴다 — 받은 뒤 등록된 파트를 누락으로 오판하지 않도록.
+            // 생성 시각은 쓰지 않는다: 같은 이름 파일에 덮어 받으면 처음 만든 날(예: 10/06)이 그대로 남는다(1.6.8 오류).
+            var snapshotAt = File.GetLastWriteTime(dialog.FileName);
             _erpIndex.Refresh();
             _erpIndex.Update(Path.GetFileName(dialog.FileName), codes, snapshotAt);
             UpdateErpStatusLabels();

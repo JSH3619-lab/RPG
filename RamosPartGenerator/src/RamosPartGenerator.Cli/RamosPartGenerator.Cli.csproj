@@ -11,10 +11,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <!-- 버전은 Desktop csproj와 같은 값으로 맞춘다 (docs/VERSIONING.md) -->
-    <Version>1.6.8</Version>
-    <AssemblyVersion>1.6.8.0</AssemblyVersion>
-    <FileVersion>1.6.8.0</FileVersion>
-    <InformationalVersion>1.6.8</InformationalVersion>
+    <Version>1.6.9</Version>
+    <AssemblyVersion>1.6.9.0</AssemblyVersion>
+    <FileVersion>1.6.9.0</FileVersion>
+    <InformationalVersion>1.6.9</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
   </PropertyGroup>
 
