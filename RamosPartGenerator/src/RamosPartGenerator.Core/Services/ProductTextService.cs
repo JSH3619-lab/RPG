@@ -414,6 +414,7 @@ public sealed class ProductTextService
                 "5" => "Reball/EMC/Laser-Marking",
                 "6" => "Reball/Laser-Marking",
                 "7" => "EMC/Laser-Marking",
+                "8" => "No Test", // TM PART Rev 2.7: 공정만, 테스트 없음
                 _ => normalizedCode
             };
         }

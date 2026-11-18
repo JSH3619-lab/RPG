@@ -452,6 +452,20 @@ public class UnitTest1
         Assert.Equal("9", parsedModule.CompositionCode);
     }
 
+    [Fact]
+    public void GeneratePreview_TmCompType8_NoTest()
+    {
+        // TM PART Rev 2.7: Comp Type 8 = NO Test(Only Manufacturing)
+        var provider = LoadProvider();
+        var service = new IncomingCompService(provider, new ProductTextService(provider));
+
+        var rows = service.GeneratePreview(service.ParseCompPart("30", "ZCSAH046VM-8BHREE"));
+
+        var comp = Assert.Single(rows, row => row.Kind == "Comp");
+        Assert.Equal("ZCSAH046VM-8BHREE", comp.PartCode);
+        Assert.Contains("No Test Comp", comp.Specification);
+    }
+
     [Theory]
     // WP = 5600 Premium (Bank/VDD는 WM과 같은 5), PCB D = BP Black x4 7.5x11.5
     [InlineData("RMRDAG58A1A-CPRRRWP7G", "DDR5 UDIMM 16GB (16Gb x8 *8) S6 RAmos BP PCB(Black) 5600 MT/s Premium (2800MHz @ 46/45/45)")]

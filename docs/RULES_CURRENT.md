@@ -3,16 +3,19 @@
 원본 문서는 아래 두 파일을 기준으로 한다.
 
 - `RAMOS_DRAM_PART (Rev.32.2).pdf` (LPDDR 파트 규칙 포함)
-- `RAMOS_DRAM_TM_PART (Rev 2.2).pdf`
+- `RAMOS_DRAM_TM_PART (Rev 2.7).pdf`
 
 ## 지원 Rev
 - 현재 운영 키: `30`
-- 표시 기준: DRAM PART `Rev.32.2`, TM PART `Rev 2.2`
+- 표시 기준: DRAM PART `Rev.32.2`, TM PART `Rev 2.7`
 
 ## Rev.32.2 반영 차이
 - LPDDR Package Type에 `H : 315 FBGA (1.0T / 12.4x15)`를 추가한다.
 - LPDDR Package Type에 `I : 200 FBGA (0.8T / 10x14.5)`를 추가한다. PDF 미수록 자사 추가분(Micron MT53B512M32D2NP 대응, PDF 정정 대기).
 - Module PCB에 `C : BrainPower(BP) PCB (Black, 10Layer)`를 추가한다. 품목규격 표기는 `BP PCB(Black, 10Layer)`다.
+
+## TM Rev 2.7 반영 차이
+- TM Comp Type(`manufacturing_comp_type`)에 `8 : NO Test(Only Manufacturing)`를 추가한다(2026-11-18). 1~7은 공정+테스트, 8은 공정만. 품목규격 표기는 `No Test Comp`다(예: `ZCSAH046VM-8BHREE` → `DDR5 RDIMM 16Gb x4 M-die S2 No Test Comp`). 화면 TM Comp Type 선택지는 고정 목록 대신 spec에서 읽는다.
 
 ## TM Rev 2.2 반영 차이
 - 임가공(TM, 입고·Comp `X`/`Z`, Module `XM`/`ZM`)은 Purchaser 필수다(Vendor `X` 포함, 2026-11-09 사용자 확정). Purchaser 없이 등록된 기존 RAMBO(Vendor `X`) 파트는 잘못 만들어진 것으로 보고 예외를 두지 않는다. 화면 Purchaser 칸도 TM 모드에서 켜고 `purchaser_tm` 목록만 보여준다.

@@ -139,6 +139,12 @@ internal sealed class DesktopLookupCatalog
             .ToArray();
     }
 
+    // TM(임가공) Comp Type 코드. 화면 고정 목록 대신 spec에서 읽어 스펙편집 추가분(예: Rev 2.7의 8)도 나오게 한다.
+    public string[] ManufacturingCompTypeCodes()
+    {
+        return Options("manufacturing_comp_type").Select(DisplayHelpers.ExtractCode).ToArray();
+    }
+
     public IReadOnlyList<string> ModuleSpeedCodes(string dramTypeCode)
     {
         return TryGetModuleSpeedRule(dramTypeCode, out var rule)

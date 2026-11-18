@@ -27,7 +27,7 @@ public sealed partial class MainForm : Form
     private static readonly string[] ManufacturingCompSourceCodes = { "XC", "ZC" };
     private static readonly string[] ManufacturingIncomingSourceCodes = { "X", "Z" };
     private static readonly string[] ManufacturingModuleSourceCodes = { "XM", "ZM" };
-    private static readonly string[] ManufacturingCompTypeCodes = { "0", "1", "2", "3", "4", "5", "6", "7" };
+    private string[] ManufacturingCompTypeCodes => _services.Lookups.ManufacturingCompTypeCodes();
 
     private readonly DesktopAppServices _services;
     private DesktopLookupPage _incomingLookups;
