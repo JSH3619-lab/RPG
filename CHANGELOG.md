@@ -1,5 +1,9 @@
 # Changelog
 
+## 스펙 변경 2026-11-18 (exe 1.6.10 그대로)
+
+- TM Vendor·TM Purchaser에 `G : GIGA` 추가 (자사 GIGA와 같음, Rev 2.7 PDF 미수록). 공용 폴더 `specs\shared.json`에도 반영
+
 ## 1.6.10 - 2026-11-18
 
 - TM PART Rev 2.7 반영: TM Comp Type `8 : NO Test(Only Manufacturing)` 추가 (품목규격 `No Test Comp`)
