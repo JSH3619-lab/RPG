@@ -319,6 +319,9 @@ public sealed class ProductTextService
             "M" => "S3",
             "C" => "S6",
             "N" => "S9",
+            // TM PART Rev 2.7: Nanya 공정 구분은 TM에서 Die Brand로 표기 (일반 파트의 Comp Type Y/Z에 해당)
+            "Y" => "S9(PX83)",
+            "Z" => "S9(XX8E)",
             _ => string.Empty
         };
     }
@@ -393,6 +396,8 @@ public sealed class ProductTextService
             "M" => "S3",
             "C" => "S6",
             "N" => "S9",
+            "Y" => "S9(PX83)",
+            "Z" => "S9(XX8E)",
             "A" => "A100",
             "X" => "RAMBO",
             _ => icBrandCode

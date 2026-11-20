@@ -58,7 +58,7 @@ public sealed class IncomingCompService
             ("Interface", interfaceCode, Codes("interface_ddr4", "interface_ddr5"), false),
             ("Part Revision", partRevisionCode, PartRevisionCodes, false),
             ("Comp Type", compTypeCode, Codes(isManufacturing ? "manufacturing_comp_type" : "comp_type"), false),
-            ("Die Brand", dieBrandCode, Codes("die_brand"), false),
+            ("Die Brand", dieBrandCode, Codes(isManufacturing ? "die_brand_tm" : "die_brand"), false),
             ("Vendor", vendorCode, Codes(isManufacturing ? "vendor_tm" : "vendor"), false),
             ("Purchaser", purchaserCode, Codes(isManufacturing ? "purchaser_tm" : "purchaser"), true),
             ("Comp Type 2", compType2Code, Codes("comp_type2"), true),

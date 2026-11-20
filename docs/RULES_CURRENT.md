@@ -16,7 +16,8 @@
 
 ## TM Rev 2.7 반영 차이
 - TM Comp Type(`manufacturing_comp_type`)에 `8 : NO Test(Only Manufacturing)`를 추가한다(2026-11-18). 1~7은 공정+테스트, 8은 공정만. 품목규격 표기는 `No Test Comp`다(예: `ZCSAH046VM-8BHREE` → `DDR5 RDIMM 16Gb x4 M-die S2 No Test Comp`). 화면 TM Comp Type 선택지는 고정 목록 대신 spec에서 읽는다.
-- TM Vendor(`vendor_tm`)·TM Purchaser(`purchaser_tm`)에 `G : GIGA`(자사 파트의 GIGA와 같음)를 추가한다(2026-11-18 사용자 확정, Rev 2.7 PDF 미수록). 예: Nanya Comp 재입고 임가공 `ZCRAH086VA-8BNSGG`·`ZMRDAG58A1A-N8SRRQK7GG`.
+- TM Vendor(`vendor_tm`)에 `G : GIGA`(자사 파트의 GIGA와 같음)를 추가한다(2026-11-18 사용자 확정, Rev 2.7 갱신본 수록). TM Purchaser에는 G가 없다. 11/18에 Purchaser에도 G를 넣었던 것은 오해석이라 1.6.11에서 뺐다(Nanya 재입고 임가공의 Purchaser는 `H` RMHK).
+- TM Die Brand(`die_brand_tm`)·TM I.C Brand(`module_ic_brand_tm`)에 `Y : S9(NANYA/PX83)`, `Z : S9(NANYA/XX8E)`를 추가한다(Rev 2.7 갱신본, 2026-11-20). 일반 파트에서는 Comp Type `Y`/`Z`(EMC Partial)로 구분하던 Nanya 공정을 TM에서는 Comp Type이 공정 코드(0~8)라 Die Brand로 구분한다. TM 모드에서만 허용하고, 품목규격 표기는 `S9(PX83)`·`S9(XX8E)`. 예: Nanya Comp 재입고 임가공 `ZCRAH086VA-8BYSGH`·`ZMRDAG58A1A-Y8SRRQK7GH`(NY), `ZCRAH086VA-8BZSGH`·`ZMRDAG58A1A-Z8SRRQK7GH`(NZ).
 
 ## TM Rev 2.2 반영 차이
 - 임가공(TM, 입고·Comp `X`/`Z`, Module `XM`/`ZM`)은 Purchaser 필수다(Vendor `X` 포함, 2026-11-09 사용자 확정). Purchaser 없이 등록된 기존 RAMBO(Vendor `X`) 파트는 잘못 만들어진 것으로 보고 예외를 두지 않는다. 화면 Purchaser 칸도 TM 모드에서 켜고 `purchaser_tm` 목록만 보여준다.

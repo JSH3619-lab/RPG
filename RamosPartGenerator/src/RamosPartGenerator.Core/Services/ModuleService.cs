@@ -63,7 +63,7 @@ public sealed class ModuleService
             ("Composition", effectiveRequest.CompositionCode, ModuleCompositionCodes(isManufacturing), false),
             ("Rank", effectiveRequest.RankCode, CodesWithAdditions("rank", "0"), false),
             ("Generation", effectiveRequest.GenerationCode, GenerationCodes, false),
-            ("I.C Brand", effectiveRequest.IcBrandCode, Codes("module_ic_brand"), false),
+            ("I.C Brand", effectiveRequest.IcBrandCode, Codes(isManufacturing ? "module_ic_brand_tm" : "module_ic_brand"), false),
             ("Comp Type", effectiveRequest.ModuleCompTypeCode, Codes(isManufacturing ? "manufacturing_comp_type" : "comp_type"), false),
             ("Comp Test Site", effectiveRequest.CompTestCode, Codes("tester"), false),
             ("SMT Site", effectiveRequest.ModuleSmtCode, CodesWithAdditions("tester", "0"), false),

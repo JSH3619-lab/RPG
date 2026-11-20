@@ -452,6 +452,36 @@ public class UnitTest1
         Assert.Equal("9", parsedModule.CompositionCode);
     }
 
+    [Theory]
+    // TM PART Rev 2.7: Nanya 공정 구분 Y(PX83)·Z(XX8E)는 TM Die Brand / I.C Brand
+    // Nanya 재입고 임가공: Vendor G(GIGA), Purchaser H(RMHK)
+    [InlineData("ZCRAH086VA-8BYSGH", "DDR5 16Gb x8 A-die S9(PX83) No Test Comp")]
+    [InlineData("ZCRAH086VA-8BZSGH", "DDR5 16Gb x8 A-die S9(XX8E) No Test Comp")]
+    public void GeneratePreview_TmNanyaDieBrandYZ(string compCode, string spec)
+    {
+        var provider = LoadProvider();
+        var incoming = new IncomingCompService(provider, new ProductTextService(provider));
+        var module = new ModuleService(provider, new ProductTextService(provider));
+
+        var comp = Assert.Single(incoming.GeneratePreview(incoming.ParseCompPart("30", compCode)), row => row.Kind == "Comp");
+        Assert.Equal(compCode, comp.PartCode);
+        Assert.Equal(spec, comp.Specification);
+
+        var mdlCode = $"ZMRDAG58A1A-{compCode[13]}8SRRQK7GH"; // Comp Die Brand = MDL I.C Brand
+        var mdl = module.GeneratePreview(module.ParseModuleFullPart("30", mdlCode));
+        Assert.Equal(mdlCode, mdl[0].PartCode);
+    }
+
+    [Fact]
+    public void GeneratePreview_NanyaDieBrandY_RejectedOutsideTm()
+    {
+        var provider = LoadProvider();
+        var incoming = new IncomingCompService(provider, new ProductTextService(provider));
+
+        // 일반(자사) Comp에서 Y는 Comp Type이지 Die Brand가 아니다
+        Assert.ThrowsAny<Exception>(() => incoming.GeneratePreview(incoming.ParseCompPart("30", "RCRAH086VA-PBYWG")));
+    }
+
     [Fact]
     public void GeneratePreview_TmCompType8_NoTest()
     {

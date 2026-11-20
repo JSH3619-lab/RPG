@@ -40,7 +40,7 @@ internal sealed class DesktopLookupCatalog
             new("revisionCode", "Part Revision", "common", true, true, AlphabetOptions()),
             new("compTypeCode", "Comp Type", "comp", true, true, Options("comp_type", "manufacturing_comp_type")),
             new("packageTypeCode", "Package", "comp", true, true, Options("package_type")),
-            new("dieBrandCode", "Die Brand", "comp", true, true, Options("die_brand")),
+            new("dieBrandCode", "Die Brand", "comp", true, true, Options("die_brand", "die_brand_tm")),
             new("testerCode", "Test Site", "comp", true, true, Options("tester")),
             new("vendorCode", tail.VendorFieldLabel, "comp", true, true, Options("vendor", "vendor_tm")),
             new("purchaserCode", tail.PurchaserFieldLabel ?? "Purchaser", "comp", tail.PurchaserFieldPresent, true, Options("purchaser", "purchaser_tm")),
@@ -71,7 +71,7 @@ internal sealed class DesktopLookupCatalog
             new("dieDensityCode", "Base Die Density", "base", true, true, Options("module_die_density")),
             new("rankCode", "Rank", "base", true, true, rankItems),
             new("generationCode", "Generation", "base", true, true, AlphabetOptions()),
-            new("icBrandCode", "I.C Brand", "structure", true, true, Options("module_ic_brand")),
+            new("icBrandCode", "I.C Brand", "structure", true, true, Options("module_ic_brand", "module_ic_brand_tm")),
             new("moduleCompTypeCode", "Comp Type", "structure", true, true, Options("comp_type", "manufacturing_comp_type")),
             new("compTestCode", "Comp Test Site", "structure", true, true, Options("tester")),
             new("moduleSmtCode", "SMT Site", "structure", true, true, new[] { "0 - No Ass'y" }.Concat(Options("tester")).ToArray()),
@@ -140,6 +140,17 @@ internal sealed class DesktopLookupCatalog
     }
 
     // TM(임가공) Comp Type 코드. 화면 고정 목록 대신 spec에서 읽어 스펙편집 추가분(예: Rev 2.7의 8)도 나오게 한다.
+    // Die Brand·I.C Brand도 모드별 목록 (TM은 Rev 2.7부터 Nanya Y/Z 추가).
+    public string[] DieBrandCodes(bool isManufacturing)
+    {
+        return Options(isManufacturing ? "die_brand_tm" : "die_brand").Select(DisplayHelpers.ExtractCode).ToArray();
+    }
+
+    public string[] IcBrandCodes(bool isManufacturing)
+    {
+        return Options(isManufacturing ? "module_ic_brand_tm" : "module_ic_brand").Select(DisplayHelpers.ExtractCode).ToArray();
+    }
+
     public string[] ManufacturingCompTypeCodes()
     {
         return Options("manufacturing_comp_type").Select(DisplayHelpers.ExtractCode).ToArray();

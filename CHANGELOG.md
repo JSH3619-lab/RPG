@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.11 - 2026-11-20
+
+- TM PART Rev 2.7 갱신본 반영: TM Die Brand·I.C Brand에 `Y : S9(NANYA/PX83)`, `Z : S9(NANYA/XX8E)` 추가 (TM 모드 전용, 품목규격 `S9(PX83)`·`S9(XX8E)`). 화면 Die Brand·I.C Brand 선택지를 모드별로 표시
+- TM Purchaser `G : GIGA` 제거 (11/18 추가는 오해석, Rev 2.7에도 없음). TM Vendor `G`는 유지
+
 ## 스펙 변경 2026-11-18 (exe 1.6.10 그대로)
 
 - TM Vendor·TM Purchaser에 `G : GIGA` 추가 (자사 GIGA와 같음, Rev 2.7 PDF 미수록). 공용 폴더 `specs\shared.json`에도 반영

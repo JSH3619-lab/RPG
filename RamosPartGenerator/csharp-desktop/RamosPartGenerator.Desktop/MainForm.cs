@@ -1346,6 +1346,11 @@ public sealed partial class MainForm : Form
                 SetFieldOptions(vendorCombo, vendorOptions);
             }
 
+            if (_incomingFields.TryGetValue("dieBrandCode", out var dieBrandCombo))
+            {
+                SetFieldOptions(dieBrandCombo, IncomingOptionsByCodes("dieBrandCode", _services.Lookups.DieBrandCodes(isManufacturingMode)));
+            }
+
             if (_incomingFields.TryGetValue("purchaserCode", out var purchaserCombo))
             {
                 SetFieldOptions(purchaserCombo, IncomingOptionsByCodes("purchaserCode", _services.Lookups.PurchaserCodes(isManufacturingMode)));
@@ -1712,6 +1717,11 @@ public sealed partial class MainForm : Form
                 {
                     var vendorOptions = ModuleOptionsByCodes("vendorCode", _services.Lookups.VendorCodes(isManufacturingMode));
                     SetFieldOptions(vendorCombo, vendorOptions);
+                }
+
+                if (_moduleFields.TryGetValue("icBrandCode", out var icBrandCombo))
+                {
+                    SetFieldOptions(icBrandCombo, ModuleOptionsByCodes("icBrandCode", _services.Lookups.IcBrandCodes(isManufacturingMode)));
                 }
 
                 SetFieldOptions(purchaserCombo, ModuleOptionsByCodes("purchaserCode", _services.Lookups.PurchaserCodes(isManufacturingMode)));
